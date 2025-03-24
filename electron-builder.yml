@@ -1,0 +1,38 @@
+appId: com.pdf.studio
+productName: PDF Studio
+copyright: Copyright © 2024 PDF Studio
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+extraResources:
+  - from: backend/dist/pdf_processor
+    to: backend
+  # PyInstaller로 빌드된 의존성 파일들도 포함
+  - from: backend/dist/pdf_processor
+    to: ./
+    filter:
+      - "**/*"
+mac:
+  artifactName: ${productName}_${version}.${ext}
+  target:
+    - dmg
+    - zip
+win:
+  artifactName: ${productName}_${version}.${ext}
+  target:
+    - nsis
+linux:
+  artifactName: ${productName}_${version}.${ext}
+  target:
+    - AppImage
+publish: null
+
+# asar 설정
+asar: true
+asarUnpack:
+  - backend/**/*

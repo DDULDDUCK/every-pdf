@@ -1,0 +1,32 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "nextron:main",
+      "type": "node",
+      "request": "attach",
+      "port": 9292,
+      "skipFiles": ["<node_internals>/**"],
+      "localRoot": "${workspaceFolder}",
+      "sourceMaps": true
+    },
+    {
+      "name": "nextron:renderer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 5858,
+      "urlFilter": "http://localhost:*",
+      "webRoot": "${workspaceFolder}/renderer",
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "all",
+      "configurations": ["nextron:main", "nextron:renderer"]
+    }
+  ]
+}
