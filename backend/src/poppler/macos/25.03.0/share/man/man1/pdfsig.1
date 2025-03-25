@@ -1,0 +1,131 @@
+.\" Copyright 2011 The Poppler Developers - http://poppler.freedesktop.org
+.TH pdfsig 1 "28 October 2015"
+.SH NAME
+pdfsig \- Portable Document Format (PDF) digital signatures tool
+.SH SYNOPSIS
+.B pdfsig
+[options]
+.RI [ PDF-file ]
+.RI [ Output-file ]
+.SH DESCRIPTION
+.B pdfsig
+verifies the digital signatures in a PDF document.
+It also displays the identity of each signer
+(commonName field and full distinguished name of the signer certificate),
+the time and date of the signature, the hash algorithm used for signing,
+the type of the signature as stated in the PDF and
+the signed ranges with a statement wether the total document is signed.
+It can also sign PDF documents (options -add-signature or -sign).
+.PP
+pdfsig uses the trusted certificates stored either in the Network Security Services (NSS) Database or in GnuPG's S/MIME system (gpgsm).
+.PP
+pdfsig also uses the Online Certificate Status Protocol (OCSP) (refer to http://en.wikipedia.org/wiki/Online_Certificate_Status_Protocol) to look up the certificate online and check if it has been revoked (unless -no-ocsp has been specified).
+.PP
+If the NSS backend is used, the NSS Database is searched for in the following locations:
+.IP \(bu
+If the \-nssdir option is specified, the directory specified by this option.
+.IP \(bu
+The NSS Certificate database in the default Firefox profile. i.e. $HOME/.mozilla/firefox/*.default.
+.IP \(bu
+The NSS Certificate database in /etc/pki/nssdb.
+.PP
+If the GPG backend is used, the S/MIME certificate is read from $GNUPGHOME, defaulting to $HOME/.gnupg
+.SH OPTIONS
+.TP
+.B \-nssdir "[prefix]directory"
+Specify the database directory containing the certificate and key
+database files. See certutil(1) -d option for details of the
+prefix. If not specified the other search locations described in
+.B DESCRIPTION
+are used.
+.TP
+.B \-nss-pwd "password"
+Specify the password needed to access the NSS database (if any).
+.TP
+.B \-nocert
+Do not validate the certificate.
+.TP
+.B \-no-ocsp
+Do not perform online OCSP certificate revocation check (local Certificate Revocation Lists (CRL) are still used).
+.TP
+.B \-no-appearance
+Do not add appearance information when signing existing fields (signer name and date).
+.TP
+.B \-aia
+Enable the use of Authority Information Access (AIA) extension to fetch missing certificates to build the certificate chain.
+.TP
+.B \-dump
+Dump all signatures into current directory in their native format. Most likely it is either a unpadded or zero-padded CMS/PKCS7 bundle.
+.TP
+.B \-add-signature
+Add a new signature to the document.
+.TP
+.B \-new-signature-field-name " name"
+Specifies the field name to be used when adding a new signature. A random ID will be used by default.
+.TP
+.B \-sign " field"
+Sign the document in the specified signature field present in the document (must be unsigned).  Field can be specified by field name (string) or the n-th signature field in the document (integer).
+.TP
+.B \-nick " nickname"
+Use the certificate with the given nickname for signing (NSS backend). If nickname starts with pkcs11:, it's treated as PKCS#11 URI (NSS backend). If the nickname is given as a fingerprint, it will be the certificate used (GPG backend)
+.TP
+.B \-backend " backend"
+Use the specified backeng for cryptographic signatures
+.TP
+.B \-kpw " password"
+Use the given password for the signing key
+(this might be missing if the key isn't password protected).
+.TP
+.B \-digest " algorithm"
+Use the given digest algorithm for signing (default: SHA256).
+.TP
+.B \-reason " reason"
+Set the given reason string for the signature (default: no reason set).
+.TP
+.B \-etsi
+Create a signature of type ETSI.CAdES.detached instead of adbe.pkcs7.detached.
+.TP
+.B \-list-nicks
+List available nicknames in the NSS database.
+.TP
+.B \-list-backends
+List available backends for cryptographic signatures
+.TP
+.B \-v
+Print copyright and version information.
+.TP
+.B \-h
+Print usage information.
+.RB ( \-help
+and
+.B \-\-help
+are equivalent.)
+.SH EXAMPLES
+.TP
+pdfsig signed_file.pdf
+Displays signature info for signed_file.pdf.
+.TP
+pdfsig input.pdf output.pdf -add-signature -nss-pwd password -nick my-cert -reason 'for fun!'
+Creates a new pdf named output.pdf with the contents of input.pdf signed by the 'my-cert' certificate.
+.TP
+pdfsig input.pdf output.pdf -add-signature -nss-pwd password -nick 'pkcs11:token=smartcard0;object=Second%20certificate;type=cert'
+Same, but uses a PKCS#11 URI as defined in IETF RFC 7512 to select the certificate to be used for signing.
+.TP
+pdfsig input.pdf output.pdf -sign 0 -nss-pwd password -nick my-cert -reason 'for fun!'
+Creates a new pdf named output.pdf with the contents of input.pdf signed by the 'my-cert' certificate. input.pdf must have an already existing un-signed signature field.
+.SH AUTHOR
+The pdfsig software and documentation are copyright 1996-2004 Glyph & Cog, LLC
+and copyright 2005-2015 The Poppler Developers - http://poppler.freedesktop.org
+.SH "SEE ALSO"
+.BR pdfdetach (1),
+.BR pdffonts (1),
+.BR pdfimages (1),
+.BR pdfinfo (1),
+.BR pdftocairo (1),
+.BR pdftohtml (1),
+.BR pdftoppm (1),
+.BR pdftops (1),
+.BR pdftotext (1)
+.BR pdfseparate (1),
+.BR pdfunite (1)
+.BR certutil (1)

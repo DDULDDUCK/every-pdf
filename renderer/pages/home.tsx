@@ -4,6 +4,7 @@ import PDFDropzone from '../components/PDFDropzone';
 import ActionButtons from '../components/ActionButtons';
 import ToolPanel from '../components/ToolPanel';
 import StatusMessage from '../components/StatusMessage';
+import WatermarkPanel from '../components/WatermarkPanel';
 
 interface ProcessingStatus {
   isProcessing: boolean;
@@ -12,7 +13,7 @@ interface ProcessingStatus {
 }
 
 export default function HomePage() {
-  const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | null>(null);
+  const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -273,6 +274,54 @@ export default function HomePage() {
     }
   };
 
+  const handleAddWatermark = async (
+    file: File,
+    options: {
+      watermarkType: 'text' | 'image';
+      watermarkText?: string;
+      watermarkImage?: File;
+      opacity: number;
+      rotation: number;
+      position: 'center' | 'tile' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+      fontSize?: number;
+      fontColor?: string;
+      pages: string;
+    }
+  ) => {
+    try {
+      setStatus({
+        isProcessing: true,
+        message: '워터마크 적용 중...',
+        type: 'processing'
+      });
+
+      // NotoSansKR 폰트를 기본으로 지정
+      const blob = await window.electron.pdf.addWatermark(file, {
+        ...options,
+        fontName: 'NotoSansKR' // 백엔드에서 사용할 기본 폰트 지정
+      });
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `watermarked_${file.name}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setStatus({
+        isProcessing: false,
+        message: '워터마크 적용 완료!',
+        type: 'success'
+      });
+    } catch (err) {
+      setStatus({
+        isProcessing: false,
+        message: err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다',
+        type: 'error'
+      });
+    }
+  };
+
   const handleReorderFiles = (startIndex: number, endIndex: number) => {
     setSelectedFiles(prevFiles => {
       const result = Array.from(prevFiles);
@@ -290,7 +339,7 @@ export default function HomePage() {
     setPdfUrl(fileUrl);
   };
 
-  const handleActionSelect = (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf') => {
+  const handleActionSelect = (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark') => {
     setSelectedAction(action);
     setSelectedFile(null);
     setPdfUrl(null);
@@ -328,9 +377,9 @@ export default function HomePage() {
         <Head>
           <title>PDF Studio - 문서 편집 도구</title>
         </Head>
-        <div className="min-h-screen bg-gray-100 p-8">
-          <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6 h-[calc(100vh-4rem)]">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+        <div className="min-h-screen w-full bg-gray-100 p-4">
+          <div className="w-full min-h-[calc(100vh-2rem)] bg-white shadow-lg rounded-lg overflow-hidden">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
               <h1 className="text-2xl font-bold text-gray-800">PDF Studio</h1>
               <ActionButtons
                 selectedAction={selectedAction}
@@ -338,24 +387,33 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="flex gap-6 h-[calc(100%-5rem)]">
-              <ToolPanel
-                selectedAction={selectedAction}
-                onSplit={handleSplit}
-                onMerge={handleMerge}
-                onRotate={handleRotate}
-                onConvertToPDF={handleConvertToPDF}
-                onConvertFromPDF={handleConvertFromPDF}
-                isProcessing={status.isProcessing}
-                selectedFiles={selectedFiles}
-                selectedFile={selectedFile}
-                onFileSelect={handleDrop}
-                onRemoveFile={handleRemoveFile}
-                onFilePreview={handlePreview}
-                onReorderFiles={handleReorderFiles}
-                selectedFormat={selectedFormat} // 선택된 형식 전달
-                onFormatSelect={handleFormatSelect} // 형식 선택 핸들러 전달
-              />
+            <div className="flex gap-6 p-6 h-[calc(100vh-7rem)]">
+              {selectedAction === 'watermark' ? (
+                <WatermarkPanel
+                  selectedFile={selectedFile}
+                  onFileSelect={handleDrop}
+                  isProcessing={status.isProcessing}
+                  onAddWatermark={handleAddWatermark}
+                />
+              ) : (
+                <ToolPanel
+                  selectedAction={selectedAction}
+                  onSplit={handleSplit}
+                  onMerge={handleMerge}
+                  onRotate={handleRotate}
+                  onConvertToPDF={handleConvertToPDF}
+                  onConvertFromPDF={handleConvertFromPDF}
+                  isProcessing={status.isProcessing}
+                  selectedFiles={selectedFiles}
+                  selectedFile={selectedFile}
+                  onFileSelect={handleDrop}
+                  onRemoveFile={handleRemoveFile}
+                  onFilePreview={handlePreview}
+                  onReorderFiles={handleReorderFiles}
+                  selectedFormat={selectedFormat} // 선택된 형식 전달
+                  onFormatSelect={handleFormatSelect} // 형식 선택 핸들러 전달
+                />
+              )}
 
               <div className="flex-1 border-2 border-gray-200 rounded-lg overflow-hidden">
                 {!pdfUrl ? (

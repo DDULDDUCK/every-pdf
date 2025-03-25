@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ActionButtonsProps {
-  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | null;
-  onActionSelect: (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf') => void;
+  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | null;
+  onActionSelect: (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark') => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -43,6 +43,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClick={() => onActionSelect('rotate')}
       >
         회전
+      </button>
+      <button
+        className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200
+                    ${
+                      selectedAction === 'watermark'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+        onClick={() => onActionSelect('watermark')}
+      >
+        워터마크
       </button>
       <button
         className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200

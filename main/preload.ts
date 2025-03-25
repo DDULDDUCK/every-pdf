@@ -123,6 +123,61 @@ const pdfApi = {
 
     return handleResponse(response);
   },
+
+  addWatermark: async (
+    file: File, 
+    options: {
+      watermarkType: 'text' | 'image';
+      watermarkText?: string;
+      watermarkImage?: File;
+      opacity: number;
+      rotation: number;
+      position: 'center' | 'tile' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+      fontSize?: number;
+      fontName?: 'NotoSansKR';
+      fontColor?: string;
+      pages: string;
+    }
+  ): Promise<Blob> => {
+    const port = await getBackendPort();
+    console.log('Sending add-watermark request to port:', port);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('watermark_type', options.watermarkType);
+    
+    if (options.watermarkType === 'text' && options.watermarkText) {
+      formData.append('watermark_text', options.watermarkText);
+    }
+    
+    if (options.watermarkType === 'image' && options.watermarkImage) {
+      formData.append('watermark_image', options.watermarkImage);
+    }
+    
+    formData.append('opacity', options.opacity.toString());
+    formData.append('rotation', options.rotation.toString());
+    formData.append('position', options.position);
+    
+    if (options.fontSize) {
+      formData.append('font_size', options.fontSize.toString());
+    }
+    
+    // 항상 NotoSansKR 폰트 사용
+    formData.append('font_name', 'NotoSansKR');
+    
+    if (options.fontColor) {
+      formData.append('font_color', options.fontColor);
+    }
+    
+    formData.append('pages', options.pages);
+
+    const response = await fetch(`${BASE_URL}:${port}/add-watermark`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    return handleResponse(response);
+  },
 };
 
 // 백엔드 포트를 받기 위한 IPC 리스너

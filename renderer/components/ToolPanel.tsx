@@ -1,5 +1,5 @@
 import React from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import PDFDropzone from './PDFDropzone';
 
 interface ToolPanelProps {
@@ -398,7 +398,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                   {selectedFormat === 'image' && selectedFiles.length > 0 && (
                     <div className="mt-2 mb-4">
                       <h4 className="text-sm font-medium text-gray-600 mb-2">선택된 이미지</h4>
-                      <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md">
+                      <div>
                         <DragDropContext
                           onDragEnd={(result: DropResult) => {
                             if (!result.destination || !onReorderFiles) return;
@@ -410,7 +410,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                               <div
                                 {...provided.droppableProps}
                                 ref={provided.innerRef}
-                                className="space-y-1 p-1"
+                                className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-2"
                               >
                                 {selectedFiles.map((file, index) => (
                                   <Draggable key={`${file.name}-${index}`} draggableId={`${file.name}-${index}`} index={index}>
