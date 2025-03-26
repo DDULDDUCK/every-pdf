@@ -11,7 +11,7 @@ files:
       - app
 extraResources:
   - from: backend/dist/pdf_processor
-    to: backend
+    to: backend/pdf_processor
   # PyInstaller로 빌드된 의존성 파일들도 포함
   - from: backend/dist/pdf_processor
     to: ./

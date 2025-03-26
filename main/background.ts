@@ -25,18 +25,26 @@ const startPythonProcess = () => {
     let cwd: string;
 
     if (isProd) {
+      // 프로덕션 환경에서는 패키징된 백엔드 실행 파일 사용
       const resourcePath = process.resourcesPath;
       const backendPath = join(resourcePath, 'backend');
       console.log('Production backend path:', backendPath);
 
       if (process.platform === 'win32') {
-        executablePath = join(backendPath, 'pdf_processor.exe');
+        executablePath = join(backendPath, 'pdf_processor', 'pdf_processor.exe');
       } else {
-        executablePath = join(backendPath, 'pdf_processor');
-        require('fs').chmodSync(executablePath, '755');
+        executablePath = join(backendPath, 'pdf_processor', 'pdf_processor');
+        // 실행 권한 설정
+        try {
+          require('fs').chmodSync(executablePath, '755');
+          console.log('Set executable permissions for:', executablePath);
+        } catch (err) {
+          console.error('Failed to set permissions:', err);
+        }
       }
-      cwd = backendPath;
+      cwd = join(backendPath, 'pdf_processor');
     } else {
+      // 개발 환경에서는 가상환경의 Python 실행
       const venvPath = join(app.getAppPath(), 'backend', 'venv');
       if (process.platform === 'win32') {
         executablePath = join(venvPath, 'Scripts', 'python.exe');
@@ -57,6 +65,12 @@ const startPythonProcess = () => {
       exists: existsSync(executablePath)
     });
 
+    if (!existsSync(executablePath)) {
+      const errorMsg = `Backend executable not found: ${executablePath}`;
+      console.error(errorMsg);
+      return reject(new Error(errorMsg));
+    }
+
     // 타임아웃 설정
     const timeoutId = setTimeout(() => {
       reject(new Error('Backend startup timeout'));
@@ -67,11 +81,13 @@ const startPythonProcess = () => {
       env: {
         ...process.env,
         PYTHONPATH: isProd ? join(process.resourcesPath, 'backend') : join(app.getAppPath(), 'backend', 'src'),
+        PYTHONIOENCODING: 'utf-8', // 인코딩 강제 설정
       },
       shell: process.platform === 'win32'
     });
 
     let portFound = false;
+    let errorOutput = '';
 
     pythonProcess.stdout.on('data', (data: Buffer) => {
       const output = data.toString();
@@ -94,18 +110,26 @@ const startPythonProcess = () => {
 
     pythonProcess.stderr.on('data', (data: Buffer) => {
       const error = data.toString();
+      errorOutput += error;
       console.error(`Backend stderr: ${error}`);
     });
 
     pythonProcess.on('close', (code: number) => {
       console.log(`Backend process exited with code ${code}`);
       if (code !== 0 && !isQuitting) {
-        console.error('Backend process crashed, attempting to restart...');
-        setTimeout(() => {
-          startPythonProcess()
-            .then(() => console.log('Backend restarted successfully'))
-            .catch(err => console.error('Failed to restart backend:', err));
-        }, 1000);
+        if (timeoutId) clearTimeout(timeoutId);
+        
+        if (!portFound) {
+          console.error('Backend process failed with errors:', errorOutput);
+          reject(new Error(`Backend process failed with code ${code}: ${errorOutput}`));
+        } else {
+          console.error('Backend process crashed, attempting to restart...');
+          setTimeout(() => {
+            startPythonProcess()
+              .then(() => console.log('Backend restarted successfully'))
+              .catch(err => console.error('Failed to restart backend:', err));
+          }, 1000);
+        }
       }
       pythonProcess = null;
     });
@@ -145,7 +169,7 @@ ipcMain.handle('get-backend-port', () => {
     console.log('Backend process started successfully');
   } catch (error) {
     console.error('Failed to start backend:', error);
-    dialog.showErrorBox('Error', 'Failed to start backend service');
+    dialog.showErrorBox('Error', `Failed to start backend service!: ${error.message}`);
     app.quit();
     return;
   }

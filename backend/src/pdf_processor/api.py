@@ -36,27 +36,49 @@ def check_and_install_poppler():
         return
         
     try:
-        # poppler 설치 여부 확인
-        result = subprocess.run(['brew', 'list', 'poppler'],
+        # 먼저 터미널에서 직접 poppler 명령어 실행을 시도
+        result = subprocess.run(['pdftocairo', '-v'],
                               capture_output=True,
                               text=True)
-        
-        if result.returncode != 0:
-            logger.info("poppler가 설치되어 있지 않습니다. 설치를 시작합니다...")
-            # poppler 설치
-            install_result = subprocess.run(['brew', 'install', 'poppler'],
+        return
+    except FileNotFoundError:
+        # poppler가 설치되어 있지 않은 경우
+        logger.info("poppler가 설치되어 있지 않습니다. 설치를 시작합니다...")
+        try:
+            # Homebrew 설치 확인
+            brew_check = subprocess.run(['which', 'brew'],
+                                     capture_output=True,
+                                     text=True)
+            if brew_check.returncode == 0:
+                # Homebrew를 통한 설치 시도
+                install_result = subprocess.run(['brew', 'install', 'poppler'],
+                                            capture_output=True,
+                                            text=True)
+                if install_result.returncode == 0:
+                    logger.info("poppler가 성공적으로 설치되었습니다.")
+                    return
+            
+            # Homebrew를 통한 설치가 실패한 경우 MacPorts 시도
+            macports_check = subprocess.run(['which', 'port'],
                                          capture_output=True,
                                          text=True)
+            if macports_check.returncode == 0:
+                install_result = subprocess.run(['sudo', 'port', 'install', 'poppler'],
+                                            capture_output=True,
+                                            text=True)
+                if install_result.returncode == 0:
+                    logger.info("poppler가 성공적으로 설치되었습니다.")
+                    return
             
-            if install_result.returncode != 0:
-                logger.error(f"poppler 설치 실패: {install_result.stderr}")
-                raise RuntimeError("poppler 설치에 실패했습니다.")
-            else:
-                logger.info("poppler가 성공적으로 설치되었습니다.")
+            raise RuntimeError("패키지 매니저를 찾을 수 없습니다. Homebrew나 MacPorts를 설치해주세요.")
+            
+        except Exception as e:
+            logger.error(f"poppler 설치 실패: {str(e)}")
+            raise RuntimeError(f"poppler 설치에 실패했습니다. Homebrew나 MacPorts를 사용하여 수동으로 설치해주세요: {str(e)}")
     
     except Exception as e:
-        logger.error(f"poppler 설치 확인/설치 중 오류 발생: {str(e)}")
-        raise RuntimeError(f"poppler 설치 과정에서 오류가 발생했습니다: {str(e)}")
+        logger.error(f"poppler 설치 확인 중 오류 발생: {str(e)}")
+        raise RuntimeError(f"poppler 설치 확인 과정에서 오류가 발생했습니다: {str(e)}")
 
 app = FastAPI()
 
@@ -371,7 +393,11 @@ async def convert_to_pdf(
                 buffer.write(content)
             
             # 폰트 경로 설정
-            font_path = os.path.join(os.path.dirname(__file__), '..', 'fonts', 'NotoSansKR-VariableFont_wght.ttf')
+            # PyInstaller가 생성한 임시 경로 확인
+            if getattr(sys, '_MEIPASS', None):
+                font_path = os.path.join(sys._MEIPASS, 'pdf_processor', 'fonts', 'NotoSansKR-VariableFont_wght.ttf')
+            else:
+                font_path = os.path.join(os.path.dirname(__file__), '..', 'fonts', 'NotoSansKR-VariableFont_wght.ttf')
             
             # 텍스트 읽기
             with open(temp_path, 'r', encoding='utf-8') as f:
@@ -564,10 +590,15 @@ async def convert_from_pdf(
     temp_pdf = session_dir / f"temp_{file.filename}"
     output_path = session_dir / f"{os.path.splitext(file.filename)[0]}"
     
-    # OS별 poppler 경로 설정
+    # OS별 poppler 경로 및 환경 설정
     poppler_path = None
     if platform.system() == "Windows":
         poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
+    elif platform.system() == "Darwin":
+        poppler_path = str(Path(__file__).parent.parent / "poppler" / "mac" / "25.03.0" / "bin")
+        lib_path = str(Path(__file__).parent.parent / "poppler" / "mac" / "25.03.0" / "lib")
+        os.environ['DYLD_LIBRARY_PATH'] = lib_path
+        os.environ['PATH'] = f"{poppler_path}:{os.environ.get('PATH', '')}"
 
     try:
         # 업로드된 PDF 파일 저장
@@ -600,16 +631,43 @@ async def convert_from_pdf(
             num_pages = len(reader.pages)
             
             try:
-                # PDF를 이미지로 변환하기 전에 poppler 설치 확인
-                check_and_install_poppler()
+                # poppler가 존재하는지 확인
+                # poppler 경로 디버그 로깅
+                logger.info(f"Current poppler path: {poppler_path}")
+                if poppler_path:
+                    logger.info(f"Path exists: {Path(poppler_path).exists()}")
+                    logger.info(f"Directory contents: {list(Path(poppler_path).glob('*')) if Path(poppler_path).exists() else 'Directory not found'}")
                 
-                # PDF를 이미지로 변환
-                images = convert_from_path(
-                    temp_pdf,
-                    dpi=300,
-                    fmt=image_format,
-                    poppler_path=poppler_path
-                )
+                try:
+                    poppler_exec_paths = [
+                        os.path.join(poppler_path, 'pdftocairo'),
+                        os.path.join(poppler_path, 'pdftocairo.exe')
+                    ]
+                    logger.info(f"Checking poppler executables: {poppler_exec_paths}")
+                    logger.info(f"Executable exists: {[Path(p).exists() for p in poppler_exec_paths]}")
+                    
+                    if not any(Path(p).exists() for p in poppler_exec_paths):
+                        raise FileNotFoundError("poppler 실행 파일을 찾을 수 없습니다")
+                except Exception as e:
+                    logger.error(f"poppler 확인 오류: {str(e)}")
+                    if platform.system() == 'Darwin':
+                        logger.error(f"Project root: {Path(__file__).parent.parent.parent}")
+                        logger.error(f"DYLD_LIBRARY_PATH: {os.environ.get('DYLD_LIBRARY_PATH', 'Not set')}")
+                    raise
+                
+                try:
+                    # PDF를 이미지로 변환
+                    images = convert_from_path(
+                        temp_pdf,
+                        dpi=300,
+                        fmt=image_format,
+                        poppler_path=poppler_path
+                    )
+                except Exception as e:
+                    logger.error(f"PDF 변환 오류: {str(e)}")
+                    if platform.system() == 'Darwin' and 'DYLD_LIBRARY_PATH' in os.environ:
+                        logger.error(f"DYLD_LIBRARY_PATH: {os.environ['DYLD_LIBRARY_PATH']}")
+                    raise
                 
                 if len(images) > 1:
                     # 여러 페이지인 경우 ZIP 파일로 압축
@@ -760,7 +818,11 @@ async def add_watermark(
             c = canvas.Canvas(str(watermark_pdf), pagesize=(page_width, page_height))
             
             # 폰트 설정
-            font_path = os.path.join(os.path.dirname(__file__), '..', 'fonts')
+            # PyInstaller가 생성한 임시 경로 확인
+            if getattr(sys, '_MEIPASS', None):
+                font_path = os.path.join(sys._MEIPASS, 'pdf_processor', 'fonts')
+            else:
+                font_path = os.path.join(os.path.dirname(__file__), '..', 'fonts')
             if font_name == "NotoSansKR":
                 font_file = os.path.join(font_path, 'NotoSansKR-VariableFont_wght.ttf')
                 pdfmetrics.registerFont(TTFont('NotoSansKR', font_file))
