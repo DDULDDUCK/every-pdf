@@ -5,6 +5,7 @@ import ActionButtons from '../components/ActionButtons';
 import ToolPanel from '../components/ToolPanel';
 import StatusMessage from '../components/StatusMessage';
 import WatermarkPanel from '../components/WatermarkPanel';
+import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
 
 interface ProcessingStatus {
   isProcessing: boolean;
@@ -381,6 +382,7 @@ export default function HomePage() {
           <div className="w-full min-h-[calc(100vh-2rem)] bg-white shadow-lg rounded-lg overflow-hidden">
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
               <h1 className="text-2xl font-bold text-gray-800">PDF Studio</h1>
+              <BuyMeCoffeeButton />
               <ActionButtons
                 selectedAction={selectedAction}
                 onActionSelect={handleActionSelect}

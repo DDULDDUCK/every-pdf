@@ -26,8 +26,37 @@ from io import BytesIO
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import re
+import subprocess
 
 logger = logging.getLogger(__name__)
+
+def check_and_install_poppler():
+    """macOS에서 poppler 설치 여부를 확인하고 필요한 경우 설치"""
+    if platform.system() != "Darwin":
+        return
+        
+    try:
+        # poppler 설치 여부 확인
+        result = subprocess.run(['brew', 'list', 'poppler'],
+                              capture_output=True,
+                              text=True)
+        
+        if result.returncode != 0:
+            logger.info("poppler가 설치되어 있지 않습니다. 설치를 시작합니다...")
+            # poppler 설치
+            install_result = subprocess.run(['brew', 'install', 'poppler'],
+                                         capture_output=True,
+                                         text=True)
+            
+            if install_result.returncode != 0:
+                logger.error(f"poppler 설치 실패: {install_result.stderr}")
+                raise RuntimeError("poppler 설치에 실패했습니다.")
+            else:
+                logger.info("poppler가 성공적으로 설치되었습니다.")
+    
+    except Exception as e:
+        logger.error(f"poppler 설치 확인/설치 중 오류 발생: {str(e)}")
+        raise RuntimeError(f"poppler 설치 과정에서 오류가 발생했습니다: {str(e)}")
 
 app = FastAPI()
 
@@ -537,9 +566,7 @@ async def convert_from_pdf(
     
     # OS별 poppler 경로 설정
     poppler_path = None
-    if platform.system() == "Darwin":  # macOS
-        poppler_path = str(Path(__file__).parent.parent / "poppler" / "macos" / "25.03.0" / "bin")
-    elif platform.system() == "Windows":
+    if platform.system() == "Windows":
         poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
 
     try:
@@ -573,6 +600,9 @@ async def convert_from_pdf(
             num_pages = len(reader.pages)
             
             try:
+                # PDF를 이미지로 변환하기 전에 poppler 설치 확인
+                check_and_install_poppler()
+                
                 # PDF를 이미지로 변환
                 images = convert_from_path(
                     temp_pdf,

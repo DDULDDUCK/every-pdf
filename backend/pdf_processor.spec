@@ -5,11 +5,8 @@ a = Analysis(
     ['/Users/jaeseok-song/Documents/PDF-Workspcae/PDF-Studio/backend/src/pdf_processor/main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('backend/src/poppler', 'poppler'),
-        ('backend/src/fonts', 'fonts'),
-    ],
-    hiddenimports=['PyPDF2', 'pdf2image'],
+    datas=[],
+    hiddenimports=['PyPDF2'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
