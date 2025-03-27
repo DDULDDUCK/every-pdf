@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Form
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 from starlette.middleware.cors import CORSMiddleware
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 import os
 import sys
 import tempfile
@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import List, Literal
 import uuid
 import platform
-from pdf2docx import Converter
 from pdf2image import convert_from_path
 import img2pdf
 from PIL import Image, ImageDraw, ImageFont
@@ -27,6 +26,12 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import re
 import subprocess
+import pdfplumber
+import docx
+from docx import Document
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
 
 logger = logging.getLogger(__name__)
 
@@ -595,8 +600,17 @@ async def convert_from_pdf(
     if platform.system() == "Windows":
         poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
     elif platform.system() == "Darwin":
-        poppler_path = str(Path(__file__).parent.parent / "poppler" / "mac" / "25.03.0" / "bin")
-        lib_path = str(Path(__file__).parent.parent / "poppler" / "mac" / "25.03.0" / "lib")
+        # PyInstaller의 _MEIPASS 경로 확인
+        if getattr(sys, '_MEIPASS', None):
+            base_path = Path(sys._MEIPASS)
+            poppler_path = str(base_path / "poppler" / "bin")
+            lib_path = str(base_path / "poppler" / "lib")
+        else:
+            base_path = Path(__file__).parent.parent
+            poppler_path = str(base_path / "poppler" / "mac" / "25.03.0" / "bin")
+            lib_path = str(base_path / "poppler" / "mac" / "25.03.0" / "lib")
+        
+        # 환경 변수 설정
         os.environ['DYLD_LIBRARY_PATH'] = lib_path
         os.environ['PATH'] = f"{poppler_path}:{os.environ.get('PATH', '')}"
 
@@ -608,10 +622,9 @@ async def convert_from_pdf(
         
         if target_format == "docx":
             output_docx = output_path.with_suffix('.docx')
-            # PDF를 Word로 변환
-            cv = Converter(temp_pdf)
-            cv.convert(output_docx)
-            cv.close()
+            
+            # 향상된 PDF를 Word로 변환 함수 호출
+            await convert_pdf_to_docx_advanced(temp_pdf, output_docx)
             
             # 임시 PDF 삭제
             temp_pdf.unlink()
@@ -728,6 +741,497 @@ async def convert_from_pdf(
             raise e
         raise HTTPException(status_code=500, detail=str(e))
 
+def extract_text_style(char):
+    """PDF 문자의 스타일 정보 추출"""
+    return {
+        'font_name': char.get('fontname', '').split('+')[-1].replace('-', ' '),
+        'font_size': round(float(char.get('size', 11))),
+        'color': char.get('non_stroking_color', (0, 0, 0)),
+        'bold': 'Bold' in char.get('fontname', ''),
+        'italic': 'Italic' in char.get('fontname', '')
+    }
+
+def get_alignment(text_block, page_width):
+    """텍스트 블록의 정렬 방식 결정"""
+    x0, x1 = text_block['x0'], text_block['x1']
+    block_width = x1 - x0
+    center = page_width / 2
+
+    # 여백과 위치를 고려한 정렬 판단
+    margin = 50
+    if abs(x0 - margin) < 20 and abs(page_width - x1 - margin) < 20:
+        return WD_ALIGN_PARAGRAPH.JUSTIFY
+    elif abs(x0 + block_width/2 - center) < 20:
+        return WD_ALIGN_PARAGRAPH.CENTER
+    elif abs(page_width - x1 - margin) < 20:
+        return WD_ALIGN_PARAGRAPH.RIGHT
+    else:
+        return WD_ALIGN_PARAGRAPH.LEFT
+
+def apply_text_style(run, style):
+    """Word 문서의 텍스트 스타일 적용"""
+    if style['font_name']:
+        run.font.name = style['font_name']
+    if style['font_size']:
+        run.font.size = Pt(style['font_size'])
+    if style['color'] and len(style['color']) == 3:
+        r, g, b = [int(c * 255) if isinstance(c, float) else c for c in style['color']]
+        run.font.color.rgb = RGBColor(r, g, b)
+    run.font.bold = style['bold']
+    run.font.italic = style['italic']
+
+async def convert_pdf_to_docx_advanced(pdf_path, docx_path):
+    """
+    PDF를 DOCX로 변환하는 고급 함수 - pdfplumber와 python-docx 사용
+    원본 PDF의 서식을 최대한 유지
+    """
+    try:
+        # Word 문서 생성
+        doc = Document()
+        
+        # PDF 파일 분석을 위해 pdfplumber 사용
+        with pdfplumber.open(pdf_path) as pdf:
+            # 각 페이지 처리
+            for page_num, page in enumerate(pdf.pages):
+                # 페이지 구분 (첫 페이지 제외)
+                if page_num > 0:
+                    doc.add_page_break()
+                
+                page_width = float(page.width)
+                
+                # 표(테이블) 추출
+                tables = page.extract_tables()
+                
+                # 텍스트 블록 위치 정보 추출
+                words = page.extract_words(extra_attrs=['fontname', 'size', 'non_stroking_color'])
+                chars = page.chars
+                
+                # 표가 있는 경우, 텍스트에서 표 영역 제외
+                table_bboxes = []
+                if tables:
+                    for table in page.find_tables():
+                        y0, x0, y1, x1 = table.bbox
+                        table_bboxes.append((x0, y0, x1, y1))
+                
+                # 이미지 추출
+                try:
+                    page_images = extract_images_from_pdf_page(pdf_path, page_num)
+                    
+                    # 이미지 처리
+                    for img_index, img_data in enumerate(page_images):
+                        img_temp_path = f"{pdf_path}_img_{page_num}_{img_index}.png"
+                        try:
+                            with open(img_temp_path, "wb") as img_file:
+                                img_file.write(img_data)
+                            # 원본 크기에 가깝게 이미지 삽입
+                            doc.add_picture(img_temp_path)
+                        except Exception as e:
+                            logger.warning(f"이미지 추가 중 오류: {str(e)}")
+                        finally:
+                            if os.path.exists(img_temp_path):
+                                os.remove(img_temp_path)
+                except Exception as img_err:
+                    logger.warning(f"페이지 {page_num+1}의 이미지 추출 중 오류 발생: {str(img_err)}")
+                
+                # 텍스트 처리
+                if words:
+                    text_blocks = group_text_into_paragraphs(words, table_bboxes)
+                    
+                    for block in text_blocks:
+                        p = doc.add_paragraph()
+                        
+                        # 텍스트 정렬 설정
+                        p.alignment = get_alignment(block, page_width)
+                        
+                        # 해당 블록의 문자 스타일 정보 수집
+                        block_chars = [c for c in chars if (
+                            c['x0'] >= block['x0'] and
+                            c['x1'] <= block['x1'] and
+                            c['top'] >= block['top'] and
+                            c['bottom'] <= block['bottom']
+                        )]
+                        
+                        if block_chars:
+                            # 현재 스타일 추적
+                            current_style = extract_text_style(block_chars[0])
+                            current_text = ''
+                            
+                            for char in block_chars:
+                                new_style = extract_text_style(char)
+                                
+                                # 스타일이 변경된 경우, 현재까지의 텍스트를 추가하고 새 스타일 시작
+                                if new_style != current_style and current_text:
+                                    run = p.add_run(current_text)
+                                    apply_text_style(run, current_style)
+                                    current_text = ''
+                                    current_style = new_style
+                                
+                                current_text += char['text']
+                            
+                            # 마지막 텍스트 블록 추가
+                            if current_text:
+                                run = p.add_run(current_text)
+                                apply_text_style(run, current_style)
+                        else:
+                            # 문자 정보를 찾지 못한 경우 기본 스타일로 추가
+                            p.add_run(block['text'])
+                
+                # 테이블 처리
+                if tables:
+                    for table_data in tables:
+                        if not table_data:
+                            continue
+                        
+                        filtered_table = clean_table_data(table_data)
+                        if not filtered_table:
+                            continue
+                        
+                        rows = len(filtered_table)
+                        cols = max(len(row) for row in filtered_table)
+                        
+                        word_table = doc.add_table(rows=rows, cols=cols)
+                        word_table.style = 'Table Grid'
+                        
+                        # 테이블 셀 서식 복사
+                        for i, row in enumerate(filtered_table):
+                            for j, cell_content in enumerate(row):
+                                if j < cols:
+                                    cell = word_table.cell(i, j)
+                                    if cell_content:
+                                        # 셀 내용의 서식 정보 찾기
+                                        cell_chars = [c for c in chars if (
+                                            c['x0'] >= table_bboxes[0][0] and
+                                            c['x1'] <= table_bboxes[0][2] and
+                                            c['top'] >= table_bboxes[0][1] and
+                                            c['bottom'] <= table_bboxes[0][3]
+                                        )]
+                                        
+                                        if cell_chars:
+                                            style = extract_text_style(cell_chars[0])
+                                            run = cell.paragraphs[0].add_run(str(cell_content).strip())
+                                            apply_text_style(run, style)
+                                        else:
+                                            cell.text = str(cell_content).strip()
+        
+        # Word 문서 저장
+        doc.save(docx_path)
+        return True
+    
+    except Exception as e:
+        logger.error(f"PDF를 Word로 변환 중 오류 발생: {str(e)}")
+        raise RuntimeError(f"PDF를 Word로 변환하는데 실패했습니다: {str(e)}")
+
+def group_text_into_paragraphs(words, table_bboxes):
+    """텍스트 블록을 단락으로 그룹화
+
+    Args:
+        words: pdfplumber에서 추출한 단어 목록
+        table_bboxes: 테이블의 바운딩 박스 목록 [(x0, y0, x1, y1), ...]
+
+    Returns:
+        List[Dict]: 그룹화된 텍스트 블록 목록. 각 블록은 text와 위치 정보를 포함
+    """
+    if not words:
+        return []
+
+    # 단어들을 y축 좌표로 정렬 (상단에서 하단으로)
+    sorted_words = sorted(words, key=lambda w: (-w['top'], w['x0']))
+    
+    # 결과 블록 목록
+    text_blocks = []
+    
+    # 현재 처리 중인 단락 정보
+    current_block = {
+        'text': '',
+        'top': sorted_words[0]['top'],
+        'bottom': sorted_words[0]['bottom'],
+        'x0': sorted_words[0]['x0'],
+        'x1': sorted_words[0]['x1']
+    }
+    
+    # 줄 간격 임계값 (이 값보다 큰 간격은 새로운 단락으로 처리)
+    line_spacing_threshold = 2.0
+    
+    for i, word in enumerate(sorted_words):
+        # 테이블 영역 내부의 텍스트는 건너뛰기
+        if any(is_within_table(word, bbox) for bbox in table_bboxes):
+            continue
+            
+        # 새로운 단락 시작 조건 확인
+        if current_block['text']:
+            vertical_gap = abs(word['top'] - current_block['bottom'])
+            is_new_paragraph = vertical_gap > (word['bottom'] - word['top']) * line_spacing_threshold
+            
+            if is_new_paragraph:
+                # 현재 블록 저장하고 새로운 블록 시작
+                if current_block['text'].strip():
+                    text_blocks.append(current_block.copy())
+                current_block = {
+                    'text': '',
+                    'top': word['top'],
+                    'bottom': word['bottom'],
+                    'x0': word['x0'],
+                    'x1': word['x1']
+                }
+            
+        # 현재 단어 추가
+        current_block['text'] += (' ' + word['text'] if current_block['text'] else word['text'])
+        current_block['bottom'] = max(current_block['bottom'], word['bottom'])
+        current_block['x0'] = min(current_block['x0'], word['x0'])
+        current_block['x1'] = max(current_block['x1'], word['x1'])
+    
+    # 마지막 블록 추가
+    if current_block['text'].strip():
+        text_blocks.append(current_block)
+    
+    return text_blocks
+
+def is_within_table(word, table_bbox):
+    """단어가 테이블 영역 내에 있는지 확인"""
+    x0, y0, x1, y1 = table_bbox
+    return (word['x0'] >= x0 and word['x1'] <= x1 and
+            word['top'] >= y0 and word['bottom'] <= y1)
+
+def clean_table_data(table_data):
+    """테이블 데이터에서 빈 행과 열을 정리"""
+    if not table_data:
+        return []
+        
+    # 빈 셀 여부 확인 함수
+    def is_empty_cell(cell):
+        return cell is None or str(cell).strip() == ''
+    
+    # 빈 행 제거
+    filtered_rows = [row for row in table_data if not all(is_empty_cell(cell) for cell in row)]
+    
+    if not filtered_rows:
+        return []
+    
+    # 모든 행의 길이를 최대 길이에 맞추기
+    max_cols = max(len(row) for row in filtered_rows)
+    normalized_rows = [row + [None] * (max_cols - len(row)) for row in filtered_rows]
+    
+    # 빈 열 찾기
+    empty_cols = []
+    for col in range(max_cols):
+        if all(is_empty_cell(row[col]) for row in normalized_rows):
+            empty_cols.append(col)
+    
+    # 빈 열 제거
+    filtered_table = []
+    for row in normalized_rows:
+        filtered_row = [cell for i, cell in enumerate(row) if i not in empty_cols]
+        filtered_table.append(filtered_row)
+    
+    return filtered_table
+
+def extract_images_from_pdf_page(pdf_path, page_num):
+    """PDF 페이지에서 이미지 추출 (PyMuPDF 대신 다른 방법 사용)"""
+    images = []
+    
+    try:
+        # 방법 1: PyPDF2를 사용하여 이미지 객체 추출 시도
+        with open(pdf_path, 'rb') as f:
+            pdf_reader = PdfReader(f)
+            page = pdf_reader.pages[page_num]
+            
+            # PDF 페이지의 리소스에서 XObject(이미지) 가져오기 시도
+            if '/Resources' in page and '/XObject' in page['/Resources']:
+                x_objects = page['/Resources']['/XObject']
+                for obj_name, obj in x_objects.items():
+                    if obj['/Subtype'] == '/Image':
+                        try:
+                            # 이미지 데이터 추출
+                            data = obj.get_data()
+                            # 이미지 타입에 따른 처리
+                            if '/Filter' in obj and '/DCTDecode' in obj['/Filter']:
+                                # JPEG 형식
+                                images.append(data)
+                            elif '/Filter' in obj and '/FlateDecode' in obj['/Filter']:
+                                # PNG 형식으로 변환
+                                width = obj['/Width']
+                                height = obj['/Height']
+                                color_space = obj['/ColorSpace']
+                                
+                                # RGB 변환
+                                if color_space == '/DeviceRGB':
+                                    mode = "RGB"
+                                else:
+                                    mode = "P"  # 팔레트 모드
+                                
+                                img = Image.frombytes(mode, (width, height), data)
+                                img_byte_arr = BytesIO()
+                                img.save(img_byte_arr, format='PNG')
+                                images.append(img_byte_arr.getvalue())
+                        except Exception as img_err:
+                            logger.warning(f"이미지 추출 실패: {str(img_err)}")
+    
+    except Exception as e:
+        logger.warning(f"PyPDF2 이미지 추출 실패: {str(e)}")
+    
+    # 이미지가 추출되지 않았다면 백업 방법: PDF를 이미지로 변환
+    if not images:
+        try:
+            # OS별 poppler 경로 설정 (이전 코드와 동일)
+            poppler_path = None
+            if platform.system() == "Windows":
+                poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
+            elif platform.system() == "Darwin":
+                if getattr(sys, '_MEIPASS', None):
+                    base_path = Path(sys._MEIPASS)
+                    poppler_path = str(base_path / "poppler" / "bin")
+                else:
+                    base_path = Path(__file__).parent.parent
+                    poppler_path = str(base_path / "poppler" / "mac" / "25.03.0" / "bin")
+            
+            # PDF 페이지를 이미지로 변환
+            page_images = convert_from_path(
+                pdf_path, 
+                first_page=page_num+1, 
+                last_page=page_num+1,
+                dpi=300,
+                fmt='png',
+                poppler_path=poppler_path
+            )
+            
+            # 전체 페이지 이미지를 바이트로 변환
+            if page_images:
+                img_byte_arr = BytesIO()
+                page_images[0].save(img_byte_arr, format='PNG')
+                images.append(img_byte_arr.getvalue())
+        
+        except Exception as e:
+            logger.warning(f"PDF2Image 변환 실패: {str(e)}")
+    
+    return images
+
+@app.post("/encrypt")
+async def encrypt_pdf(
+    file: UploadFile,
+    password: str = Form(...),
+    allow_printing: bool = Form(True),
+    allow_commenting: bool = Form(True)
+):
+    """PDF 파일 암호화
+    
+    Args:
+        file: PDF 파일
+        password: 암호화에 사용할 비밀번호
+        allow_printing: 인쇄 허용 여부
+        allow_commenting: 주석 허용 여부
+    """
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="PDF 파일만 지원됩니다")
+
+    session_dir = get_session_dir()
+    temp_path = session_dir / f"temp_{file.filename}"
+    output_path = session_dir / f"encrypted_{file.filename}"
+
+    try:
+        # 업로드된 파일 저장
+        with open(temp_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        # PDF 처리
+        reader = PdfReader(temp_path)
+        writer = PdfWriter()
+
+        # 모든 페이지 복사
+        for page in reader.pages:
+            writer.add_page(page)
+
+        # 암호화 설정 (AES-256-R5 알고리즘 사용)
+        writer.encrypt(
+            user_password=password,
+            owner_password=password,  # 소유자 비밀번호도 동일하게 설정
+            algorithm="AES-256-R5"  # 권장되는 안전한 암호화 알고리즘
+        )
+
+        # 결과 저장
+        with open(output_path, "wb") as output_file:
+            writer.write(output_file)
+
+        # 임시 파일 삭제
+        temp_path.unlink()
+
+        return FileResponse(
+            path=str(output_path),
+            filename=f"encrypted_{file.filename}",
+            background=BackgroundTask(lambda: shutil.rmtree(session_dir, ignore_errors=True))
+        )
+
+    except Exception as e:
+        # 오류 발생 시 세션 디렉토리 정리
+        shutil.rmtree(session_dir, ignore_errors=True)
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/decrypt")
+async def decrypt_pdf(
+    file: UploadFile,
+    password: str = Form(...)
+):
+    """PDF 파일 복호화
+    
+    Args:
+        file: 암호화된 PDF 파일
+        password: 복호화를 위한 비밀번호
+    """
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="PDF 파일만 지원됩니다")
+
+    session_dir = get_session_dir()
+    temp_path = session_dir / f"temp_{file.filename}"
+    output_path = session_dir / f"decrypted_{file.filename}"
+
+    try:
+        # 업로드된 파일 저장
+        with open(temp_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        # PDF 처리
+        reader = PdfReader(temp_path)
+        
+        # 암호화 여부 확인
+        if not reader.is_encrypted:
+            raise HTTPException(status_code=400, detail="암호화되지 않은 PDF 파일입니다")
+
+        try:
+            # 비밀번호로 복호화 시도
+            reader.decrypt(password)
+        except:
+            raise HTTPException(status_code=400, detail="잘못된 비밀번호입니다")
+
+        # 복호화된 PDF 생성
+        writer = PdfWriter()
+        
+        # 모든 페이지 복사
+        for page in reader.pages:
+            writer.add_page(page)
+
+        # 결과 저장
+        with open(output_path, "wb") as output_file:
+            writer.write(output_file)
+
+        # 임시 파일 삭제
+        temp_path.unlink()
+
+        return FileResponse(
+            path=str(output_path),
+            filename=f"decrypted_{file.filename}",
+            background=BackgroundTask(lambda: shutil.rmtree(session_dir, ignore_errors=True))
+        )
+
+    except Exception as e:
+        # 오류 발생 시 세션 디렉토리 정리
+        shutil.rmtree(session_dir, ignore_errors=True)
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/add-watermark")
 async def add_watermark(
     file: UploadFile,
@@ -740,8 +1244,10 @@ async def add_watermark(
     font_size: int = Form(40),
     font_name: Literal["NotoSansKR", "Arial", "Times"] = Form("NotoSansKR"),
     font_color: str = Form("#000000"),
+    font_bold: str = Form("false"),  # 문자열로 받아서 파싱
     pages: str = Form("all")
 ):
+    print("폰트:"+font_bold)
     """PDF에 워터마크 추가
     
     Args:
@@ -755,6 +1261,7 @@ async def add_watermark(
         font_size: 폰트 크기 (텍스트 워터마크)
         font_name: 폰트 이름 (텍스트 워터마크)
         font_color: 폰트 색상 (텍스트 워터마크, HEX 형식)
+        font_bold: 볼드체 사용 여부 ("true" 또는 "false")
         pages: 워터마크 적용 페이지 ("all" 또는 "1-3,5,7")
     """
     if not file.filename.lower().endswith('.pdf'):
@@ -779,7 +1286,7 @@ async def add_watermark(
         
         # 이미지 워터마크인 경우 임시 파일로 저장
         watermark_img_path = None
-        if watermark_type == "image" and watermark_image:
+        if (watermark_type == "image" and watermark_image):
             watermark_img_path = session_dir / f"watermark_{watermark_image.filename}"
             with open(watermark_img_path, "wb") as buffer:
                 content = await watermark_image.read()
@@ -807,85 +1314,109 @@ async def add_watermark(
             color = font_color.lstrip('#')
             r, g, b = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
             
-            # 원본 PDF의 첫 페이지 크기 가져오기
-            with open(temp_path, 'rb') as pdf_file:
-                pdf_reader = PdfReader(pdf_file)
-                first_page = pdf_reader.pages[0]
-                page_width = float(first_page.mediabox.width)
-                page_height = float(first_page.mediabox.height)
-
-            # 워터마크용 PDF 생성 (원본 PDF와 같은 크기로)
-            c = canvas.Canvas(str(watermark_pdf), pagesize=(page_width, page_height))
-            
             # 폰트 설정
             # PyInstaller가 생성한 임시 경로 확인
             if getattr(sys, '_MEIPASS', None):
                 font_path = os.path.join(sys._MEIPASS, 'pdf_processor', 'fonts')
             else:
                 font_path = os.path.join(os.path.dirname(__file__), '..', 'fonts')
+            
+            is_bold = font_bold.lower() == "true"
+            
             if font_name == "NotoSansKR":
-                font_file = os.path.join(font_path, 'NotoSansKR-VariableFont_wght.ttf')
-                pdfmetrics.registerFont(TTFont('NotoSansKR', font_file))
-                c.setFont('NotoSansKR', font_size)
-            else:
-                # 기본 폰트 사용
-                c.setFont(font_name, font_size)
-            
-            # 색상 설정
-            c.setFillColorRGB(r/255, g/255, b/255, alpha=opacity)
-            
-            # 회전 준비
-            c.saveState()
-            
-            if position == "center":
-                # 중앙에 워터마크 그리기 (상단 기준)
-                text_width = c.stringWidth(watermark_text, font_name if font_name != "NotoSansKR" else "NotoSansKR", font_size)
-                x = (page_width - text_width) / 2
-                y = page_height - ((page_height - font_size) / 2)
-                c.translate(x + text_width/2, y - font_size/2)
-                c.rotate(rotation)
-                c.drawString(-text_width/2, 0, watermark_text)
-            elif position == "tile":
-                # 타일 패턴으로 워터마크 그리기 (상단에서 시작)
-                text_width = c.stringWidth(watermark_text, font_name if font_name != "NotoSansKR" else "NotoSansKR", font_size)
-                tile_size = max(text_width, font_size) * 2
-                for x in range(0, int(page_width), int(tile_size)):
-                    for y in range(int(page_height), -int(tile_size), -int(tile_size)):
-                        c.saveState()
-                        c.translate(x, y)
-                        c.rotate(rotation)
-                        c.drawString(0, 0, watermark_text)
-                        c.restoreState()
-            else:
-                # 지정된 위치에 워터마크 그리기 (상단 기준)
-                text_width = c.stringWidth(watermark_text, font_name if font_name != "NotoSansKR" else "NotoSansKR", font_size)
-                margin = 50  # 여백
+                # 일반 폰트와 볼드 폰트 파일 경로 설정
+                regular_font_file = os.path.join(font_path, 'NotoSansKR-Regular.ttf')
+                bold_font_file = os.path.join(font_path, 'NotoSansKR-Bold.ttf')
                 
-                # 여백 조정 (텍스트가 화면을 벗어나지 않도록)
-                min_x = margin
-                max_x = page_width - margin - text_width
-                min_y = margin + font_size
-                max_y = page_height - margin
-                
-                if position == "top-left":
-                    x, y = min_x, max_y
-                elif position == "top-right":
-                    x, y = max_x, max_y
-                elif position == "bottom-left":
-                    x, y = min_x, min_y
-                elif position == "bottom-right":
-                    x, y = max_x, min_y
-                
-                # 화면 범위를 벗어나지 않도록 좌표 보정
-                x = max(min_x, min(x, max_x))
-                y = max(min_y, min(y, max_y))
-                
-                c.translate(x + text_width/2, y - font_size/2)
-                c.rotate(rotation)
-                c.drawString(-text_width/2, 0, watermark_text)
-            
-            c.restoreState()
-            c.save()
+                # 폰트 등록
+                pdfmetrics.registerFont(TTFont('NotoSansKR-Regular', regular_font_file))
+                pdfmetrics.registerFont(TTFont('NotoSansKR-Bold', bold_font_file))
+
+            # 각 페이지 크기에 맞는 워터마크 PDF를 생성하기 위한 준비
+            watermark_pdfs = []
+            reader = PdfReader(temp_path)
+
+            for i in pages_to_watermark:
+                page = reader.pages[i]
+                page_width = float(page.mediabox.width)
+                page_height = float(page.mediabox.height)
+
+                # 각 페이지용 워터마크 PDF 생성
+                watermark_path = session_dir / f"watermark_{i}.pdf"
+                watermark_pdfs.append(watermark_path)
+                c = canvas.Canvas(str(watermark_path), pagesize=(page_width, page_height))
+
+                # 폰트 설정
+                if font_name == "NotoSansKR":
+                    # 일반/볼드 폰트 선택
+                    font_key = 'NotoSansKR-Bold' if is_bold else 'NotoSansKR-Regular'
+                    c.setFont(font_key, font_size)
+                else:
+                    font_key = f"{font_name}-Bold" if is_bold else font_name
+                    c.setFont(font_key, font_size)
+
+                # 색상 설정
+                c.setFillColorRGB(r/255, g/255, b/255, alpha=opacity)
+
+                # 회전 준비
+                c.saveState()
+
+                if position == "center":
+                    # 중앙에 워터마크 그리기 (상단 기준)
+                    text_width = c.stringWidth(watermark_text, font_key, font_size)
+                    x = (page_width - text_width) / 2
+                    y = page_height - ((page_height - font_size) / 2)
+                    c.translate(x + text_width/2, y - font_size/2)
+                    c.rotate(rotation)
+                    c.drawString(-text_width/2, 0, watermark_text)
+                elif position == "tile":
+                    # 타일 패턴으로 워터마크 그리기
+                    text_width = c.stringWidth(watermark_text, font_key, font_size)
+                    tile_size = max(text_width, font_size) * 2
+                    
+                    # 페이지 전체를 덮도록 여유있게 계산
+                    start_y = page_height + tile_size
+                    end_y = -tile_size
+                    
+                    for x in range(0, int(page_width + tile_size), int(tile_size)):
+                        for y in range(int(start_y), int(end_y), -int(tile_size)):
+                            c.saveState()
+                            c.translate(x, y)
+                            c.rotate(rotation)
+                            c.drawString(-text_width/2, -font_size/2, watermark_text)
+                            c.restoreState()
+                else:
+                    # 지정된 위치에 워터마크 그리기 (상단 기준)
+                    text_width = c.stringWidth(watermark_text, font_key, font_size)
+                    margin = 50  # 여백
+
+                    # 여백 조정 (텍스트가 화면을 벗어나지 않도록)
+                    min_x = margin
+                    max_x = page_width - margin - text_width
+                    min_y = margin + font_size
+                    max_y = page_height - margin
+
+                    if position == "top-left":
+                        x, y = min_x, max_y
+                    elif position == "top-right":
+                        x, y = max_x, max_y
+                    elif position == "bottom-left":
+                        x, y = min_x, min_y
+                    elif position == "bottom-right":
+                        x, y = max_x, min_y
+
+                    # 화면 범위를 벗어나지 않도록 좌표 보정
+                    x = max(min_x, min(x, max_x))
+                    y = max(min_y, min(y, max_y))
+
+                    c.translate(x + text_width/2, y - font_size/2)
+                    c.rotate(rotation)
+                    c.drawString(-text_width/2, 0, watermark_text)
+
+                c.restoreState()
+                c.save()
+
+            # 기존 워터마크 PDF 파일은 더 이상 필요하지 않음
             
         elif watermark_type == "image" and watermark_img_path:
             # 이미지 워터마크 처리
@@ -912,69 +1443,77 @@ async def add_watermark(
                     new_size = (int(img.width * ratio), int(img.height * ratio))
                     img = img.resize(new_size, Image.Resampling.LANCZOS)
                 
-                # 워터마크용 PDF 생성
-                img_io = BytesIO()
-                img.save(img_io, format='PNG')
-                img_io.seek(0)
+                # 각 페이지에 대한 워터마크 생성
+                watermark_pdfs = []
                 
-                # 원본 PDF의 첫 페이지 크기 가져오기
-                with open(temp_path, 'rb') as pdf_file:
-                    pdf_reader = PdfReader(pdf_file)
-                    first_page = pdf_reader.pages[0]
-                    page_width = float(first_page.mediabox.width)
-                    page_height = float(first_page.mediabox.height)
-
-                # 워터마크용 PDF 생성 (원본 PDF와 같은 크기로)
-                c = canvas.Canvas(str(watermark_pdf), pagesize=(page_width, page_height))
-                
-                # 이미지 크기
-                img_width, img_height = img.size
-                
-                # 회전 설정
-                c.saveState()
-                
-                if position == "center":
-                    # 중앙에 이미지 배치 (상단 기준)
-                    x = (page_width - img_width) / 2
-                    y = page_height - ((page_height - img_height) / 2)
-                    c.translate(x + img_width/2, y - img_height/2)
-                    c.rotate(rotation)
-                    c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
-                elif position == "tile":
-                    # 타일 패턴으로 배치 (상단에서 시작)
-                    tile_spacing = max(img_width, img_height) * 1.5
-                    for x in range(0, int(page_width), int(tile_spacing)):
-                        for y in range(int(page_height), -int(tile_spacing), -int(tile_spacing)):
-                            c.saveState()
-                            c.translate(x + img_width/2, y)
-                            c.rotate(rotation)
-                            c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
-                            c.restoreState()
-                else:
-                    # 지정된 위치에 배치 (상단 기준)
-                    margin = 50  # 여백
-                    if position == "top-left":
-                        x, y = margin, page_height
-                    elif position == "top-right":
-                        x, y = page_width - margin - img_width, page_height
-                    elif position == "bottom-left":
-                        x, y = margin, img_height
-                    elif position == "bottom-right":
-                        x, y = page_width - margin - img_width, img_height
+                for i in pages_to_watermark:
+                    page = reader.pages[i]
+                    page_width = float(page.mediabox.width)
+                    page_height = float(page.mediabox.height)
                     
-                    c.translate(x + img_width/2, y - img_height/2)
-                    c.rotate(rotation)
-                    c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
-                
-                c.restoreState()
-                c.save()
+                    # 각 페이지용 워터마크 PDF 생성
+                    watermark_path = session_dir / f"watermark_{i}.pdf"
+                    watermark_pdfs.append(watermark_path)
+                    
+                    img_io = BytesIO()
+                    img.save(img_io, format='PNG')
+                    img_io.seek(0)
+                    
+                    c = canvas.Canvas(str(watermark_path), pagesize=(page_width, page_height))
+                    
+                    # 이미지 크기
+                    img_width, img_height = img.size
+                    
+                    # 회전 설정
+                    c.saveState()
+                    
+                    if position == "center":
+                        # 중앙에 이미지 배치 (상단 기준)
+                        x = (page_width - img_width) / 2
+                        y = page_height - ((page_height - img_height) / 2)
+                        c.translate(x + img_width/2, y - img_height/2)
+                        c.rotate(rotation)
+                        c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
+                    elif position == "tile":
+                        # 타일 패턴으로 배치
+                        tile_spacing = max(img_width, img_height) * 1.5
+                        
+                        # 페이지 전체를 덮도록 여유있게 계산
+                        start_y = page_height + tile_spacing
+                        end_y = -tile_spacing
+                        
+                        for x in range(0, int(page_width + tile_spacing), int(tile_spacing)):
+                            for y in range(int(start_y), int(end_y), -int(tile_spacing)):
+                                c.saveState()
+                                c.translate(x + img_width/2, y)
+                                c.rotate(rotation)
+                                c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
+                                c.restoreState()
+                    else:
+                        # 지정된 위치에 배치 (상단 기준)
+                        margin = 50  # 여백
+                        if position == "top-left":
+                            x, y = margin, page_height
+                        elif position == "top-right":
+                            x, y = page_width - margin - img_width, page_height
+                        elif position == "bottom-left":
+                            x, y = margin, img_height
+                        elif position == "bottom-right":
+                            x, y = page_width - margin - img_width, img_height
+                        
+                        c.translate(x + img_width/2, y - img_height/2)
+                        c.rotate(rotation)
+                        c.drawImage(ImageReader(img), -img_width/2, -img_height/2, width=img_width, height=img_height, mask='auto')
+                    
+                    c.restoreState()
+                    c.save()
                 
             except Exception as e:
+                # 생성된 워터마크 PDF들 정리
+                for wp in watermark_pdfs:
+                    if wp.exists():
+                        wp.unlink()
                 raise HTTPException(status_code=500, detail=f"이미지 워터마크 처리 실패: {str(e)}")
-        
-        # 워터마크 PDF 읽기
-        watermark_reader = PdfReader(watermark_pdf)
-        watermark_page = watermark_reader.pages[0]
         
         # 결과 PDF 생성
         writer = PdfWriter()
@@ -984,8 +1523,15 @@ async def add_watermark(
             page = reader.pages[i]
             
             if i in pages_to_watermark:
-                # 워터마크 적용
-                page.merge_page(watermark_page)
+                # 해당 페이지의 워터마크 PDF 읽기
+                watermark_path = session_dir / f"watermark_{i}.pdf"
+                if watermark_path.exists():
+                    watermark_reader = PdfReader(str(watermark_path))
+                    watermark_page = watermark_reader.pages[0]
+                    # 워터마크 적용
+                    page.merge_page(watermark_page)
+                    # 사용한 워터마크 PDF 삭제
+                    watermark_path.unlink()
             
             # 결과 PDF에 페이지 추가
             writer.add_page(page)
@@ -996,7 +1542,6 @@ async def add_watermark(
         
         # 임시 파일 삭제
         temp_path.unlink()
-        watermark_pdf.unlink()
         if watermark_img_path and watermark_img_path.exists():
             watermark_img_path.unlink()
         

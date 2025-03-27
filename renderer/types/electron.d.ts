@@ -33,6 +33,14 @@ interface Window {
           pages: string;
         }
       ) => Promise<Blob>;
+      encryptPdf: (
+        file: File,
+        password: string,
+      ) => Promise<Blob>;
+      decryptPdf: (
+        file: File,
+        password: string
+      ) => Promise<Blob>;
     };
   };
 }

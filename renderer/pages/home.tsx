@@ -5,6 +5,7 @@ import ActionButtons from '../components/ActionButtons';
 import ToolPanel from '../components/ToolPanel';
 import StatusMessage from '../components/StatusMessage';
 import WatermarkPanel from '../components/WatermarkPanel';
+import SecurityPanel from '../components/SecurityPanel';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
 
 interface ProcessingStatus {
@@ -14,12 +15,13 @@ interface ProcessingStatus {
 }
 
 export default function HomePage() {
-  const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | null>(null);
+  const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   // 선택된 파일 형식 상태 추가
   const [selectedFormat, setSelectedFormat] = useState<'txt' | 'html' | 'image' | null>(null);
+  const [securityMode, setSecurityMode] = useState<'encrypt' | 'decrypt'>('encrypt');
   const [status, setStatus] = useState<ProcessingStatus>({
     isProcessing: false,
     message: null,
@@ -275,6 +277,85 @@ export default function HomePage() {
     }
   };
 
+  const handleEncrypt = async (password: string) => { // Removed allowPrinting and allowCommenting
+    if (!selectedFile) {
+      setStatus({
+        isProcessing: false,
+        message: '파일을 선택해주세요',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      setStatus({
+        isProcessing: true,
+        message: 'PDF 암호화 중...',
+        type: 'processing'
+      });
+
+      const blob = await window.electron.pdf.encryptPdf(selectedFile, password); // Removed allowPrinting and allowCommenting
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `encrypted_${selectedFile.name}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setStatus({
+        isProcessing: false,
+        message: 'PDF 암호화 완료!',
+        type: 'success'
+      });
+    } catch (err) {
+      setStatus({
+        isProcessing: false,
+        message: err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleDecrypt = async (password: string) => {
+    if (!selectedFile) {
+      setStatus({
+        isProcessing: false,
+        message: '파일을 선택해주세요',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      setStatus({
+        isProcessing: true,
+        message: 'PDF 복호화 중...',
+        type: 'processing'
+      });
+
+      // TODO: window.electron.pdf.decryptPdf가 정의되어 있는지 확인 필요
+      const blob = await window.electron.pdf.decryptPdf(selectedFile, password);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `decrypted_${selectedFile.name}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setStatus({
+        isProcessing: false,
+        message: 'PDF 복호화 완료!',
+        type: 'success'
+      });
+    } catch (err) {
+      setStatus({
+        isProcessing: false,
+        message: err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다',
+        type: 'error'
+      });
+    }
+  };
+
   const handleAddWatermark = async (
     file: File,
     options: {
@@ -286,6 +367,7 @@ export default function HomePage() {
       position: 'center' | 'tile' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
       fontSize?: number;
       fontColor?: string;
+      fontBold?: boolean;
       pages: string;
     }
   ) => {
@@ -340,7 +422,7 @@ export default function HomePage() {
     setPdfUrl(fileUrl);
   };
 
-  const handleActionSelect = (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark') => {
+  const handleActionSelect = (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security') => {
     setSelectedAction(action);
     setSelectedFile(null);
     setPdfUrl(null);
@@ -396,6 +478,15 @@ export default function HomePage() {
                   onFileSelect={handleDrop}
                   isProcessing={status.isProcessing}
                   onAddWatermark={handleAddWatermark}
+                />
+              ) : selectedAction === 'security' ? (
+                <SecurityPanel
+                  selectedFile={selectedFile}
+                  onFileSelect={handleDrop}
+                  onEncrypt={handleEncrypt}
+                  onDecrypt={handleDecrypt}
+                  mode={securityMode}
+                  setMode={setSecurityMode}
                 />
               ) : (
                 <ToolPanel

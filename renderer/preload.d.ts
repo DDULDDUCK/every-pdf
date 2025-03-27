@@ -43,6 +43,45 @@ declare global {
          * @returns 변환된 파일의 Blob (이미지 변환 시 여러 페이지면 ZIP 파일)
          */
         convertFromPdf: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png') => Promise<Blob>;
+        
+        /**
+         * PDF 파일 암호화
+         * @param file PDF 파일
+         * @param password 암호화에 사용할 비밀번호
+         * @returns 암호화된 PDF 파일의 Blob
+         */
+        encryptPdf: (file: File, password: string) => Promise<Blob>;
+        
+        /**
+         * PDF 파일 복호화
+         * @param file 암호화된 PDF 파일
+         * @param password 복호화를 위한 비밀번호
+         * @returns 복호화된 PDF 파일의 Blob
+         */
+        decryptPdf: (file: File, password: string) => Promise<Blob>;
+        
+        /**
+         * PDF에 워터마크 추가
+         * @param file 원본 PDF 파일
+         * @param options 워터마크 옵션
+         * @returns 워터마크가 적용된 PDF 파일의 Blob
+         */
+        addWatermark: (
+          file: File,
+          options: {
+            watermarkType: 'text' | 'image';
+            watermarkText?: string;
+            watermarkImage?: File;
+            opacity: number;
+            rotation: number;
+            position: 'center' | 'tile' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+            fontSize?: number;
+            fontName?: 'NotoSansKR'; // 백엔드에서 사용할 기본 폰트
+            fontColor?: string;
+            fontBold?: boolean;
+            pages: string;
+          }
+        ) => Promise<Blob>;
       };
     };
   }

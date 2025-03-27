@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import SecurityPanel from './SecurityPanel';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import PDFDropzone from './PDFDropzone';
 
 interface ToolPanelProps {
-  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | null;
+  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'security' | null;
   onSplit: (pages: string) => void;
   onMerge: (files: File[]) => void;
   onRotate: (pages: string, angle: number, includeUnspecified: boolean) => void;
   onConvertToPDF: (files: File[], sourceFormat: 'txt' | 'html' | 'image') => void;
   onConvertFromPDF: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png') => void;
+  onEncrypt?: (file: File, password: string, allowPrinting: boolean, allowCommenting: boolean) => void;
+  onDecrypt?: (file: File, password: string) => void;
   isProcessing: boolean;
   selectedFiles: File[];
   selectedFile: File | null;
@@ -27,6 +30,8 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
   onRotate,
   onConvertToPDF,
   onConvertFromPDF,
+  onEncrypt,
+  onDecrypt,
   isProcessing,
   selectedFiles,
   selectedFile,

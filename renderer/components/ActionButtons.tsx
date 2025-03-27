@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ActionButtonsProps {
-  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | null;
-  onActionSelect: (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark') => void;
+  selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null;
+  onActionSelect: (action: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security') => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -76,6 +76,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClick={() => onActionSelect('convert-from-pdf')}
       >
         다른 형식으로 변환
+      </button>
+      <button
+        className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200
+                   ${
+                     selectedAction === 'security'
+                       ? 'bg-blue-500 text-white'
+                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                   }`}
+        onClick={() => onActionSelect('security')}
+      >
+        보안
       </button>
     </div>
   );

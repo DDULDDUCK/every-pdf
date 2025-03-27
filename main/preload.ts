@@ -136,6 +136,7 @@ const pdfApi = {
       fontSize?: number;
       fontName?: 'NotoSansKR';
       fontColor?: string;
+      fontBold?: boolean;
       pages: string;
     }
   ): Promise<Blob> => {
@@ -164,14 +165,51 @@ const pdfApi = {
     
     // 항상 NotoSansKR 폰트 사용
     formData.append('font_name', 'NotoSansKR');
-    
     if (options.fontColor) {
       formData.append('font_color', options.fontColor);
     }
+
+    if (options.fontBold !== undefined) {
+      formData.append('font_bold', options.fontBold.toString());
+    }
     
+    formData.append('pages', options.pages);
     formData.append('pages', options.pages);
 
     const response = await fetch(`${BASE_URL}:${port}/add-watermark`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    return handleResponse(response);
+  },
+
+  encryptPdf: async (file: File, password: string): Promise<Blob> => { // Removed allowPrinting and allowCommenting
+    const port = await getBackendPort();
+    console.log('Sending encrypt request to port:', port);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('password', password);
+    // Removed allow_printing and allow_commenting from FormData
+
+    const response = await fetch(`${BASE_URL}:${port}/encrypt`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    return handleResponse(response);
+  },
+
+  decryptPdf: async (file: File, password: string): Promise<Blob> => {
+    const port = await getBackendPort();
+    console.log('Sending decrypt request to port:', port);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('password', password);
+
+    const response = await fetch(`${BASE_URL}:${port}/decrypt`, {
       method: 'POST',
       body: formData,
     });

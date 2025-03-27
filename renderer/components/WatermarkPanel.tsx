@@ -20,6 +20,7 @@ interface WatermarkPanelProps {
       position: WatermarkPosition;
       fontSize?: number;
       fontColor?: string;
+      fontBold?: boolean;
       pages: string;
     }
   ) => void;
@@ -39,6 +40,7 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
   const [position, setPosition] = useState<WatermarkPosition>('center');
   const [fontSize, setFontSize] = useState<number>(40);
   const [fontColor, setFontColor] = useState<string>('#888888');
+  const [fontBold, setFontBold] = useState<boolean>(false);
   const [pages, setPages] = useState<string>('all');
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
 
@@ -60,6 +62,7 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
       position,
       fontSize: watermarkType === 'text' ? fontSize : undefined,
       fontColor: watermarkType === 'text' ? fontColor : undefined,
+      fontBold: watermarkType === 'text' ? fontBold : undefined,
       pages,
     });
   };
@@ -177,6 +180,18 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center mt-4">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fontBold}
+                  onChange={(e) => setFontBold(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-600">굵은 글씨</span>
+              </label>
             </div>
           </>
         )}
