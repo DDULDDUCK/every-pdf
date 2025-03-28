@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Switch } from '@headlessui/react';
 import PDFDropzone from './PDFDropzone';
 
 interface SecurityPanelProps {
   selectedFile: File | null;
   onFileSelect: (files: File[]) => void;
-  onEncrypt: (password: string) => void; // Removed allowPrinting and allowCommenting
+  onEncrypt: (password: string) => void;
   onDecrypt: (password: string) => void;
   mode: 'encrypt' | 'decrypt';
   setMode: (mode: 'encrypt' | 'decrypt') => void;
@@ -24,7 +23,7 @@ export default function SecurityPanel({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'encrypt') {
-      onEncrypt(password); // Removed allowPrinting and allowCommenting
+      onEncrypt(password);
     } else {
       onDecrypt(password);
     }
@@ -32,9 +31,9 @@ export default function SecurityPanel({
   };
 
   return (
-    <div className="w-72 bg-gray-50 p-4 rounded-lg flex flex-col gap-4 overflow-y-auto">
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">PDF 보안</h3>
+    <div className="w-72 p-4 rounded-lg flex flex-col gap-4 overflow-y-auto bg-panel-bg theme-transition">
+      <div className="p-4 rounded-lg shadow-sm bg-card-bg theme-transition">
+        <h3 className="text-lg font-semibold mb-4 text-text theme-transition">PDF 보안</h3>
         <div className="space-y-3">
           <PDFDropzone
             onDrop={files => files[0] && onFileSelect([files[0]])}
@@ -43,14 +42,14 @@ export default function SecurityPanel({
             multiple={false}
             accept=".pdf"
           >
-            <div className="text-gray-500 text-center text-sm">
+            <div className="text-button-text text-center text-sm">
               PDF 파일을 드래그하거나 클릭하여 선택하세요
             </div>
           </PDFDropzone>
 
           {selectedFile && (
-            <div className="p-2 bg-blue-50 rounded-md mb-4">
-              <p className="text-sm text-blue-600 truncate" title={selectedFile.name}>
+            <div className="panel-selected-file">
+              <p className="panel-selected-file-text" title={selectedFile.name}>
                 선택된 파일: {selectedFile.name}
               </p>
             </div>
@@ -58,20 +57,20 @@ export default function SecurityPanel({
 
           <div className="mb-4 flex justify-center gap-2">
             <button
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium theme-transition ${
                 mode === 'encrypt'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-primary text-button-text-selected'
+                  : 'bg-button-bg text-button-text hover:bg-button-hover'
               }`}
               onClick={() => setMode('encrypt')}
             >
               암호화
             </button>
             <button
-              className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium theme-transition ${
                 mode === 'decrypt'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-primary text-button-text-selected'
+                  : 'bg-button-bg text-button-text hover:bg-button-hover'
               }`}
               onClick={() => setMode('decrypt')}
             >
@@ -83,7 +82,7 @@ export default function SecurityPanel({
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium mb-1 text-text theme-transition"
               >
                 비밀번호
               </label>
@@ -92,19 +91,19 @@ export default function SecurityPanel({
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="form-input w-full"
                 required
               />
             </div>
 
-            {/* Removed permission settings as pypdf doesn't support them */}
-
             <button
               type="submit"
               disabled={!selectedFile}
-              className="w-full py-2 bg-blue-500 text-white rounded-lg 
-                      hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed
-                      transition-colors duration-200"
+              className={`w-full py-2 rounded-lg theme-transition ${
+                !selectedFile 
+                  ? 'bg-button-bg text-button-text opacity-60 cursor-not-allowed'
+                  : 'bg-primary text-button-text-selected cursor-pointer'
+              }`}
             >
               {mode === 'encrypt' ? '암호화하기' : '복호화하기'}
             </button>

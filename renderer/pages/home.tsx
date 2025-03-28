@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import PDFDropzone from '../components/PDFDropzone';
+import ThemePanel from '../components/ThemePanel';
 import ActionButtons from '../components/ActionButtons';
 import ToolPanel from '../components/ToolPanel';
 import StatusMessage from '../components/StatusMessage';
@@ -15,7 +17,47 @@ interface ProcessingStatus {
 }
 
 export default function HomePage() {
+  const router = useRouter();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
+
+  // 테마 초기화 및 감지
+  useEffect(() => {
+    // 로컬 스토리지에서 테마 가져오기
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+    // 사용자가 다크 모드를 선호하는지 확인
+    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // 저장된 테마가 있으면 그것을 사용, 없으면 사용자 선호에 따라 설정
+    const initialTheme = savedTheme || (prefersDarkMode ? 'dark' : 'light');
+    setTheme(initialTheme);
+    
+    // HTML 데이터 속성 설정
+    document.documentElement.setAttribute('data-theme', initialTheme);
+  }, []);
+
+  // 테마 변경 시 HTML 데이터 속성 업데이트 및 로컬 스토리지 저장
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // URL 쿼리에서 선택된 액션을 가져와 설정
+  useEffect(() => {
+    if (router.query.action) {
+      setSelectedAction(router.query.action as any);
+    }
+  }, [router.query]);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+  };
+
+  // Welcome 페이지로 이동
+  const goToWelcome = () => {
+    router.push('/welcome');
+  };
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -460,15 +502,22 @@ export default function HomePage() {
         <Head>
           <title>PDF Studio - 문서 편집 도구</title>
         </Head>
-        <div className="min-h-screen w-full bg-gray-100 p-4">
-          <div className="w-full min-h-[calc(100vh-2rem)] bg-white shadow-lg rounded-lg overflow-hidden">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-              <h1 className="text-2xl font-bold text-gray-800">PDF Studio</h1>
-              <BuyMeCoffeeButton />
-              <ActionButtons
-                selectedAction={selectedAction}
-                onActionSelect={handleActionSelect}
-              />
+        <div className="app-container">
+          <div className="content-card w-full min-h-[calc(100vh-2rem)]">
+            <div className="content-header flex justify-between items-center border-b">
+              <h1 
+                className="content-title cursor-pointer hover:text-primary transition-colors" 
+                onClick={goToWelcome}
+              >
+                PDF Studio
+              </h1>
+              <div className="flex items-center gap-4">
+                <BuyMeCoffeeButton />
+                <ActionButtons
+                  selectedAction={selectedAction}
+                  onActionSelect={handleActionSelect}
+                />
+              </div>
             </div>
 
             <div className="flex gap-6 p-6 h-[calc(100vh-7rem)]">
@@ -503,14 +552,14 @@ export default function HomePage() {
                   onRemoveFile={handleRemoveFile}
                   onFilePreview={handlePreview}
                   onReorderFiles={handleReorderFiles}
-                  selectedFormat={selectedFormat} // 선택된 형식 전달
-                  onFormatSelect={handleFormatSelect} // 형식 선택 핸들러 전달
+                  selectedFormat={selectedFormat}
+                  onFormatSelect={handleFormatSelect}
                 />
               )}
 
-              <div className="flex-1 border-2 border-gray-200 rounded-lg overflow-hidden">
+              <div className="flex-1 border-2 border-border rounded-lg overflow-hidden theme-transition">
                 {!pdfUrl ? (
-                  <div className="h-full flex items-center justify-center text-gray-500">
+                  <div className="h-full flex items-center justify-center text-text">
                     선택된 PDF 파일이 없습니다
                   </div>
                 ) : (

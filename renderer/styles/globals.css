@@ -3,13 +3,380 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #ffffff;
+    --text: #1a202c;
+    --border: #e2e8f0;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --primary-rgb: 59, 130, 246; /* #3b82f6의 RGB 값 */
+    --card-bg: #ffffff;
+    --panel-bg: #f9fafb;
+    --button-bg: #f3f4f6;
+    --button-text: #4b5563;
+    --button-hover: #e5e7eb;
+    --button-selected: #3b82f6;
+    --button-text-selected: #ffffff;
+    --dropzone-bg: #f9fafb;
+    --dropzone-border: #e5e7eb;
+    --success: #10b981;
+    --error: #ef4444;
+    --error-hover: #dc2626;
+    --warning: #f59e0b;
+    --input-bg: #ffffff;
+    --input-text: #1a202c;
+    --input-border: #e2e8f0;
+    --input-placeholder: #9ca3af;
+    --header-bg: #ffffff;
+    --header-border: #e2e8f0;
+    --tooltip-bg: #ffffff;
+    --tooltip-text: #1a202c;
+    --status-bg: rgba(255, 255, 255, 0.9);
+    --coffee-button-bg: #FFDD00;
+    --coffee-button-hover: #FFED4A;
+    --coffee-button-text: #1a202c;
+    --slider-bg: #e5e7eb;
+    --slider-thumb: #3b82f6;
+    --range-bg: #e5e7eb;
+  }
+
+  [data-theme='dark'] {
+      --background: #111827;
+      --text: #f9fafb;
+      --border: #374151;
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --primary-rgb: 96, 165, 250; /* #60a5fa의 RGB 값 */
+      --card-bg: #1f2937;
+      --panel-bg: #1f2937;
+      --button-bg: #374151;
+      --button-text: #d1d5db;
+      --button-hover: #4b5563;
+      --button-selected: #3b82f6;
+      --button-text-selected: #ffffff;
+      --dropzone-bg: #1f2937;
+      --dropzone-border: #374151;
+      --success: #059669;
+      --error: #dc2626;
+      --error-hover: #b91c1c;
+      --warning: #d97706;
+      --input-bg: #1f2937;
+      --input-text: #f9fafb;
+      --input-border: #374151;
+      --input-placeholder: #6b7280;
+      --header-bg: #1f2937;
+      --header-border: #374151;
+      --tooltip-bg: #1f2937;
+      --tooltip-text: #f9fafb;
+      --status-bg: rgba(31, 41, 55, 0.9);
+      --coffee-button-bg: #bb9500;
+      --coffee-button-hover: #ddb100;
+      --coffee-button-text: #ffffff;
+      --slider-bg: #4b5563;
+      --slider-thumb: #60a5fa;
+      --range-bg: #374151;
+    }
+
   body {
-    @apply bg-gray-900;
+    @apply transition-colors duration-200;
+    background-color: var(--background);
+    color: var(--text);
+  }
+  
+  input, textarea, select {
+    @apply transition-colors duration-200;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+  }
+  
+  input::placeholder, textarea::placeholder, select::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  /* Range/슬라이더 스타일 개선 */
+  input[type="range"] {
+    @apply theme-transition;
+    background-color: var(--range-bg);
+    height: 0.5rem;
+    border-radius: 0.25rem;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    @apply theme-transition;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--slider-thumb);
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    @apply theme-transition;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: var(--slider-thumb);
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+    border: none;
+  }
+
+  /* 체크박스 스타일 개선 */
+  input[type="checkbox"] {
+    @apply theme-transition;
+    accent-color: var(--primary);
+  }
+
+  /* 라디오 버튼 스타일 개선 */
+  input[type="radio"] {
+    @apply theme-transition;
+    accent-color: var(--primary);
   }
 }
 
 @layer components {
   .btn-blue {
-    @apply text-white font-bold px-4 py-2 rounded bg-blue-600 hover:bg-blue-500;
+    @apply text-white font-bold px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 transition-colors duration-200;
+  }
+
+  .theme-panel {
+    @apply fixed top-4 right-4 z-50 transition-all duration-200;
+  }
+
+  .theme-transition {
+    @apply transition-all duration-200;
+  }
+
+  .app-container {
+    @apply min-h-screen transition-colors duration-200;
+    background-color: var(--background);
+  }
+
+  .content-card {
+    background-color: var(--card-bg);
+    border-color: var(--border);
+    @apply shadow-lg rounded-lg overflow-hidden theme-transition;
+  }
+
+  .content-header {
+    background-color: var(--header-bg);
+    border-color: var(--header-border);
+    @apply px-6 py-4 theme-transition;
+  }
+
+  .content-title {
+    color: var(--text);
+    @apply text-2xl font-bold theme-transition;
+  }
+
+  .form-input {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+    @apply rounded-md px-3 py-2 theme-transition border;
+  }
+
+  .form-input::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .tooltip {
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    @apply px-2 py-1 rounded shadow-lg text-sm theme-transition;
+  }
+
+  .status-message {
+    color: var(--text);
+    @apply fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg theme-transition;
+  }
+
+  .hover-panel {
+    @apply transition-colors duration-200;
+    &:hover {
+      background-color: var(--button-hover);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  /* 다크 모드 전환 개선을 위한 추가 스타일 */
+  .bg-primary {
+    background-color: var(--primary);
+  }
+
+  .text-primary {
+    color: var(--primary);
+  }
+
+  .text-text {
+    color: var(--text);
+  }
+
+  .text-button-text {
+    color: var(--button-text);
+  }
+
+  .text-button-text-selected {
+    color: var(--button-text-selected);
+  }
+
+  .bg-card-bg {
+    background-color: var(--card-bg);
+  }
+
+  .bg-panel-bg {
+    background-color: var(--panel-bg);
+  }
+
+  .border-border {
+    border-color: var(--border);
+  }
+
+  /* 배경 색상에 대한 투명도 변형 */
+  .bg-primary-10 {
+    background-color: rgba(var(--primary-rgb), 0.1);
+  }
+
+  /* 입력 요소들에 대한 스타일 개선 */
+  .form-select, 
+  select {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+    @apply rounded-md px-3 py-2 theme-transition border;
+  }
+
+  /* 범위 슬라이더 스타일 */
+  input[type="range"] {
+    @apply theme-transition;
+    background-color: var(--range-bg);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    background-color: var(--slider-thumb);
+  }
+
+  input[type="checkbox"] {
+    border-color: var(--border);
+  }
+
+  /* 커피 버튼 스타일 */
+  .coffee-button {
+    background-color: var(--coffee-button-bg);
+    color: var(--coffee-button-text);
+    @apply theme-transition px-4 py-2 font-semibold rounded-lg flex items-center gap-2;
+  }
+
+  .coffee-button:hover {
+    background-color: var(--coffee-button-hover);
+  }
+
+  /* 컬러 오버레이 */
+  .bg-primary-light {
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  }
+
+  /* Select 박스 스타일 개선 */
+  select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  .dark select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d1d5db' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  }
+
+  /* 패널 파일 선택 표시 */
+  .file-selected {
+    @apply p-2 rounded-md mb-4 theme-transition;
+    background-color: rgba(var(--primary-rgb), 0.1);
+  }
+
+  .file-selected p {
+    @apply text-sm truncate theme-transition;
+    color: var(--primary);
+  }
+
+  /* 공통 사용 클래스 추가 */
+  .file-preview-container {
+    @apply flex-1 border-2 border-border rounded-lg overflow-hidden theme-transition;
+  }
+
+  .empty-preview-message {
+    @apply h-full flex items-center justify-center text-text;
+  }
+
+  .panel-title {
+    @apply text-lg font-semibold text-text mb-4 theme-transition;
+  }
+
+  .panel-section {
+    @apply space-y-3;
+  }
+
+  .panel-label {
+    @apply block text-sm font-medium text-text mb-2 theme-transition;
+  }
+
+  .panel-selected-file {
+    @apply p-2 rounded-md mb-4 theme-transition;
+    background-color: rgba(var(--primary-rgb), 0.1);
+  }
+
+  .panel-selected-file-text {
+    @apply text-sm truncate theme-transition;
+    color: var(--primary);
+  }
+
+  .action-button {
+    @apply w-full py-2 rounded-lg theme-transition;
+  }
+
+  .primary-action-button {
+    @apply w-full py-2 rounded-lg theme-transition;
+    background-color: var(--primary);
+    color: var(--button-text-selected);
+  }
+  
+  .primary-action-button:hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, white);
+  }
+
+  .disabled-action-button {
+    @apply w-full py-2 rounded-lg theme-transition opacity-60 cursor-not-allowed;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+  }
+
+  /* 컨텐츠 컨테이너 스타일 */
+  .content-container {
+    @apply flex gap-6 p-6 h-[calc(100vh-7rem)] overflow-hidden;
+  }
+
+  /* 드롭다운 목록 컨테이너 */
+  .dropdown-container {
+    @apply max-h-40 overflow-y-auto border border-border rounded-md p-2 space-y-2 theme-transition;
+  }
+
+  /* 드롭다운 아이템 */
+  .dropdown-item {
+    @apply flex items-center justify-between p-2 bg-input-bg rounded-md hover:bg-button-hover text-text transition-colors duration-200 theme-transition;
   }
 }

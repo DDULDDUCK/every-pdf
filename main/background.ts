@@ -1,4 +1,4 @@
-import { app, ipcMain, dialog } from 'electron';
+import { app, ipcMain, dialog, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import { join } from 'path';
@@ -151,6 +151,98 @@ ipcMain.handle('get-backend-port', () => {
 (async () => {
   await app.whenReady();
 
+  // 메뉴 템플릿 생성
+  const template: MenuItemConstructorOptions[] = [
+    {
+      label: '파일',
+      submenu: [
+        { role: 'quit', label: '종료' }
+      ]
+    },
+    {
+      label: '편집',
+      submenu: [
+        { role: 'undo', label: '실행 취소' },
+        { role: 'redo', label: '다시 실행' },
+        { type: 'separator' },
+        { role: 'cut', label: '잘라내기' },
+        { role: 'copy', label: '복사' },
+        { role: 'paste', label: '붙여넣기' },
+        { role: 'delete', label: '삭제' },
+        { role: 'selectAll', label: '모두 선택' }
+      ]
+    },
+    {
+      label: '보기',
+      submenu: [
+        { role: 'reload', label: '새로고침' },
+        { role: 'resetZoom', label: '실제 크기' },
+        { role: 'zoomIn', label: '확대' },
+        { role: 'zoomOut', label: '축소' },
+        { type: 'separator' },
+        { role: 'togglefullscreen', label: '전체 화면' }
+      ]
+    },
+    {
+      role: 'help',
+      label: '도움말',
+      submenu: [
+        {
+          label: '정보',
+          click: async () => {
+            dialog.showMessageBox({
+              type: 'info',
+              title: 'PDF Studio 정보',
+              message: 'PDF Studio',
+              detail: `버전: 1.0.0\n제작: JaeSeok Song\n\nPDF 문서를 쉽게 편집할 수 있는 도구입니다.`,
+              buttons: ['확인'],
+              noLink: true
+            });
+          }
+        },
+        {
+          label: '라이센스 정보',
+          click: async () => {
+            dialog.showMessageBox({
+              type: 'info',
+              title: '라이센스 정보',
+              message: '사용된 오픈소스 라이브러리',
+              detail: `본 프로그램은 다음의 오픈소스 라이브러리를 사용합니다:
+
+Backend 라이브러리:
+- FastAPI (MIT License)
+- Uvicorn (BSD License)
+- PyPDF (MIT License)
+- Pillow (Historical Permission Notice and Disclaimer - HPND)
+- python-multipart (Apache License 2.0)
+- PyInstaller (GPL v2)
+- img2pdf (LGPL v3)
+- xhtml2pdf (Apache License 2.0)
+- ReportLab (BSD License)
+- pdf2image (MIT License)
+- pdfplumber (MIT License)
+- python-docx (MIT License)
+
+Frontend 라이브러리:
+- Electron (MIT License)
+- React (MIT License)
+- Next.js (MIT License)
+- Tailwind CSS (MIT License)
+
+각 라이브러리의 라이센스 전문은 해당 프로젝트의 GitHub 페이지에서 확인하실 수 있습니다.`,
+              buttons: ['확인'],
+              noLink: true
+            });
+          }
+        }
+      ]
+    }
+  ];
+
+  // 메뉴 설정
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
   isQuitting = false;
 
   mainWindow = createWindow('main', {
@@ -175,10 +267,10 @@ ipcMain.handle('get-backend-port', () => {
   }
 
   if (isProd) {
-    await mainWindow.loadURL('app://./home');
+    await mainWindow.loadURL('app://./welcome');
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}/welcome`);
     mainWindow.webContents.openDevTools();
   }
 })();

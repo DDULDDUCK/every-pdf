@@ -10,5 +10,3 @@ reportlab>=4.3.1 #BSD
 pdf2image>=1.17.0 #MIT
 pdfplumber>=0.11.5 #MIT
 python-docx>=1.1.2 #MIT
-fonttools>=4.56.0 #MIT
-cryptography>=44.0.2 #Apache/BSD
