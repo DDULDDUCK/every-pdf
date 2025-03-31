@@ -314,6 +314,17 @@
     color: var(--primary);
   }
 
+  /* 상단 메뉴 호버 효과 */
+  .hover-menu {
+    @apply px-4 py-2 rounded-md transition-colors duration-200;
+    color: var(--text);
+    
+    &:hover {
+      background-color: var(--button-hover);
+      color: var(--primary);
+    }
+  }
+
   /* 공통 사용 클래스 추가 */
   .file-preview-container {
     @apply flex-1 border-2 border-border rounded-lg overflow-hidden theme-transition;

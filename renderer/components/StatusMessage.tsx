@@ -27,10 +27,10 @@ const StatusMessage: React.FC<StatusMessageProps> = ({
     let bgColor, textColor = 'text-button-text-selected';
     switch (type) {
       case 'success':
-        bgColor = 'bg-success';
+        bgColor = 'bg-primary';
         break;
       case 'error':
-        bgColor = 'bg-error';
+        bgColor = 'bg-primary';
         break;
       case 'processing':
         bgColor = 'bg-primary';

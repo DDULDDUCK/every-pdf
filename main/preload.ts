@@ -105,7 +105,7 @@ const pdfApi = {
     return handleResponse(response);
   },
 
-  convertFromPdf: async (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png'): Promise<Blob> => {
+  convertFromPdf: async (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png', outputPath?: string): Promise<Blob> => {
     const port = await getBackendPort();
     console.log('Sending convert-from-pdf request to port:', port);
 
@@ -115,12 +115,19 @@ const pdfApi = {
     if (imageFormat) {
       formData.append('image_format', imageFormat);
     }
+    // 사용자가 지정한 저장 경로 추가
+    if (outputPath) {
+      formData.append('output_path_str', outputPath);
+    }
 
     const response = await fetch(`${BASE_URL}:${port}/convert-from-pdf`, {
       method: 'POST',
       body: formData,
     });
 
+    // DOCX 변환 시에는 백엔드에서 직접 저장하므로, 성공 시 빈 Blob 반환 가능
+    // 또는 백엔드에서 성공 여부만 반환하도록 수정할 수도 있음
+    // 여기서는 일단 기존 handleResponse 유지
     return handleResponse(response);
   },
 
@@ -227,4 +234,8 @@ ipcRenderer.on('backend-port', (_event, port: number) => {
 // API를 renderer 프로세스에 노출
 contextBridge.exposeInMainWorld('electron', {
   pdf: pdfApi,
+  // 파일 저장 대화상자 호출 함수 추가
+  showSaveDialog: (options: Electron.SaveDialogOptions): Promise<Electron.SaveDialogReturnValue> => {
+    return ipcRenderer.invoke('show-save-dialog', options);
+  },
 });

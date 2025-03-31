@@ -1,9 +1,15 @@
 import { app, ipcMain, dialog, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron';
 import serve from 'electron-serve';
+import { autoUpdater } from 'electron-updater';
+import log from 'electron-log';
 import { createWindow } from './helpers';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
+
+// 자동 업데이트 로그 설정
+autoUpdater.logger = log;
+log.transports.file.level = 'info';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -148,8 +154,71 @@ ipcMain.handle('get-backend-port', () => {
   return backendPort;
 });
 
+// 파일 저장 대화상자를 위한 IPC 핸들러
+ipcMain.handle('show-save-dialog', async (event, options) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) {
+    throw new Error('BrowserWindow not found');
+  }
+  return await dialog.showSaveDialog(window, options);
+});
+
+// 자동 업데이트 이벤트 핸들러
+autoUpdater.on('checking-for-update', () => {
+  console.log('업데이트 확인 중...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: '업데이트 알림',
+    message: '새로운 버전이 있습니다.',
+    detail: `새 버전 ${info.version}이(가) 다운로드됩니다.`,
+    buttons: ['확인']
+  });
+});
+
+autoUpdater.on('update-not-available', () => {
+  console.log('현재 최신 버전입니다.');
+});
+
+autoUpdater.on('error', (err) => {
+  dialog.showErrorBox('오류', '업데이트 중 오류가 발생했습니다: ' + err.message);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let message = `다운로드 속도: ${progressObj.bytesPerSecond}`;
+  message += ` - 다운로드됨 ${progressObj.percent}%`;
+  message += ` (${progressObj.transferred}/${progressObj.total})`;
+  console.log(message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: '업데이트 준비 완료',
+    message: '업데이트가 다운로드되었습니다.',
+    detail: '애플리케이션을 다시 시작하여 업데이트를 적용하시겠습니까?',
+    buttons: ['다시 시작', '나중에'],
+    cancelId: 1
+  }).then(result => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall(false, true);
+    }
+  });
+});
+
 (async () => {
   await app.whenReady();
+  
+  if (isProd) {
+    // 프로덕션 환경에서만 자동 업데이트 체크
+    try {
+      await autoUpdater.checkForUpdates();
+    } catch (error) {
+      console.error('업데이트 확인 중 오류 발생:', error);
+    }
+  }
 
   // 메뉴 템플릿 생성
   const template: MenuItemConstructorOptions[] = [
@@ -245,9 +314,15 @@ Frontend 라이브러리:
 
   isQuitting = false;
 
+  const iconPath = join(app.getAppPath(), 'resources',
+    process.platform === 'win32' ? 'logo.ico' :
+    process.platform === 'darwin' ? 'logo.icns' : 'logo.png' // Linux는 logo.png 사용 (resources 폴더에 있어야 함)
+  );
+
   mainWindow = createWindow('main', {
     width: 1000,
     height: 800,
+    icon: iconPath, // 아이콘 경로 추가
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,

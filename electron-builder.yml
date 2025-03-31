@@ -18,19 +18,27 @@ extraResources:
     filter:
       - "**/*"
 mac:
+  icon: resources/logo.icns # macOS용 아이콘
   artifactName: ${productName}_${version}.${ext}
   target:
     - dmg
     - zip
 win:
+  icon: resources/logo.ico # Windows용 아이콘
   artifactName: ${productName}_${version}.${ext}
   target:
     - nsis
 linux:
+  icon: resources/logo.png # Linux용 아이콘 (resources 폴더에 logo.png 필요)
   artifactName: ${productName}_${version}.${ext}
   target:
     - AppImage
-publish: null
+publish:
+  provider: github
+  owner: dduldduck
+  repo: pdf-studio
+  private: true
+  releaseType: release
 
 # asar 설정
 asar: true

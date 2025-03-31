@@ -284,26 +284,45 @@ export default function HomePage() {
         type: 'processing'
       });
 
-      const blob = await window.electron.pdf.convertFromPdf(file, targetFormat, imageFormat);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      
-      let filename: string;
+      let outputPath: string | undefined = undefined;
+
+      // DOCX로 변환 시 저장 경로 묻기
       if (targetFormat === 'docx') {
-        filename = `${file.name.replace('.pdf', '.docx')}`;
-      } else {
+        const defaultPath = `${file.name.replace('.pdf', '.docx')}`;
+        const result = await window.electron.showSaveDialog({
+          title: 'Word 파일 저장',
+          defaultPath: defaultPath,
+          filters: [{ name: 'Word 문서', extensions: ['docx'] }]
+        });
+
+        if (result.canceled || !result.filePath) {
+          setStatus({ isProcessing: false, message: '저장이 취소되었습니다.', type: 'error' });
+          return; // 저장 취소 시 중단
+        }
+        outputPath = result.filePath;
+      }
+
+      // 백엔드 API 호출 (outputPath 추가)
+      const blob = await window.electron.pdf.convertFromPdf(file, targetFormat, imageFormat, outputPath);
+
+      // DOCX 변환 시에는 백엔드에서 직접 저장하므로 다운로드 로직 제거
+      if (targetFormat !== 'docx') {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        let filename: string;
         const extension = imageFormat || 'jpg';
         if (blob.type.includes('zip')) {
           filename = `${file.name.replace('.pdf', '')}_images.zip`;
         } else {
           filename = `${file.name.replace('.pdf', '')}.${extension}`;
         }
+        
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
       }
-      
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
 
       setStatus({
         isProcessing: false,

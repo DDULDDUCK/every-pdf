@@ -24,12 +24,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       {buttons.map(({ action, label }) => (
         <button
           key={action}
-          className={`px-4 py-2 rounded-lg font-medium theme-transition
-                     ${
-                       selectedAction === action
-                         ? 'bg-primary text-button-text-selected'
-                         : 'bg-button-bg text-button-text hover:bg-button-hover'
-                     }`}
+          className={`hover-menu font-medium ${
+            selectedAction === action
+              ? 'bg-primary text-button-text-selected'
+              : 'bg-button-bg text-button-text'
+          }`}
           onClick={() => onActionSelect(action)}
         >
           {label}

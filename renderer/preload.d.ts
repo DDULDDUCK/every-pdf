@@ -40,12 +40,13 @@ declare global {
          * @param file PDF 파일
          * @param targetFormat 변환할 형식 ('docx' 또는 'image')
          * @param imageFormat 이미지 형식 ('jpg' 또는 'png', targetFormat이 'image'일 때만 사용)
-         * @returns 변환된 파일의 Blob (이미지 변환 시 여러 페이지면 ZIP 파일)
+         * @param outputPath (선택) DOCX 변환 시 저장할 경로
+         * @returns 변환된 파일의 Blob (이미지 변환 시 여러 페이지면 ZIP 파일, DOCX는 백엔드 저장 후 빈 Blob 반환 가능)
          */
-        convertFromPdf: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png') => Promise<Blob>;
-        
-        /**
-         * PDF 파일 암호화
+                convertFromPdf: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png', outputPath?: string) => Promise<Blob>;
+                
+                /**
+                 * PDF 파일 암호화
          * @param file PDF 파일
          * @param password 암호화에 사용할 비밀번호
          * @returns 암호화된 PDF 파일의 Blob
@@ -83,6 +84,12 @@ declare global {
           }
         ) => Promise<Blob>;
       };
+      /**
+       * 파일 저장 대화상자를 표시
+       * @param options Electron SaveDialogOptions
+       * @returns Electron SaveDialogReturnValue
+       */
+      showSaveDialog: (options: Electron.SaveDialogOptions) => Promise<Electron.SaveDialogReturnValue>;
     };
   }
 }

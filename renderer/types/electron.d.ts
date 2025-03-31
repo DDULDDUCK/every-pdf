@@ -16,7 +16,8 @@ interface Window {
       convertFromPdf: (
         file: File,
         targetFormat: 'docx' | 'image',
-        imageFormat?: 'jpg' | 'png'
+        imageFormat?: 'jpg' | 'png',
+        outputPath?: string // 저장 경로 추가
       ) => Promise<Blob>;
       addWatermark: (
         file: File,
@@ -42,5 +43,7 @@ interface Window {
         password: string
       ) => Promise<Blob>;
     };
+    // 파일 저장 대화상자 함수 추가
+    showSaveDialog: (options: Electron.SaveDialogOptions) => Promise<Electron.SaveDialogReturnValue>;
   };
 }

@@ -585,7 +585,8 @@ async def convert_to_pdf(
 async def convert_from_pdf(
     file: UploadFile,
     target_format: Literal["docx", "image"] = Form(...),
-    image_format: Literal["jpg", "png"] = Form(None)
+    image_format: Literal["jpg", "png"] = Form(None),
+    output_path_str: str = Form(None)  # 사용자가 지정한 저장 경로
 ):
     """PDF를 다른 형식으로 변환"""
     if not file.filename.lower().endswith('.pdf'):
@@ -620,10 +621,34 @@ async def convert_from_pdf(
             content = await file.read()
             buffer.write(content)
         
+        
         if target_format == "docx":
-            output_docx = output_path.with_suffix('.docx')
-            
+            print(f"Received file: {output_path_str}")  # 로깅 추가
+            if output_path_str:
+                # 사용자가 경로를 지정한 경우
+                print(f"Received file1: {output_path_str}")
+                logger.info(f"Received output path string: {output_path_str}") # 로깅 추가
+                output_docx = Path(output_path_str)
+                logger.info(f"Output docx path object: {output_docx}") # 로깅 추가
+                # 디렉토리가 존재하지 않으면 생성 (필요한 경우)
+                try:
+                    output_docx.parent.mkdir(parents=True, exist_ok=True)
+                    print(f"Ensured directory exists: {output_docx.parent}") # 로깅 추가
+                except Exception as dir_err:
+                    print(f"Failed to create directory {output_docx.parent}: {dir_err}")
+                    # 디렉토리 생성 실패 시 오류 처리 또는 기본 경로 사용 고려
+                    raise HTTPException(status_code=500, detail=f"Failed to create output directory: {dir_err}")
+                # 세션 디렉토리 정리 작업에서 이 파일을 제외해야 할 수 있음
+                # 여기서는 우선 BackgroundTask는 그대로 둠
+                cleanup_task = BackgroundTask(lambda: shutil.rmtree(session_dir, ignore_errors=True))
+            else:
+                print(f"Received file2: {output_path_str}")  # 로깅 추가
+                # 사용자가 경로를 지정하지 않은 경우 (기존 방식)
+                output_docx = output_path.with_suffix('.docx')
+                cleanup_task = BackgroundTask(lambda: shutil.rmtree(session_dir, ignore_errors=True))
+
             # 향상된 PDF를 Word로 변환 함수 호출
+            print(f"Converting PDF to DOCX: {temp_pdf} -> {output_docx}")  # 로깅 추가
             await convert_pdf_to_docx_advanced(temp_pdf, output_docx)
             
             # 임시 PDF 삭제
@@ -631,10 +656,9 @@ async def convert_from_pdf(
             
             return FileResponse(
                 path=str(output_docx),
-                filename=f"{os.path.splitext(file.filename)[0]}.docx",
-                background=BackgroundTask(lambda: shutil.rmtree(session_dir, ignore_errors=True))
+                filename=output_docx.name, # 파일 이름은 실제 저장된 파일 이름 사용
+                background=cleanup_task
             )
-            
         elif target_format == "image":
             if not image_format:
                 raise HTTPException(status_code=400, detail="이미지 형식(jpg 또는 png)을 지정해야 합니다")
@@ -782,144 +806,98 @@ def apply_text_style(run, style):
 
 async def convert_pdf_to_docx_advanced(pdf_path, docx_path):
     """
-    PDF를 DOCX로 변환하는 고급 함수 - pdfplumber와 python-docx 사용
-    원본 PDF의 서식을 최대한 유지
+    PDF를 DOCX로 변환하는 함수 - Microsoft Office Word 필요
+    - Windows: Word COM 자동화 사용
+    - macOS: Word for Mac 사용
     """
-    try:
-        # Word 문서 생성
-        doc = Document()
-        
-        # PDF 파일 분석을 위해 pdfplumber 사용
-        with pdfplumber.open(pdf_path) as pdf:
-            # 각 페이지 처리
-            for page_num, page in enumerate(pdf.pages):
-                # 페이지 구분 (첫 페이지 제외)
-                if page_num > 0:
-                    doc.add_page_break()
-                
-                page_width = float(page.width)
-                
-                # 표(테이블) 추출
-                tables = page.extract_tables()
-                
-                # 텍스트 블록 위치 정보 추출
-                words = page.extract_words(extra_attrs=['fontname', 'size', 'non_stroking_color'])
-                chars = page.chars
-                
-                # 표가 있는 경우, 텍스트에서 표 영역 제외
-                table_bboxes = []
-                if tables:
-                    for table in page.find_tables():
-                        y0, x0, y1, x1 = table.bbox
-                        table_bboxes.append((x0, y0, x1, y1))
-                
-                # 이미지 추출
-                try:
-                    page_images = extract_images_from_pdf_page(pdf_path, page_num)
-                    
-                    # 이미지 처리
-                    for img_index, img_data in enumerate(page_images):
-                        img_temp_path = f"{pdf_path}_img_{page_num}_{img_index}.png"
-                        try:
-                            with open(img_temp_path, "wb") as img_file:
-                                img_file.write(img_data)
-                            # 원본 크기에 가깝게 이미지 삽입
-                            doc.add_picture(img_temp_path)
-                        except Exception as e:
-                            logger.warning(f"이미지 추가 중 오류: {str(e)}")
-                        finally:
-                            if os.path.exists(img_temp_path):
-                                os.remove(img_temp_path)
-                except Exception as img_err:
-                    logger.warning(f"페이지 {page_num+1}의 이미지 추출 중 오류 발생: {str(img_err)}")
-                
-                # 텍스트 처리
-                if words:
-                    text_blocks = group_text_into_paragraphs(words, table_bboxes)
-                    
-                    for block in text_blocks:
-                        p = doc.add_paragraph()
-                        
-                        # 텍스트 정렬 설정
-                        p.alignment = get_alignment(block, page_width)
-                        
-                        # 해당 블록의 문자 스타일 정보 수집
-                        block_chars = [c for c in chars if (
-                            c['x0'] >= block['x0'] and
-                            c['x1'] <= block['x1'] and
-                            c['top'] >= block['top'] and
-                            c['bottom'] <= block['bottom']
-                        )]
-                        
-                        if block_chars:
-                            # 현재 스타일 추적
-                            current_style = extract_text_style(block_chars[0])
-                            current_text = ''
-                            
-                            for char in block_chars:
-                                new_style = extract_text_style(char)
-                                
-                                # 스타일이 변경된 경우, 현재까지의 텍스트를 추가하고 새 스타일 시작
-                                if new_style != current_style and current_text:
-                                    run = p.add_run(current_text)
-                                    apply_text_style(run, current_style)
-                                    current_text = ''
-                                    current_style = new_style
-                                
-                                current_text += char['text']
-                            
-                            # 마지막 텍스트 블록 추가
-                            if current_text:
-                                run = p.add_run(current_text)
-                                apply_text_style(run, current_style)
-                        else:
-                            # 문자 정보를 찾지 못한 경우 기본 스타일로 추가
-                            p.add_run(block['text'])
-                
-                # 테이블 처리
-                if tables:
-                    for table_data in tables:
-                        if not table_data:
-                            continue
-                        
-                        filtered_table = clean_table_data(table_data)
-                        if not filtered_table:
-                            continue
-                        
-                        rows = len(filtered_table)
-                        cols = max(len(row) for row in filtered_table)
-                        
-                        word_table = doc.add_table(rows=rows, cols=cols)
-                        word_table.style = 'Table Grid'
-                        
-                        # 테이블 셀 서식 복사
-                        for i, row in enumerate(filtered_table):
-                            for j, cell_content in enumerate(row):
-                                if j < cols:
-                                    cell = word_table.cell(i, j)
-                                    if cell_content:
-                                        # 셀 내용의 서식 정보 찾기
-                                        cell_chars = [c for c in chars if (
-                                            c['x0'] >= table_bboxes[0][0] and
-                                            c['x1'] <= table_bboxes[0][2] and
-                                            c['top'] >= table_bboxes[0][1] and
-                                            c['bottom'] <= table_bboxes[0][3]
-                                        )]
-                                        
-                                        if cell_chars:
-                                            style = extract_text_style(cell_chars[0])
-                                            run = cell.paragraphs[0].add_run(str(cell_content).strip())
-                                            apply_text_style(run, style)
-                                        else:
-                                            cell.text = str(cell_content).strip()
-        
-        # Word 문서 저장
-        doc.save(docx_path)
-        return True
+    logger.info(f"Starting PDF to DOCX conversion. PDF: {pdf_path}, Target DOCX: {docx_path}")
     
-    except Exception as e:
-        logger.error(f"PDF를 Word로 변환 중 오류 발생: {str(e)}")
-        raise RuntimeError(f"PDF를 Word로 변환하는데 실패했습니다: {str(e)}")
+    # 출력 디렉토리가 존재하는지 확인하고 생성
+    output_dir = os.path.dirname(docx_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        logger.info(f"Ensuring output directory exists: {output_dir}")
+    
+    if platform.system() == "Windows":
+        try:
+            import win32com.client
+            
+            # Word COM 객체 생성
+            word = win32com.client.Dispatch("Word.Application")
+            word.Visible = False
+            
+            try:
+                # PDF를 Word로 열기
+                doc = word.Documents.Open(str(pdf_path))
+                # DOCX로 저장
+                doc.SaveAs2(str(docx_path), FileFormat=16)  # wdFormatDocumentDefault = 16
+                doc.Close()
+                logger.info(f"Successfully converted and saved DOCX file in Windows: {docx_path}")
+                return True
+            finally:
+                word.Quit()
+                
+        except Exception as e:
+            logger.error(f"Windows conversion failed: {str(e)}")
+            raise RuntimeError(f"Windows에서 Word를 통한 변환 실패: {str(e)}")
+            
+    elif platform.system() == "Darwin":
+        try:
+            import subprocess
+            import time
+            
+            # AppleScript 명령어 생성
+            applescript = f'''
+                tell application "Microsoft Word"
+                    activate
+                    set pdf_path to POSIX file "{pdf_path}"
+                    set docx_path to POSIX file "{docx_path}"
+                    
+                    -- PDF 열기
+                    open pdf_path
+                    
+                    -- 저장이 완료될 때까지 대기
+                    delay 1
+                    
+                    -- 활성 문서 저장
+                    if exists active document then
+                        set mydoc to active document
+                        save as mydoc file name docx_path file format format document
+                        close mydoc saving no
+                        return "success"
+                    else
+                        return "error: no active document"
+                    end if
+                end tell
+            '''
+            
+            # AppleScript 실행
+            logger.info("Executing AppleScript for PDF conversion...")
+            process = subprocess.Popen(['osascript', '-e', applescript],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+            
+            if process.returncode != 0:
+                error_msg = stderr.decode('utf-8')
+                logger.error(f"AppleScript execution failed: {error_msg}")
+                raise RuntimeError(f"AppleScript 실행 실패: {error_msg}")
+            
+            result = stdout.decode('utf-8').strip()
+            if result == "success":
+                logger.info(f"Successfully converted and saved DOCX file in macOS: {docx_path}")
+                return True
+            else:
+                raise RuntimeError(f"문서 변환 실패: {result}")
+            
+        except Exception as e:
+            logger.error(f"macOS conversion failed: {str(e)}")
+            raise RuntimeError(f"macOS에서 Word를 통한 변환 실패: {str(e)}")
+    
+    else:
+        error_msg = "PDF를 DOCX로 변환하려면 Windows 또는 macOS와 Microsoft Office가 필요합니다."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
 
 def group_text_into_paragraphs(words, table_bboxes):
     """텍스트 블록을 단락으로 그룹화
