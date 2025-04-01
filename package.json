@@ -2,7 +2,7 @@
   "private": true,
   "name": "pdf-studio",
   "description": "PDF 문서 편집 도구",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "dduldduck <dduldduck@gmail.com>",
   "main": "app/background.js",
   "scripts": {
@@ -17,7 +17,12 @@
     "build:win": "npm run setup-backend && npm run build-backend && nextron build --win --ia32",
     "build:mac": "npm run setup-backend && npm run build-backend && nextron build --mac --x64",
     "build:linux": "npm run setup-backend && npm run build-backend && nextron build --linux",
-    "clean": "rimraf backend/venv backend/dist backend/build"
+    "clean": "rimraf backend/venv backend/dist backend/build",
+    "only-publish": "electron-builder --publish always",
+    "publish": "npm run build && electron-builder --publish always",
+    "publish:win": "npm run build:win && electron-builder --win --publish always",
+    "publish:mac": "npm run build:mac && electron-builder --mac --publish always",
+    "publish:linux": "npm run build:linux && electron-builder --linux --publish always"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
