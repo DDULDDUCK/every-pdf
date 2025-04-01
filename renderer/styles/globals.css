@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Noto Sans KR';
+  src: url('/fonts/NotoSansKR-Regular.ttf') format('truetype'); /* public 디렉토리 기준 경로 */
+  font-weight: 400; /* Regular */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Noto Sans KR';
+  src: url('/fonts/NotoSansKR-Bold.ttf') format('truetype'); /* public 디렉토리 기준 경로 */
+  font-weight: 700; /* Bold */
+  font-style: normal;
+}
+
+
 @layer base {
   :root {
     --background: #ffffff;
@@ -79,6 +94,8 @@
 
   body {
     @apply transition-colors duration-200;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+                 Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif; /* Noto Sans KR를 우선 적용 */
     background-color: var(--background);
     color: var(--text);
   }
