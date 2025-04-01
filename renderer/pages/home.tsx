@@ -521,8 +521,8 @@ export default function HomePage() {
         <Head>
           <title>PDF Studio - 문서 편집 도구</title>
         </Head>
-        <div className="app-container">
-          <div className="content-card w-full min-h-[calc(100vh-2rem)]">
+        <div className="app-container flex flex-col min-h-screen">
+          <div className="content-card w-full flex flex-col flex-grow">
             <div className="content-header flex justify-between items-center border-b">
               <h1 
                 className="content-title cursor-pointer hover:text-primary transition-colors" 
@@ -539,7 +539,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex gap-6 p-6 h-[calc(100vh-7rem)]">
+            <div className="flex gap-6 p-6 flex-grow">
               {selectedAction === 'watermark' ? (
                 <WatermarkPanel
                   selectedFile={selectedFile}
