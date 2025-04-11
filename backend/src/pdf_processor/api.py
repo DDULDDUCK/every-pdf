@@ -1053,7 +1053,12 @@ def extract_images_from_pdf_page(pdf_path, page_num):
             # OS별 poppler 경로 설정 (이전 코드와 동일)
             poppler_path = None
             if platform.system() == "Windows":
-                poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
+                if getattr(sys, '_MEIPASS', None):
+                    # 프로덕션 환경 (PyInstaller로 패키징된 경우)
+                    poppler_path = os.path.join(sys._MEIPASS, 'poppler', 'bin')
+                else:
+                    # 개발 환경
+                    poppler_path = str(Path(__file__).parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
             elif platform.system() == "Darwin":
                 if getattr(sys, '_MEIPASS', None):
                     base_path = Path(sys._MEIPASS)

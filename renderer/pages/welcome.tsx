@@ -83,7 +83,7 @@ export default function WelcomePage() {
         </main>
         
         <footer className="py-4 px-8 text-center text-button-text text-sm theme-transition">
-          &copy; {new Date().getFullYear()} PDF Studio. 모든 권리 보유.
+          &copy; {new Date().getFullYear()} DDULDDUCK. All rights reserved.
         </footer>
       </div>
     </>

@@ -173,8 +173,13 @@ autoUpdater.on('update-available', (info) => {
     type: 'info',
     title: '업데이트 알림',
     message: '새로운 버전이 있습니다.',
-    detail: `새 버전 ${info.version}이(가) 다운로드됩니다.`,
-    buttons: ['확인']
+    detail: `새 버전 ${info.version}이(가) 사용 가능합니다. 지금 업데이트하시겠습니까?`,
+    buttons: ['지금 업데이트', '나중에'],
+    cancelId: 1
+  }).then(result => {
+    if (result.response === 0) {
+      autoUpdater.downloadUpdate();
+    }
   });
 });
 
