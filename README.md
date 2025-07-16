@@ -73,16 +73,16 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 ## 📺 데모 미디어 (Demo Media)
 
 ### 이미지 (IMAGE)
-- 환영 이미지  
+- 홈 이미지 (Home)
   ![Welcome](./asset/welcome.png)
 
-- 분할 기능 예시  
+- 분할 기능 예시 (Split) 
   ![Split Demo](./asset/split.png)
 
 ### 동영상 (MOVIE)
 
 - PDF Studio 사용 예시 (Demo video)
-  <video src="./asset/test.mov" controls width="600"></video>
+  [![프로젝트 데모 영상](https://github.com/DDULDDUCK/pdf-studio/tree/main/asset/welcome.png?raw=true)](https://github.com/DDULDDUCK/pdf-studio/tree/main/asset/test.mov)
 
 ***
 
