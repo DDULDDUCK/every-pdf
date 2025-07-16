@@ -1,3 +1,59 @@
+## 📺 데모 미디어 (Demo Media)
+
+### 이미지 (IMAGE)
+- 홈 이미지 (Home)
+  ![Welcome](./asset/welcome.png)
+
+- 분할 기능 예시 (Split) 
+  ![Split Demo](./asset/split.png)
+
+### 동영상 (MOVIE)
+- PDF Studio 사용 예시 (Demo video)
+![demo](https://github.com/user-attachments/assets/d51e5596-3274-4bcd-a8ca-b54241a85e70)
+
+## 다운로드 (Download)
+- 윈도우 와 Mac 지원 ( Window and Mac )
+- Window : exe
+- Mac : dmg
+- https://github.com/DDULDDUCK/pdf-studio/releases
+***
+# 🎉 Announcing PDF Studio v1.1.0!
+
+Hello everyone! We are thrilled to unveil the first official version of **PDF Studio**, your new solution for working with PDF documents. Complex and tedious PDF editing is now a thing of the past—with PDF Studio, it's simple and efficient.
+
+PDF Studio is a powerful desktop application packed with all the essential features you need, from everyday document tasks to professional-level editing.
+
+## ✨ Key Features
+
+In this initial release, you can explore the following core features:
+
+*   **📄 Split:**
+    *   Easily split large PDF files by a specific page range or individual page numbers.
+    *   Extract and save only the parts you need with just a few clicks.
+
+*   **➕ Merge:**
+    *   Effortlessly combine multiple PDF documents into a single file with a simple drag-and-drop.
+    *   Organize your scattered documents, such as reports and contracts, into one clean file.
+
+*   **💧 Watermark:**
+    *   Protect your documents or indicate their origin by adding custom text or image watermarks.
+    *   Freely adjust the opacity, position, and size of your watermark to create professional-looking documents.
+
+*   **🔄 Rotate & Reorder:**
+    *   Fix improperly scanned pages or rearrange them in your desired order.
+    *   Take full control of your document's flow with our intuitive interface.
+
+## 💻 Tech Stack
+
+PDF Studio is built on modern technologies to deliver top-tier performance and stability.
+
+*   **Frontend:** Built with **Nextron (Next.js + Electron)** for a seamless and responsive user experience.
+*   **Backend:** The core PDF processing is powered by a robust and reliable **Python** backend, ensuring swift handling of even complex operations.
+
+**Thank you for using PDF Studio!**
+
+***
+
 # 🎉 PDF Studio v1.1.0 출시!
 
 안녕하세요! PDF 문서 작업을 위한 새로운 솔루션, **PDF Studio**의 첫 번째 정식 버전을 드디어 선보입니다. 복잡하고 번거로웠던 PDF 편집, 이제 PDF Studio와 함께라면 간편해집니다.
@@ -34,62 +90,6 @@ PDF Studio는 최신 기술을 바탕으로 최고의 성능과 안정성을 제
 **PDF Studio와 함께해주셔서 감사합니다!**
 
 ***
-
-# 🎉 Announcing PDF Studio v1.1.0!
-
-Hello everyone! We are thrilled to unveil the first official version of **PDF Studio**, your new solution for working with PDF documents. Complex and tedious PDF editing is now a thing of the past—with PDF Studio, it's simple and efficient.
-
-PDF Studio is a powerful desktop application packed with all the essential features you need, from everyday document tasks to professional-level editing.
-
-## ✨ Key Features
-
-In this initial release, you can explore the following core features:
-
-*   **📄 Split:**
-    *   Easily split large PDF files by a specific page range or individual page numbers.
-    *   Extract and save only the parts you need with just a few clicks.
-
-*   **➕ Merge:**
-    *   Effortlessly combine multiple PDF documents into a single file with a simple drag-and-drop.
-    *   Organize your scattered documents, such as reports and contracts, into one clean file.
-
-*   **💧 Watermark:**
-    *   Protect your documents or indicate their origin by adding custom text or image watermarks.
-    *   Freely adjust the opacity, position, and size of your watermark to create professional-looking documents.
-
-*   **🔄 Rotate & Reorder:**
-    *   Fix improperly scanned pages or rearrange them in your desired order.
-    *   Take full control of your document's flow with our intuitive interface.
-
-## 💻 Tech Stack
-
-PDF Studio is built on modern technologies to deliver top-tier performance and stability.
-
-*   **Frontend:** Built with **Nextron (Next.js + Electron)** for a seamless and responsive user experience.
-*   **Backend:** The core PDF processing is powered by a robust and reliable **Python** backend, ensuring swift handling of even complex operations.
-
-**Thank you for using PDF Studio!**
-
-## 📺 데모 미디어 (Demo Media)
-
-### 이미지 (IMAGE)
-- 홈 이미지 (Home)
-  ![Welcome](./asset/welcome.png)
-
-- 분할 기능 예시 (Split) 
-  ![Split Demo](./asset/split.png)
-
-### 동영상 (MOVIE)
-- PDF Studio 사용 예시 (Demo video)
-![demo](https://github.com/user-attachments/assets/d51e5596-3274-4bcd-a8ca-b54241a85e70)
-
-## 다운로드 (Download)
-- 윈도우 와 Mac 지원 ( Window and Mac )
-- Window : exe
-- Mac : dmg
-- https://github.com/DDULDDUCK/pdf-studio/releases
-***
-
 # PDF-Studio
 
 > Nextron(Electron + Next.js) 기반의 PDF 도구 데스크탑 애플리케이션입니다. TailwindCSS, Python 백엔드, 다양한 PDF 기능을 제공합니다.
