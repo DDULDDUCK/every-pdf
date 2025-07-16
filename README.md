@@ -87,7 +87,7 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 - 윈도우 와 Mac 지원 ( Window and Mac )
 - Window : exe
 - Mac : dmg
-  ![Release](https://github.com/DDULDDUCK/pdf-studio/releases)
+- https://github.com/DDULDDUCK/pdf-studio/releases
 ***
 
 # PDF-Studio
