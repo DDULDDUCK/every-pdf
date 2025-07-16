@@ -83,7 +83,11 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 - PDF Studio 사용 예시 (Demo video)
 ![demo](https://github.com/user-attachments/assets/d51e5596-3274-4bcd-a8ca-b54241a85e70)
 
-
+## 다운로드 (Download)
+- 윈도우 와 Mac 지원 ( Window and Mac )
+- Window : exe
+- Mac : dmg
+  ![Release](https://github.com/DDULDDUCK/pdf-studio/releases)
 ***
 
 # PDF-Studio
