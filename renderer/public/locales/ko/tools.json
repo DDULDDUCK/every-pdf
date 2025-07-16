@@ -1,0 +1,64 @@
+{
+  "split": {
+    "title": "PDF 분할",
+    "dropzone": "PDF 파일을 드래그하거나 클릭하여 선택하세요",
+    "selectedFile": "선택된 파일: {{fileName}}",
+    "pageRange": "페이지 범위",
+    "pageRangePlaceholder": "예: 1-3,5,7-9",
+    "actionButton": "분할하기"
+  },
+  "merge": {
+    "title": "PDF 병합",
+    "dropzone": "PDF 파일을 드래그하거나 클릭하여 선택하세요",
+    "multiSelectHint": "(Shift 키를 누른 채로 여러 파일 선택 가능)",
+    "selectedFiles": "선택된 파일 ({{count}})",
+    "actionButton": "병합하기",
+    "removeFile": "삭제"
+  },
+  "rotate": {
+    "title": "PDF 회전",
+    "dropzone": "PDF 파일을 드래그하거나 클릭하여 선택하세요",
+    "selectedFile": "선택된 파일: {{fileName}}",
+    "rotationRange": "회전 범위",
+    "allPages": "전체 페이지",
+    "selectedPages": "선택한 페이지",
+    "pageRange": "페이지 범위",
+    "pageRangePlaceholder": "예: 1-3,5,7-9",
+    "includeUnspecified": "지정하지 않은 페이지 포함하기",
+    "rotationAngle": "회전 각도",
+    "degrees": {
+      "90": "90도",
+      "180": "180도",
+      "270": "270도"
+    },
+    "actionButton": "회전하기"
+  },
+  "convertToPdf": {
+    "title": "PDF로 변환",
+    "formatSelection": "변환할 형식 선택",
+    "formats": {
+      "txt": "Text (TXT)",
+      "html": "HTML",
+      "image": "이미지"
+    },
+    "dropzone": "파일을 드래그하거나 클릭하여 선택하세요",
+    "supportedFormats": "지원 형식: {{formats}}",
+    "multiSelectHint": "(여러 장 선택 가능)",
+    "selectedFile": "선택된 파일: {{fileName}}",
+    "selectedImages": "선택된 이미지: {{count}}장",
+    "actionButton": "PDF로 변환하기"
+  },
+  "convertFromPdf": {
+    "title": "다른 형식으로 변환",
+    "dropzone": "PDF 파일을 드래그하거나 클릭하여 선택하세요",
+    "supportedFormats": "변환 가능: Word, JPG, PNG",
+    "selectedFile": "선택된 파일: {{fileName}}",
+    "formatSelection": "변환할 형식 선택",
+    "formats": {
+      "docx": "Word (DOCX)",
+      "jpg": "이미지 (JPG)",
+      "png": "이미지 (PNG)"
+    },
+    "note": "* PDF를 이미지로 변환 시 각 페이지가 개별 이미지 파일로 저장됩니다"
+  }
+}

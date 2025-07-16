@@ -1,0 +1,11 @@
+{
+  "split": "分割",
+  "merge": "結合",
+  "rotate": "回転",
+  "watermark": "ウォーターマーク",
+  "convertToPdf": "PDFに変換",
+  "convertFromPdf": "PDFから変換",
+  "security": "セキュリティ",
+  "seletedFile": "選択したファイル: {{fileName}}",
+  "selectedImg": "選択した画像: {{count}}"
+}

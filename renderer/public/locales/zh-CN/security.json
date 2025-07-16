@@ -1,0 +1,10 @@
+{
+  "title": "PDF安全",
+  "dropzone": "拖拽PDF文件或点击选择",
+  "selectedFile": "已选择文件：{{file}}",
+  "encrypt": "加密",
+  "decrypt": "解密",
+  "password": "密码",
+  "encryptAction": "加密",
+  "decryptAction": "解密"
+}

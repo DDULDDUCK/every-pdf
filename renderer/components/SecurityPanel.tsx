@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PDFDropzone from './PDFDropzone';
+import { useTranslation } from 'next-i18next';
 
 interface SecurityPanelProps {
   selectedFile: File | null;
@@ -19,6 +20,7 @@ export default function SecurityPanel({
   setMode
 }: SecurityPanelProps) {
   const [password, setPassword] = useState('');
+  const { t } = useTranslation('security');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function SecurityPanel({
   return (
     <div className="w-72 p-4 rounded-lg flex flex-col gap-4 overflow-y-auto bg-panel-bg theme-transition">
       <div className="p-4 rounded-lg shadow-sm bg-card-bg theme-transition">
-        <h3 className="text-lg font-semibold mb-4 text-text theme-transition">PDF 보안</h3>
+        <h3 className="text-lg font-semibold mb-4 text-text theme-transition">{t('title', 'PDF 보안')}</h3>
         <div className="space-y-3">
           <PDFDropzone
             onDrop={files => files[0] && onFileSelect([files[0]])}
@@ -43,14 +45,14 @@ export default function SecurityPanel({
             accept=".pdf"
           >
             <div className="text-button-text text-center text-sm">
-              PDF 파일을 드래그하거나 클릭하여 선택하세요
+              {t('dropzone', 'PDF 파일을 드래그하거나 클릭하여 선택하세요')}
             </div>
           </PDFDropzone>
 
           {selectedFile && (
             <div className="panel-selected-file">
               <p className="panel-selected-file-text" title={selectedFile.name}>
-                선택된 파일: {selectedFile.name}
+                {t('selectedFile', { file: selectedFile.name, defaultValue: '선택된 파일: {{file}}' })}
               </p>
             </div>
           )}
@@ -64,7 +66,7 @@ export default function SecurityPanel({
               }`}
               onClick={() => setMode('encrypt')}
             >
-              암호화
+              {t('encrypt', '암호화')}
             </button>
             <button
               className={`px-4 py-2 rounded-lg font-medium theme-transition ${
@@ -74,7 +76,7 @@ export default function SecurityPanel({
               }`}
               onClick={() => setMode('decrypt')}
             >
-              복호화
+              {t('decrypt', '복호화')}
             </button>
           </div>
 
@@ -84,7 +86,7 @@ export default function SecurityPanel({
                 htmlFor="password"
                 className="block text-sm font-medium mb-1 text-text theme-transition"
               >
-                비밀번호
+                {t('password', '비밀번호')}
               </label>
               <input
                 type="password"
@@ -105,7 +107,9 @@ export default function SecurityPanel({
                   : 'bg-primary text-button-text-selected cursor-pointer'
               }`}
             >
-              {mode === 'encrypt' ? '암호화하기' : '복호화하기'}
+              {mode === 'encrypt'
+                ? t('encryptAction', '암호화하기')
+                : t('decryptAction', '복호화하기')}
             </button>
           </form>
         </div>

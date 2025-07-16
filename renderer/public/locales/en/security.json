@@ -1,0 +1,10 @@
+{
+  "title": "PDF Security",
+  "dropzone": "Drag and drop a PDF file or click to select",
+  "selectedFile": "Selected file: {{file}}",
+  "encrypt": "Encrypt",
+  "decrypt": "Decrypt",
+  "password": "Password",
+  "encryptAction": "Encrypt",
+  "decryptAction": "Decrypt"
+}

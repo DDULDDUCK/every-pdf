@@ -1,0 +1,33 @@
+{
+  "pageTitle": "PDF Studio - 文档编辑工具",
+  "noFileSelected": "未选择PDF文件",
+  "split": {
+    "processing": "正在拆分PDF...",
+    "success": "PDF拆分完成！",
+    "error": "请选择一个文件"
+  },
+  "merge": {
+    "processing": "正在合并PDF...",
+    "success": "PDF合并完成！",
+    "error": "请选择至少两个PDF文件进行合并"
+  },
+  "rotate": {
+    "processing": "正在旋转PDF...",
+    "success": "PDF旋转完成！"
+  },
+  "convert": {
+    "toPdf": "正在将文件转换为PDF...",
+    "fromPdf": "正在转换PDF...",
+    "success": "转换完成！"
+  },
+  "security": {
+    "encrypt": "正在加密PDF...",
+    "decrypt": "正在解密PDF...",
+    "success": "安全处理完成！"
+  },
+  "watermark": {
+    "processing": "正在添加水印...",
+    "success": "水印添加完成！"
+  },
+  "error": "发生未知错误"
+}

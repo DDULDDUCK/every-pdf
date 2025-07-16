@@ -4,8 +4,12 @@ import Head from 'next/head';
 import ThemePanel from '../components/ThemePanel';
 import ActionButtons from '../components/ActionButtons';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
+import { useTranslation } from "react-i18next";
 
 export default function WelcomePage() {
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  // i18n 초기화
+  const { t, i18n } = useTranslation("welcome");
   const router = useRouter();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
@@ -44,23 +48,76 @@ export default function WelcomePage() {
   return (
     <>
       <Head>
-        <title>PDF Studio - 시작 화면</title>
+        <title>{t("pageTitle")}</title>
       </Head>
       <div className="app-container min-h-screen flex flex-col">
         <header className="py-6 px-8 border-b border-border theme-transition">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-text theme-transition">PDF Studio</h1>
+            <h1 className="text-3xl font-bold text-text theme-transition">{t("mainHeading")}</h1>
             <div className="flex gap-4">
-              <BuyMeCoffeeButton />
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <button
+                    onClick={() => setIsLangOpen(!isLangOpen)}
+                    className="flex items-center gap-1 px-3 py-1 rounded-md bg-card-bg hover:bg-card-hover text-text theme-transition"
+                  >
+                    {i18n.language === 'ko' && '🇰🇷'}
+                    {i18n.language === 'ja' && '🇯🇵'}
+                    {i18n.language === 'en' && '🇺🇸'}
+                    {i18n.language === 'zh-CN' && '🇨🇳'}
+                    <span className="text-sm font-medium">
+                      {i18n.language === 'ko' && '한국어'}
+                      {i18n.language === 'ja' && '日本語'}
+                      {i18n.language === 'en' && 'English'}
+                      {i18n.language === 'zh-CN' && '中文'}
+                    </span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isLangOpen && (
+                    <div className="absolute right-0 w-40 rounded-md shadow-lg bg-card-bg border border-border z-10"
+                         onMouseLeave={() => setIsLangOpen(false)}>
+                    <div className="py-1">
+                      <button
+                        onClick={() => i18n.changeLanguage('ko')}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
+                      >
+                        🇰🇷 한국어
+                      </button>
+                      <button
+                        onClick={() => i18n.changeLanguage('ja')}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
+                      >
+                        🇯🇵 日本語
+                      </button>
+                      <button
+                        onClick={() => i18n.changeLanguage('en')}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
+                      >
+                        🇺🇸 English
+                      </button>
+                      <button
+                        onClick={() => i18n.changeLanguage('zh-CN')}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
+                      >
+                        🇨🇳 中文
+                      </button>
+                    </div>
+                  </div>
+                  )}
+                </div>
+                <BuyMeCoffeeButton />
+              </div>
             </div>
           </div>
         </header>
 
         <main className="flex-1 flex flex-col items-center justify-center p-8 gap-12">
           <div className="text-center mb-4">
-            <h2 className="text-4xl font-bold text-text mb-4 theme-transition">PDF 작업 도구</h2>
+            <h2 className="text-4xl font-bold text-text mb-4 theme-transition">{t("mainHeading")}</h2>
             <p className="text-xl text-button-text theme-transition">
-              PDF 파일에 대한 다양한 작업을 쉽고 빠르게 처리할 수 있습니다.
+              {t("description")}
             </p>
           </div>
 
@@ -68,9 +125,9 @@ export default function WelcomePage() {
             <ThemePanel currentTheme={theme} onThemeChange={handleThemeChange} />
             
             <div className="bg-card-bg p-6 rounded-lg shadow-md theme-transition">
-              <h3 className="text-xl font-bold mb-4 text-text theme-transition">작업 시작하기</h3>
+              <h3 className="text-xl font-bold mb-4 text-text theme-transition">{t("sectionTitle")}</h3>
               <p className="text-button-text mb-4 theme-transition">
-                원하는 작업을 선택하여 시작하세요.
+                {t("sectionDescription")}
               </p>
               <div className="flex flex-col gap-3">
                 <ActionButtons
@@ -83,7 +140,7 @@ export default function WelcomePage() {
         </main>
         
         <footer className="py-4 px-8 text-center text-button-text text-sm theme-transition">
-          &copy; {new Date().getFullYear()} DDULDDUCK. All rights reserved.
+          {t("footerText", { year: new Date().getFullYear() })}
         </footer>
       </div>
     </>

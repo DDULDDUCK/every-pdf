@@ -1,0 +1,11 @@
+{
+  "split": "拆分",
+  "merge": "合并",
+  "rotate": "旋转",
+  "watermark": "水印",
+  "convertToPdf": "转换为PDF",
+  "convertFromPdf": "从PDF转换",
+  "security": "安全",
+  "seletedFile": "已选择文件：{{fileName}}",
+  "selectedImg": "已选择图片：{{count}}"
+}

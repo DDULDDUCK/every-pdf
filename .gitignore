@@ -11,3 +11,5 @@ next-env.d.ts
 # build
 /app
 dist
+
+venv

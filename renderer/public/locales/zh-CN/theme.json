@@ -1,0 +1,12 @@
+{
+    "title" : "主题设置",
+    "description" : {
+        "light": "设置为浅色主题。",
+        "dark": "设置为深色主题。"
+    },
+    "theme": {
+        "light": "浅色模式",
+        "dark": "深色模式"
+    },   
+    "usestate" : "使用中"
+}

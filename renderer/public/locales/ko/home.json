@@ -1,0 +1,33 @@
+{
+  "pageTitle": "PDF Studio - 문서 편집 도구",
+  "noFileSelected": "선택된 PDF 파일이 없습니다",
+  "split": {
+    "processing": "PDF 분할 중...",
+    "success": "PDF 분할 완료!",
+    "error": "파일을 선택해주세요"
+  },
+  "merge": {
+    "processing": "PDF 병합 중...", 
+    "success": "PDF 병합 완료!",
+    "error": "병합할 PDF 파일을 2개 이상 선택해주세요"
+  },
+  "rotate": {
+    "processing": "PDF 회전 중...",
+    "success": "PDF 회전 완료!"
+  },
+  "convert": {
+    "toPdf": "파일을 PDF로 변환 중...",
+    "fromPdf": "PDF 변환 중...",
+    "success": "변환 완료!"
+  },
+  "security": {
+    "encrypt": "PDF 암호화 중...",
+    "decrypt": "PDF 복호화 중...",
+    "success": "보안 처리 완료!"
+  },
+  "watermark": {
+    "processing": "워터마크 적용 중...",
+    "success": "워터마크 적용 완료!"
+  },
+  "error": "알 수 없는 오류가 발생했습니다"
+}

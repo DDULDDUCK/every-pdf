@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SecurityPanel from './SecurityPanel';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import PDFDropzone from './PDFDropzone';
@@ -42,6 +43,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
   selectedFormat,
   onFormatSelect,
 }) => {
+  const { t } = useTranslation('tools');
   const [pages, setPages] = React.useState('');
   const [rotationPages, setRotationPages] = React.useState('');
   const [rotationAngle, setRotationAngle] = React.useState(90);
@@ -65,7 +67,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
     <div className="w-72 bg-panel-bg p-4 rounded-lg flex flex-col gap-4 overflow-y-auto theme-transition">
       {selectedAction === 'split' && (
         <div className="bg-card-bg p-4 rounded-lg shadow-sm theme-transition">
-          <h3 className="panel-title">PDF 분할</h3>
+          <h3 className="panel-title">{t('split.title')}</h3>
           <div className="panel-section">
             <PDFDropzone
               onDrop={files => files[0] && onFileSelect([files[0]])}
@@ -74,24 +76,24 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               multiple={false}
             >
               <div className="text-button-text text-center text-sm">
-                PDF 파일을 드래그하거나 클릭하여 선택하세요
+                {t('split.dropzone')}
               </div>
             </PDFDropzone>
 
             {selectedFile && (
               <div className="panel-selected-file">
                 <p className="panel-selected-file-text">
-                  선택된 파일: {selectedFile.name}
+                  {t('split.selectedFile', { fileName: selectedFile.name })}
                 </p>
               </div>
             )}
 
-            <label className="panel-label">페이지 범위</label>
+            <label className="panel-label">{t('split.pageRange')}</label>
             <input
               type="text"
               value={pages}
               onChange={(e) => setPages(e.target.value)}
-              placeholder="예: 1-3,5,7-9"
+              placeholder={t('split.pageRangePlaceholder')}
               className="form-input w-full"
             />
             <button
@@ -99,7 +101,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               disabled={isProcessing || !pages || !selectedFile}
               className={`${isProcessing || !pages || !selectedFile ? 'disabled-action-button' : 'primary-action-button'}`}
             >
-              분할하기
+              {t('split.actionButton')}
             </button>
           </div>
         </div>
@@ -107,7 +109,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
 
       {selectedAction === 'merge' && (
         <div className="bg-card-bg p-4 rounded-lg shadow-sm theme-transition">
-          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">PDF 병합</h3>
+          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">{t('merge.title')}</h3>
           <div className="space-y-3">
             <PDFDropzone
               onDrop={files => onFileSelect([...selectedFiles, ...files])}
@@ -116,15 +118,15 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               multiple={true}
             >
               <div className="text-button-text text-center text-sm">
-                PDF 파일을 드래그하거나 클릭하여 선택하세요<br />
-                <span className="text-xs">(Shift 키를 누른 채로 여러 파일 선택 가능)</span>
+                {t('merge.dropzone')}<br />
+                <span className="text-xs">{t('merge.multiSelectHint')}</span>
               </div>
             </PDFDropzone>
 
             {selectedFiles.length > 0 && (
               <div className="mt-4 space-y-2">
                 <h4 className="text-sm text-text theme-transition">
-                  선택된 파일 ({selectedFiles.length})
+                  {t('merge.selectedFiles', { count: selectedFiles.length })}
                 </h4>
                 <DragDropContext
                   onDragEnd={(result: DropResult) => {
@@ -180,7 +182,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                            hover:bg-primary-hover disabled:bg-button-bg disabled:text-button-text
                            disabled:cursor-not-allowed transition-colors duration-200 theme-transition"
                 >
-                  병합하기
+                  {t('merge.actionButton')}
                 </button>
               </div>
             )}
@@ -190,7 +192,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
 
       {selectedAction === 'rotate' && (
         <div className="bg-card-bg p-4 rounded-lg shadow-sm theme-transition">
-          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">PDF 회전</h3>
+          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">{t('rotate.title')}</h3>
           <div className="space-y-3">
             <PDFDropzone
               onDrop={files => files[0] && onFileSelect([files[0]])}
@@ -199,21 +201,21 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               multiple={false}
             >
               <div className="text-button-text text-center text-sm">
-                PDF 파일을 드래그하거나 클릭하여 선택하세요
+                {t('rotate.dropzone')}
               </div>
             </PDFDropzone>
 
             {selectedFile && (
               <div className="p-2 bg-primary/10 rounded-md theme-transition">
                 <p className="text-sm text-primary truncate theme-transition" title={selectedFile.name}>
-                  선택된 파일: {selectedFile.name}
+                  {t('rotate.selectedFile', { fileName: selectedFile.name })}
                 </p>
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-text mb-2 theme-transition">회전 범위</label>
+                <label className="block text-sm text-text mb-2 theme-transition">{t('rotate.rotationRange')}</label>
                 <div className="space-y-2">
                   <label className="flex items-center">
                     <input
@@ -223,7 +225,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                       onChange={(e) => setRotationType(e.target.value as 'all')}
                       className="mr-2"
                     />
-                    <span className="text-sm text-text theme-transition">전체 페이지</span>
+                    <span className="text-sm text-text theme-transition">{t('rotate.allPages')}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -233,19 +235,19 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                       onChange={(e) => setRotationType(e.target.value as 'selected')}
                       className="mr-2"
                     />
-                    <span className="text-sm text-text theme-transition">선택한 페이지</span>
+                    <span className="text-sm text-text theme-transition">{t('rotate.selectedPages')}</span>
                   </label>
                 </div>
               </div>
 
               {rotationType === 'selected' && (
                 <div>
-                  <label className="block text-sm text-text mb-1 theme-transition">페이지 범위</label>
+                  <label className="block text-sm text-text mb-1 theme-transition">{t('rotate.pageRange')}</label>
                   <input
                     type="text"
                     value={rotationPages}
                     onChange={(e) => setRotationPages(e.target.value)}
-                    placeholder="예: 1-3,5,7-9"
+                    placeholder={t('rotate.pageRangePlaceholder')}
                     className="form-input w-full"
                   />
                   <div className="mt-2">
@@ -256,22 +258,22 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                         onChange={(e) => setIncludeUnspecified(e.target.checked)}
                         className="mr-2"
                       />
-                      <span className="text-sm text-text theme-transition">지정하지 않은 페이지 포함하기</span>
+                      <span className="text-sm text-text theme-transition">{t('rotate.includeUnspecified')}</span>
                     </label>
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm text-text mb-1 theme-transition">회전 각도</label>
+                <label className="block text-sm text-text mb-1 theme-transition">{t('rotate.rotationAngle')}</label>
                 <select
                   value={rotationAngle}
                   onChange={(e) => setRotationAngle(Number(e.target.value))}
                   className="form-select w-full"
                 >
-                  <option value={90}>90도</option>
-                  <option value={180}>180도</option>
-                  <option value={270}>270도</option>
+                  <option value={90}>{t('rotate.degrees.90')}</option>
+                  <option value={180}>{t('rotate.degrees.180')}</option>
+                  <option value={270}>{t('rotate.degrees.270')}</option>
                 </select>
               </div>
 
@@ -286,7 +288,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                           hover:bg-blue-600 disabled:bg-button-bg disabled:text-button-text
                           disabled:cursor-not-allowed transition-colors duration-200 theme-transition"
               >
-                회전하기
+                {t('rotate.actionButton')}
               </button>
             </div>
           </div>
@@ -295,11 +297,11 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
 
       {selectedAction === 'convert-to-pdf' && (
         <div className="bg-card-bg p-4 rounded-lg shadow-sm theme-transition">
-          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">PDF로 변환</h3>
+          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">{t('convertToPdf.title')}</h3>
           <div className="space-y-3">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-text mb-3 theme-transition">변환할 형식 선택</label>
+                <label className="block text-sm font-medium text-text mb-3 theme-transition">{t('convertToPdf.formatSelection')}</label>
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     className={`px-4 py-3 rounded-lg flex flex-col items-center justify-center transition-all ${
@@ -311,7 +313,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={isProcessing}
                   >
                     <span className="text-lg mb-1">📝</span>
-                    <span className="font-medium">Text (TXT)</span>
+                    <span className="font-medium">{t('convertToPdf.formats.txt')}</span>
                   </button>
                   <button
                     className={`px-4 py-3 rounded-lg flex flex-col items-center justify-center transition-all ${
@@ -323,7 +325,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={isProcessing}
                   >
                     <span className="text-lg mb-1">🌐</span>
-                    <span className="font-medium">HTML</span>
+                    <span className="font-medium">{t('convertToPdf.formats.html')}</span>
                   </button>
                   <button
                     className={`px-4 py-3 rounded-lg flex flex-col items-center justify-center transition-all ${
@@ -335,7 +337,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={isProcessing}
                   >
                     <span className="text-lg mb-1">🖼️</span>
-                    <span className="font-medium">이미지</span>
+                    <span className="font-medium">{t('convertToPdf.formats.image')}</span>
                   </button>
                 </div>
               </div>
@@ -362,16 +364,16 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     }
                   >
                     <div className="text-button-text text-center text-sm">
-                      <p>파일을 드래그하거나 클릭하여 선택하세요</p>
+                      <p>{t('convertToPdf.dropzone')}</p>
                       <p className="text-xs mt-1">
-                        지원 형식: {
-                          selectedFormat === 'txt' ? 'TXT' :
-                          selectedFormat === 'html' ? 'HTML' :
-                          'JPG, JPEG, PNG'
-                        }
+                         {t('convertToPdf.supportedFormats', {
+                           formats: selectedFormat === 'txt' ? t('convertToPdf.formats.txt') :
+                           selectedFormat === 'html' ? t('convertToPdf.formats.html') :
+                           t('convertToPdf.formats.image')
+                         })}
                       </p>
                       {selectedFormat === 'image' && (
-                        <p className="text-xs mt-1">(여러 장 선택 가능)</p>
+                        <p className="text-xs mt-1">{t('convertToPdf.multiSelectHint')}</p>
                       )}
                     </div>
                   </PDFDropzone>
@@ -381,11 +383,11 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     <div className="panel-selected-file">
                       {selectedFormat !== 'image' ? (
                         <p className="panel-selected-file-text" title={selectedFile?.name}>
-                          선택된 파일: {selectedFile?.name}
+                          {t('convertToPdf.selectedFile', { fileName: selectedFile?.name })}
                         </p>
                       ) : (
                         <p className="panel-selected-file-text">
-                          선택된 이미지: {selectedFiles.length}장
+                          {t('convertToPdf.selectedImages', { count: selectedFiles.length })}
                         </p>
                       )}
                     </div>
@@ -394,7 +396,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                   {/* 이미지 목록 표시 */}
                   {selectedFormat === 'image' && selectedFiles.length > 0 && (
                     <div className="mt-2 mb-4">
-                      <h4 className="text-sm font-medium text-text mb-2 theme-transition">선택된 이미지</h4>
+                      <h4 className="text-sm font-medium text-text mb-2 theme-transition">{t('convertToPdf.selectedImages', { count: selectedFiles.length })}</h4>
                       <div>
                         <DragDropContext
                           onDragEnd={(result: DropResult) => {
@@ -463,7 +465,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                       (selectedFormat === 'image' ? selectedFiles.length === 0 : !selectedFile)
                     }
                   >
-                    PDF로 변환하기
+                    {t('convertToPdf.actionButton')}
                   </button>
                 </div>
               )}
@@ -474,7 +476,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
 
       {selectedAction === 'convert-from-pdf' && (
         <div className="bg-card-bg p-4 rounded-lg shadow-sm theme-transition">
-          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">다른 형식으로 변환</h3>
+          <h3 className="text-lg font-semibold text-text mb-4 theme-transition">{t('convertFromPdf.title')}</h3>
           <div className="space-y-3">
             <PDFDropzone
               onDrop={files => files[0] && onFileSelect([files[0]])}
@@ -484,22 +486,22 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
               accept=".pdf"
             >
               <div className="text-button-text text-center text-sm">
-                <p>PDF 파일을 드래그하거나 클릭하여 선택하세요</p>
-                <p className="text-xs mt-1">변환 가능: Word, JPG, PNG</p>
+                <p>{t('convertFromPdf.dropzone')}</p>
+               <p className="text-xs mt-1">{t('convertFromPdf.supportedFormats')}</p>
               </div>
             </PDFDropzone>
 
             {selectedFile && (
               <div className="p-2 bg-primary/10 rounded-md mb-4 theme-transition">
                 <p className="text-sm text-primary truncate theme-transition" title={selectedFile.name}>
-                  선택된 파일: {selectedFile.name}
+                  {t('convertFromPdf.selectedFile', { fileName: selectedFile.name })}
                 </p>
               </div>
             )}
 
             {selectedFile && (
               <div className="space-y-4 mt-4">
-                <label className="block text-sm font-medium text-text mb-2 theme-transition">변환할 형식 선택</label>
+                <label className="block text-sm font-medium text-text mb-2 theme-transition">{t('convertFromPdf.formatSelection')}</label>
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     className="p-3 rounded-lg flex flex-col items-center justify-center
@@ -510,8 +512,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={!selectedFile || !selectedFile.name.toLowerCase().endsWith('.pdf') || isProcessing}
                   >
                     <span className="text-lg mb-1">📄</span>
-                    <span className="font-medium">Word</span>
-                    <span className="text-xs text-button-text">(DOCX)</span>
+                    <span className="font-medium">{t('convertFromPdf.formats.docx')}</span>
                   </button>
                   
                   <button
@@ -523,8 +524,7 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={!selectedFile || !selectedFile.name.toLowerCase().endsWith('.pdf') || isProcessing}
                   >
                     <span className="text-lg mb-1">🖼️</span>
-                    <span className="font-medium">이미지</span>
-                    <span className="text-xs text-button-text">(JPG)</span>
+                    <span className="font-medium">{t('convertFromPdf.formats.jpg')}</span>
                   </button>
                   
                   <button
@@ -536,13 +536,12 @@ const ToolPanel: React.FC<ToolPanelProps> = ({
                     disabled={!selectedFile || !selectedFile.name.toLowerCase().endsWith('.pdf') || isProcessing}
                   >
                     <span className="text-lg mb-1">🖼️</span>
-                    <span className="font-medium">이미지</span>
-                    <span className="text-xs text-button-text">(PNG)</span>
+                    <span className="font-medium">{t('convertFromPdf.formats.png')}</span>
                   </button>
                 </div>
                 
                 <div className="pt-2 mt-2 border-t border-border theme-transition"></div>
-                  <p className="text-xs text-button-text mb-2">* PDF를 이미지로 변환 시 각 페이지가 개별 이미지 파일로 저장됩니다</p>
+                  <p className="text-xs text-button-text mb-2">{t('convertFromPdf.note')}</p>
                 </div>
             )}
           </div>

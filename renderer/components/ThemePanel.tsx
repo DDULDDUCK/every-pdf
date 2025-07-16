@@ -1,14 +1,15 @@
 import React from 'react';
-
+import { useTranslation } from "react-i18next";
 interface ThemePanelProps {
   currentTheme: 'light' | 'dark';
   onThemeChange: (theme: 'light' | 'dark') => void;
 }
 
 export default function ThemePanel({ currentTheme, onThemeChange }: ThemePanelProps) {
+  const { t } = useTranslation("theme");
   return (
     <div className="p-6 bg-card-bg text-text rounded-lg shadow-md theme-transition">
-      <h2 className="text-xl font-bold mb-4 text-text">테마 설정</h2>
+      <h2 className="text-xl font-bold mb-4 text-text">{t('title')}</h2>
       <div className="space-y-4">
         <div 
           className={`flex items-center justify-between p-3 rounded cursor-pointer transition-colors
@@ -25,13 +26,13 @@ export default function ThemePanel({ currentTheme, onThemeChange }: ThemePanelPr
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-text">라이트 모드</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">밝은 테마로 설정합니다</p>
+              <h3 className="font-medium text-text">{t('theme.light')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('description.light')}</p>
             </div>
           </div>
           <div className="flex items-center">
             {currentTheme === 'light' && (
-              <span className="mr-2 text-sm font-medium text-primary">사용 중</span>
+              <span className="mr-2 text-sm font-medium text-primary">{t('usestate')}</span>
             )}
             <div className={`w-4 h-4 rounded-full ${currentTheme === 'light' ? 'bg-primary' : 'bg-button-bg'}`} />
           </div>
@@ -52,13 +53,13 @@ export default function ThemePanel({ currentTheme, onThemeChange }: ThemePanelPr
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-text">다크 모드</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">어두운 테마로 설정합니다</p>
+              <h3 className="font-medium text-text">{t('theme.dark')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('description.dark')}</p>
             </div>
           </div>
           <div className="flex items-center">
             {currentTheme === 'dark' && (
-              <span className="mr-2 text-sm font-medium text-primary">사용 중</span>
+              <span className="mr-2 text-sm font-medium text-primary">{t('usestate')}</span>
             )}
             <div className={`w-4 h-4 rounded-full ${currentTheme === 'dark' ? 'bg-primary' : 'bg-button-bg'}`} />
           </div>

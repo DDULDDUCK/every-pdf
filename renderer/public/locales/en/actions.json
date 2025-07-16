@@ -1,0 +1,11 @@
+{
+  "split": "split",
+  "merge": "merge", 
+  "rotate": "rotate",
+  "watermark": "watermark",
+  "convertToPdf": "convert to PDF",
+  "convertFromPdf": "convert from PDF",
+  "security": "security",
+  "seletedFile": "Selected file: {{fileName}}",
+  "selectedImg": "Selected images: {{count}}"
+}

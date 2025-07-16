@@ -1,0 +1,64 @@
+{
+  "split": {
+    "title": "PDFを分割",
+    "dropzone": "PDFファイルをドラッグ＆ドロップまたはクリックして選択",
+    "selectedFile": "選択されたファイル: {{fileName}}",
+    "pageRange": "ページ範囲",
+    "pageRangePlaceholder": "例: 1-3,5,7-9",
+    "actionButton": "分割"
+  },
+  "merge": {
+    "title": "PDFを結合",
+    "dropzone": "PDFファイルをドラッグ＆ドロップまたはクリックして選択",
+    "multiSelectHint": "（Shiftを押しながら複数選択可能）",
+    "selectedFiles": "選択されたファイル（{{count}}）",
+    "actionButton": "結合",
+    "removeFile": "削除"
+  },
+  "rotate": {
+    "title": "PDFを回転",
+    "dropzone": "PDFファイルをドラッグ＆ドロップまたはクリックして選択",
+    "selectedFile": "選択されたファイル: {{fileName}}",
+    "rotationRange": "回転範囲",
+    "allPages": "全ページ",
+    "selectedPages": "選択したページ",
+    "pageRange": "ページ範囲",
+    "pageRangePlaceholder": "例: 1-3,5,7-9",
+    "includeUnspecified": "未指定ページを含む",
+    "rotationAngle": "回転角度",
+    "degrees": {
+      "90": "90°",
+      "180": "180°",
+      "270": "270°"
+    },
+    "actionButton": "回転"
+  },
+  "convertToPdf": {
+    "title": "PDFに変換",
+    "formatSelection": "変換するフォーマットを選択",
+    "formats": {
+      "txt": "テキスト（TXT）",
+      "html": "HTML",
+      "image": "画像"
+    },
+    "dropzone": "ファイルをドラッグ＆ドロップまたはクリックして選択",
+    "supportedFormats": "対応フォーマット: {{formats}}",
+    "multiSelectHint": "（複数選択可能）",
+    "selectedFile": "選択されたファイル: {{fileName}}",
+    "selectedImages": "選択された画像: {{count}}",
+    "actionButton": "PDFに変換"
+  },
+  "convertFromPdf": {
+    "title": "他のフォーマットに変換",
+    "dropzone": "PDFファイルをドラッグ＆ドロップまたはクリックして選択",
+    "supportedFormats": "変換可能: Word, JPG, PNG",
+    "selectedFile": "選択されたファイル: {{fileName}}",
+    "formatSelection": "変換するフォーマットを選択",
+    "formats": {
+      "docx": "Word（DOCX）",
+      "jpg": "画像（JPG）",
+      "png": "画像（PNG）"
+    },
+    "note": "* PDFを画像に変換する場合、各ページが別々の画像ファイルとして保存されます"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "title" : "Theme settings",
+    "description" : {
+        "light": "Set to light theme.",
+        "dark": "Set to dark theme."
+    },
+    "theme": {
+        "light": "Light mode",
+        "dark": "Dark mode"
+    },   
+    "usestate" : "In use"
+}

@@ -1,0 +1,64 @@
+{
+  "split": {
+    "title": "Split PDF",
+    "dropzone": "Drag and drop a PDF file or click to select",
+    "selectedFile": "Selected file: {{fileName}}",
+    "pageRange": "Page range",
+    "pageRangePlaceholder": "e.g. 1-3,5,7-9",
+    "actionButton": "Split"
+  },
+  "merge": {
+    "title": "Merge PDF",
+    "dropzone": "Drag and drop PDF files or click to select",
+    "multiSelectHint": "(Hold Shift to select multiple files)",
+    "selectedFiles": "Selected files ({{count}})",
+    "actionButton": "Merge",
+    "removeFile": "Remove"
+  },
+  "rotate": {
+    "title": "Rotate PDF",
+    "dropzone": "Drag and drop a PDF file or click to select",
+    "selectedFile": "Selected file: {{fileName}}",
+    "rotationRange": "Rotation range",
+    "allPages": "All pages",
+    "selectedPages": "Selected pages",
+    "pageRange": "Page range",
+    "pageRangePlaceholder": "e.g. 1-3,5,7-9",
+    "includeUnspecified": "Include unspecified pages",
+    "rotationAngle": "Rotation angle",
+    "degrees": {
+      "90": "90°",
+      "180": "180°",
+      "270": "270°"
+    },
+    "actionButton": "Rotate"
+  },
+  "convertToPdf": {
+    "title": "Convert to PDF",
+    "formatSelection": "Select format to convert",
+    "formats": {
+      "txt": "Text (TXT)",
+      "html": "HTML",
+      "image": "Image"
+    },
+    "dropzone": "Drag and drop files or click to select",
+    "supportedFormats": "Supported formats: {{formats}}",
+    "multiSelectHint": "(Multiple selection available)",
+    "selectedFile": "Selected file: {{fileName}}",
+    "selectedImages": "Selected images: {{count}}",
+    "actionButton": "Convert to PDF"
+  },
+  "convertFromPdf": {
+    "title": "Convert to Other Formats",
+    "dropzone": "Drag and drop a PDF file or click to select",
+    "supportedFormats": "Available conversions: Word, JPG, PNG",
+    "selectedFile": "Selected file: {{fileName}}",
+    "formatSelection": "Select format to convert",
+    "formats": {
+      "docx": "Word (DOCX)",
+      "jpg": "Image (JPG)",
+      "png": "Image (PNG)"
+    },
+    "note": "* When converting PDF to images, each page will be saved as a separate image file"
+  }
+}

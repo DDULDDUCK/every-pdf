@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface FileSelectionMessageProps {
   file: File | null;
@@ -13,17 +14,19 @@ const FileSelectionMessage: React.FC<FileSelectionMessageProps> = ({
   format,
   className = ''
 }) => {
+  const { t } = useTranslation();
+
   if (!file && (!files || files.length === 0)) return null;
 
   return (
     <div className={`panel-selected-file ${className}`}>
       {file ? (
         <p className="panel-selected-file-text" title={file.name}>
-          선택된 파일: {file.name}
+          {t('selectedFile', { fileName: file.name })}
         </p>
       ) : format === 'image' && files && files.length > 0 ? (
         <p className="panel-selected-file-text">
-          선택된 이미지: {files.length}장
+          {t('selectedImages', { count: files.length })}
         </p>
       ) : null}
     </div>

@@ -1,0 +1,33 @@
+{
+  "pageTitle": "PDFスタジオ - ドキュメント編集ツール",
+  "noFileSelected": "PDFファイルが選択されていません",
+  "split": {
+    "processing": "PDFを分割中...",
+    "success": "PDFの分割が完了しました！",
+    "error": "ファイルを選択してください"
+  },
+  "merge": {
+    "processing": "PDFを結合中...", 
+    "success": "PDFの結合が完了しました！",
+    "error": "結合するPDFファイルを2つ以上選択してください"
+  },
+  "rotate": {
+    "processing": "PDFを回転中...",
+    "success": "PDFの回転が完了しました！"
+  },
+  "convert": {
+    "toPdf": "ファイルをPDFに変換中...",
+    "fromPdf": "PDFを変換中...",
+    "success": "変換が完了しました！"
+  },
+  "security": {
+    "encrypt": "PDFを暗号化中...",
+    "decrypt": "PDFの暗号を解除中...",
+    "success": "セキュリティ処理が完了しました！"
+  },
+  "watermark": {
+    "processing": "ウォーターマークを適用中...",
+    "success": "ウォーターマークが適用されました！"
+  },
+  "error": "不明なエラーが発生しました"
+}

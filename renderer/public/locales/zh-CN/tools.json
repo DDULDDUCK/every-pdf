@@ -1,0 +1,64 @@
+{
+  "split": {
+    "title": "拆分PDF",
+    "dropzone": "拖拽PDF文件或点击选择",
+    "selectedFile": "已选择文件：{{fileName}}",
+    "pageRange": "页码范围",
+    "pageRangePlaceholder": "例如：1-3,5,7-9",
+    "actionButton": "拆分"
+  },
+  "merge": {
+    "title": "合并PDF",
+    "dropzone": "拖拽PDF文件或点击选择",
+    "multiSelectHint": "（按住Shift可多选）",
+    "selectedFiles": "已选择文件（{{count}}）",
+    "actionButton": "合并",
+    "removeFile": "移除"
+  },
+  "rotate": {
+    "title": "旋转PDF",
+    "dropzone": "拖拽PDF文件或点击选择",
+    "selectedFile": "已选择文件：{{fileName}}",
+    "rotationRange": "旋转范围",
+    "allPages": "全部页面",
+    "selectedPages": "选择页面",
+    "pageRange": "页码范围",
+    "pageRangePlaceholder": "例如：1-3,5,7-9",
+    "includeUnspecified": "包含未指定页面",
+    "rotationAngle": "旋转角度",
+    "degrees": {
+      "90": "90°",
+      "180": "180°",
+      "270": "270°"
+    },
+    "actionButton": "旋转"
+  },
+  "convertToPdf": {
+    "title": "转换为PDF",
+    "formatSelection": "选择要转换的格式",
+    "formats": {
+      "txt": "文本（TXT）",
+      "html": "HTML",
+      "image": "图片"
+    },
+    "dropzone": "拖拽文件或点击选择",
+    "supportedFormats": "支持格式：{{formats}}",
+    "multiSelectHint": "（可多选）",
+    "selectedFile": "已选择文件：{{fileName}}",
+    "selectedImages": "已选择图片：{{count}}",
+    "actionButton": "转换为PDF"
+  },
+  "convertFromPdf": {
+    "title": "转换为其他格式",
+    "dropzone": "拖拽PDF文件或点击选择",
+    "supportedFormats": "可转换：Word, JPG, PNG",
+    "selectedFile": "已选择文件：{{fileName}}",
+    "formatSelection": "选择要转换的格式",
+    "formats": {
+      "docx": "Word（DOCX）",
+      "jpg": "图片（JPG）",
+      "png": "图片（PNG）"
+    },
+    "note": "* 将PDF转换为图片时，每页会保存为单独的图片文件"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "title": "PDFセキュリティ",
+  "dropzone": "PDFファイルをドラッグ＆ドロップまたはクリックして選択",
+  "selectedFile": "選択されたファイル: {{file}}",
+  "encrypt": "暗号化",
+  "decrypt": "復号化",
+  "password": "パスワード",
+  "encryptAction": "暗号化",
+  "decryptAction": "復号化"
+}

@@ -1,0 +1,33 @@
+{
+  "pageTitle": "PDF Studio - Document Editing Tool",
+  "noFileSelected": "No PDF file selected",
+  "split": {
+    "processing": "Splitting PDF...",
+    "success": "PDF split completed!",
+    "error": "Please select a file"
+  },
+  "merge": {
+    "processing": "Merging PDF...", 
+    "success": "PDF merge completed!",
+    "error": "Please select at least 2 PDF files to merge"
+  },
+  "rotate": {
+    "processing": "Rotating PDF...",
+    "success": "PDF rotation completed!"
+  },
+  "convert": {
+    "toPdf": "Converting file to PDF...",
+    "fromPdf": "Converting PDF...",
+    "success": "Conversion completed!"
+  },
+  "security": {
+    "encrypt": "Encrypting PDF...",
+    "decrypt": "Decrypting PDF...",
+    "success": "Security process completed!"
+  },
+  "watermark": {
+    "processing": "Applying watermark...",
+    "success": "Watermark applied!"
+  },
+  "error": "An unknown error has occurred"
+}

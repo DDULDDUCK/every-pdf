@@ -1,0 +1,11 @@
+{
+  "split": "분할",
+  "merge": "병합", 
+  "rotate": "회전",
+  "watermark": "워터마크",
+  "convertToPdf": "PDF로 변환",
+  "convertFromPdf": "다른 형식으로 변환",
+  "security": "보안",
+  "seletedFile": "선택된 파일: {{fileName}}",
+  "selectedImg": "선택된 이미지: {{count}}장"
+}

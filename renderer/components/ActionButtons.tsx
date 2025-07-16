@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from "react-i18next";
 
 interface ActionButtonsProps {
   selectedAction: 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null;
@@ -9,14 +10,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   selectedAction,
   onActionSelect,
 }) => {
+  const { t } = useTranslation("actions");
   const buttons = [
-    { action: 'split', label: '분할' },
-    { action: 'merge', label: '병합' },
-    { action: 'rotate', label: '회전' },
-    { action: 'watermark', label: '워터마크' },
-    { action: 'convert-to-pdf', label: 'PDF로 변환' },
-    { action: 'convert-from-pdf', label: '다른 형식으로 변환' },
-    { action: 'security', label: '보안' },
+    { action: 'split', label: t('split') },
+    { action: 'merge', label: t('merge') },
+    { action: 'rotate', label: t('rotate') },
+    { action: 'watermark', label: t('watermark') },
+    { action: 'convert-to-pdf', label: t('convertToPdf') },
+    { action: 'convert-from-pdf', label: t('convertFromPdf') },
+    { action: 'security', label: t('security') },
   ] as const;
 
   return (

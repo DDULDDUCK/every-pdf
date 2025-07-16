@@ -9,6 +9,7 @@ import StatusMessage from '../components/StatusMessage';
 import WatermarkPanel from '../components/WatermarkPanel';
 import SecurityPanel from '../components/SecurityPanel';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
+import { useTranslation } from "react-i18next";
 
 interface ProcessingStatus {
   isProcessing: boolean;
@@ -17,6 +18,7 @@ interface ProcessingStatus {
 }
 
 export default function HomePage() {
+  const { t } = useTranslation(["common", "home"]);
   const router = useRouter();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
@@ -125,7 +127,7 @@ export default function HomePage() {
     if (!selectedFile) {
       setStatus({
         isProcessing: false,
-        message: '파일을 선택해주세요',
+        message: t('home:split.error'),
         type: 'error'
       });
       return;
@@ -134,7 +136,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 분할 중...',
+        message: t('home:split.processing'),
         type: 'processing'
       });
 
@@ -148,7 +150,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 분할 완료!',
+        message: t('home:split.success'),
         type: 'success'
       });
     } catch (err) {
@@ -164,7 +166,7 @@ export default function HomePage() {
     if (files.length < 2) {
       setStatus({
         isProcessing: false,
-        message: '병합할 PDF 파일을 2개 이상 선택해주세요',
+        message: t('home:merge.error'),
         type: 'error'
       });
       return;
@@ -173,7 +175,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 병합 중...',
+        message: t('home:merge.processing'),
         type: 'processing'
       });
 
@@ -187,7 +189,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 병합 완료!',
+        message: t('home:merge.success'),
         type: 'success'
       });
     } catch (err) {
@@ -203,7 +205,7 @@ export default function HomePage() {
     if (!selectedFile) {
       setStatus({
         isProcessing: false,
-        message: '파일을 선택해주세요',
+        message: t('home:split.error'),
         type: 'error'
       });
       return;
@@ -212,7 +214,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 회전 중...',
+        message: t('home:rotate.processing'),
         type: 'processing'
       });
 
@@ -226,7 +228,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 회전 완료!',
+        message: t('home:rotate.success'),
         type: 'success'
       });
     } catch (err) {
@@ -242,7 +244,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: '파일을 PDF로 변환 중...',
+        message: t('home:convert.toPdf'),
         type: 'processing'
       });
 
@@ -264,7 +266,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 변환 완료!',
+        message: t('home:convert.success'),
         type: 'success'
       });
     } catch (err) {
@@ -280,7 +282,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 변환 중...',
+        message: t('home:convert.fromPdf'),
         type: 'processing'
       });
 
@@ -326,7 +328,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: '변환 완료!',
+        message: t('home:convert.success'),
         type: 'success'
       });
     } catch (err) {
@@ -342,7 +344,7 @@ export default function HomePage() {
     if (!selectedFile) {
       setStatus({
         isProcessing: false,
-        message: '파일을 선택해주세요',
+        message: t('home:split.error'),
         type: 'error'
       });
       return;
@@ -351,7 +353,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 암호화 중...',
+        message: t('home:security.encrypt'),
         type: 'processing'
       });
 
@@ -365,7 +367,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 암호화 완료!',
+        message: t('home:security.success'),
         type: 'success'
       });
     } catch (err) {
@@ -381,7 +383,7 @@ export default function HomePage() {
     if (!selectedFile) {
       setStatus({
         isProcessing: false,
-        message: '파일을 선택해주세요',
+        message: t('home:split.error'),
         type: 'error'
       });
       return;
@@ -390,7 +392,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: 'PDF 복호화 중...',
+        message: t('home:security.decrypt'),
         type: 'processing'
       });
 
@@ -405,7 +407,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: 'PDF 복호화 완료!',
+        message: t('home:security.success'),
         type: 'success'
       });
     } catch (err) {
@@ -435,7 +437,7 @@ export default function HomePage() {
     try {
       setStatus({
         isProcessing: true,
-        message: '워터마크 적용 중...',
+        message: t('home:watermark.processing'),
         type: 'processing'
       });
 
@@ -454,7 +456,7 @@ export default function HomePage() {
 
       setStatus({
         isProcessing: false,
-        message: '워터마크 적용 완료!',
+        message: t('home:watermark.success'),
         type: 'success'
       });
     } catch (err) {
@@ -519,7 +521,7 @@ export default function HomePage() {
     return (
       <React.Fragment>
         <Head>
-          <title>PDF Studio - 문서 편집 도구</title>
+          <title>{t('home:pageTitle')}</title>
         </Head>
         <div className="app-container flex flex-col min-h-screen">
           <div className="content-card w-full flex flex-col flex-grow">
@@ -579,7 +581,7 @@ export default function HomePage() {
               <div className="flex-1 border-2 border-border rounded-lg overflow-hidden theme-transition">
                 {!pdfUrl ? (
                   <div className="h-full flex items-center justify-center text-text">
-                    선택된 PDF 파일이 없습니다
+                    {t('home:noFileSelected')}
                   </div>
                 ) : (
                   selectedFormat === 'image' ? (
