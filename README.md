@@ -70,6 +70,20 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 
 **Thank you for using PDF Studio!**
 
+## 📺 데모 미디어 (Demo Media)
+
+### 이미지 (IMAGE)
+- 환영 이미지  
+  ![Welcome](./asset/welcome.png)
+
+- 분할 기능 예시  
+  ![Split Demo](./asset/split.png)
+
+### 동영상 (MOVIE)
+
+- PDF Studio 사용 예시 (Demo video)
+  <video src="./asset/test.mov" controls width="600"></video>
+
 ***
 
 # PDF-Studio
