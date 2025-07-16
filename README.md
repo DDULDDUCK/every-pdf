@@ -81,7 +81,8 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 
 ### 동영상 (MOVIE)
 - PDF Studio 사용 예시 (Demo video)
-![Uploading demo.gif…]()
+![demo](https://github.com/user-attachments/assets/d51e5596-3274-4bcd-a8ca-b54241a85e70)
+
 
 ***
 
