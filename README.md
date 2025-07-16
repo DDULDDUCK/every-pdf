@@ -1,5 +1,3 @@
-<p align="center"><img src="https://i.imgur.com/a9QWW0v.png" width="300"></p>
-
 # PDF-Studio
 
 > Nextron(Electron + Next.js) 기반의 PDF 도구 데스크탑 애플리케이션입니다. TailwindCSS, Python 백엔드, 다양한 PDF 기능을 제공합니다.
