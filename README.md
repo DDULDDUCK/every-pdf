@@ -80,10 +80,8 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
   ![Split Demo](./asset/split.png)
 
 ### 동영상 (MOVIE)
-
 - PDF Studio 사용 예시 (Demo video)
-  [![프로젝트 데모 영상](https://github.com/DDULDDUCK/pdf-studio/tree/main/asset/welcome.png?raw=true)](https://github.com/DDULDDUCK/pdf-studio/tree/main/asset/test.mov)
-
+    ![Demo video](./asset/test.gif)
 ***
 
 # PDF-Studio
