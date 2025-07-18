@@ -35,7 +35,7 @@ linux:
     - AppImage
 publish:
   provider: github
-  owner: DDUKDDUCK
+  owner: DDULDDUCK
   repo: pdf-studio
   private: true
   token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
