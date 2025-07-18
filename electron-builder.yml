@@ -37,8 +37,7 @@ publish:
   provider: github
   owner: DDULDDUCK
   repo: pdf-studio
-  private: true
-  token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
+  token: ${env.GH_TOKEN} # GitHub Personal Access Token from environment variable
   releaseType: release
 
 # asar 설정
