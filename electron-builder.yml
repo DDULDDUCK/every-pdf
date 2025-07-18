@@ -1,6 +1,6 @@
 appId: com.pdf.studio
 productName: PDF Studio
-copyright: Copyright © 2024 PDF Studio
+copyright: Copyright © 2025 DDULDDUCK
 directories:
   output: dist
   buildResources: resources
@@ -37,7 +37,8 @@ publish:
   provider: github
   owner: DDULDDUCK
   repo: pdf-studio
-  token: ${env.GH_TOKEN} # GitHub Personal Access Token from environment variable
+  private: false
+  #token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
   releaseType: release
 
 # asar 설정
