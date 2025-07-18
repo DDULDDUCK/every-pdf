@@ -268,7 +268,7 @@ autoUpdater.on('update-downloaded', (info) => {
               type: 'info',
               title: 'PDF Studio 정보',
               message: 'PDF Studio',
-              detail: `버전: ${app.getVersion()}\n제작: JaeSeok Song\n\nPDF 문서를 쉽게 편집할 수 있는 도구입니다.`,
+              detail: `버전: ${app.getVersion()}\n제작: DDULDDUCK\n\nPDF 문서를 쉽게 편집할 수 있는 도구입니다.`,
               buttons: ['확인'],
               noLink: true
             });

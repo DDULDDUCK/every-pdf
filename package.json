@@ -2,8 +2,8 @@
   "private": true,
   "name": "pdf-studio",
   "description": "PDF 문서 편집 도구",
-  "version": "1.1.0",
-  "author": "dduldduck <dduldduck@gmail.com>",
+  "version": "1.1.1",
+  "author": "DDULDDUCK <dduldduck@gmail.com>",
   "main": "app/background.js",
   "scripts": {
     "postinstall": "electron-builder install-app-deps",

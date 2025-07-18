@@ -17,7 +17,7 @@
 - Mac : dmg
 - https://github.com/DDULDDUCK/pdf-studio/releases
 ***
-# 🎉 Announcing PDF Studio v1.1.0!
+# 🎉 Announcing PDF Studio!
 
 Hello everyone! We are thrilled to unveil the first official version of **PDF Studio**, your new solution for working with PDF documents. Complex and tedious PDF editing is now a thing of the past—with PDF Studio, it's simple and efficient.
 
@@ -54,7 +54,7 @@ PDF Studio is built on modern technologies to deliver top-tier performance and s
 
 ***
 
-# 🎉 PDF Studio v1.1.0 출시!
+# 🎉 PDF Studio 출시!
 
 안녕하세요! PDF 문서 작업을 위한 새로운 솔루션, **PDF Studio**의 첫 번째 정식 버전을 드디어 선보입니다. 복잡하고 번거로웠던 PDF 편집, 이제 PDF Studio와 함께라면 간편해집니다.
 
