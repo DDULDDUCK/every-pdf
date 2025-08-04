@@ -231,11 +231,20 @@ ipcRenderer.on('backend-port', (_event, port: number) => {
   PORT = port;
 });
 
-// API를 renderer 프로세스에 노출
+ // API를 renderer 프로세스에 노출
 contextBridge.exposeInMainWorld('electron', {
   pdf: pdfApi,
   // 파일 저장 대화상자 호출 함수 추가
   showSaveDialog: (options: Electron.SaveDialogOptions): Promise<Electron.SaveDialogReturnValue> => {
     return ipcRenderer.invoke('show-save-dialog', options);
   },
+});
+
+// ServerStatus용 IPC 채널 노출 (window.api)
+contextBridge.exposeInMainWorld('api', {
+  invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args),
+  on: (channel: string, listener: (event: any, ...args: any[]) => void) =>
+    ipcRenderer.on(channel, listener),
+  removeListener: (channel: string, listener: (...args: any[]) => void) =>
+    ipcRenderer.removeListener(channel, listener),
 });

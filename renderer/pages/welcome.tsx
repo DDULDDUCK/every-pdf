@@ -5,6 +5,9 @@ import ThemePanel from '../components/ThemePanel';
 import ActionButtons from '../components/ActionButtons';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
 import { useTranslation } from "react-i18next";
+import { ServerStatusIndicator } from '../components/ServerStatus';
+
+import type { ServerStatus } from '../types/ServerStatus';
 
 export default function WelcomePage() {
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -12,7 +15,24 @@ export default function WelcomePage() {
   const { t, i18n } = useTranslation("welcome");
   const router = useRouter();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  
+  const [serverStatus, setServerStatus] = useState<ServerStatus>('connecting');
+
+  // 서버 상태 관리
+  useEffect(() => {
+    let mounted = true;
+    window.api.invoke('get-server-status').then((result: ServerStatus) => {
+      if (mounted) setServerStatus(result);
+    });
+    const handler = (_event: any, newStatus: ServerStatus) => {
+      setServerStatus(newStatus);
+    };
+    window.api.on('server-status-changed', handler);
+    return () => {
+      mounted = false;
+      window.api.removeListener('server-status-changed', handler);
+    };
+  }, []);
+
   // 테마 초기화 및 감지
   useEffect(() => {
     // 로컬 스토리지에서 테마 가져오기
@@ -133,15 +153,22 @@ export default function WelcomePage() {
                 <ActionButtons
                   selectedAction={null}
                   onActionSelect={handleActionSelect}
+                  serverStatus={serverStatus}
                 />
               </div>
             </div>
           </div>
         </main>
         
-        <footer className="py-4 px-8 text-center text-button-text text-sm theme-transition">
-          {t("footerText", { year: new Date().getFullYear() })}
+        <footer className="py-4 px-8 relative flex items-center text-button-text text-sm theme-transition min-h-[40px]">
+          <span className="absolute left-1/2 -translate-x-1/2 w-max text-center">
+            {t("footerText", { year: new Date().getFullYear() })}
+          </span>
+          <span className="ml-auto">
+            <ServerStatusIndicator />
+          </span>
         </footer>
+        
       </div>
     </>
   );

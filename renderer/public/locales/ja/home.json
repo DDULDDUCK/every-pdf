@@ -29,5 +29,8 @@
     "processing": "ウォーターマークを適用中...",
     "success": "ウォーターマークが適用されました！"
   },
-  "error": "不明なエラーが発生しました"
-}
+  "error": "不明なエラーが発生しました",
+  "serverConnecting": "サーバーに接続中...",
+  "serverConnected": "サーバー接続済み",
+  "serverError": "サーバー接続に失敗しました"
+  }

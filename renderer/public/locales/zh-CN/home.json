@@ -29,5 +29,8 @@
     "processing": "正在添加水印...",
     "success": "水印添加完成！"
   },
-  "error": "发生未知错误"
-}
+  "error": "发生未知错误",
+  "serverConnecting": "正在连接服务器...",
+  "serverConnected": "服务器已连接",
+  "serverError": "服务器连接失败"
+  }

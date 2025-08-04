@@ -23,6 +23,23 @@ export default function HomePage() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
 
+  // 서버 상태 관리
+  const [serverStatus, setServerStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+  useEffect(() => {
+    // 최초 상태 조회
+    if (window.api?.invoke) {
+      window.api.invoke('get-server-status').then((status: any) => {
+        setServerStatus(status);
+      });
+    }
+    // 상태 변경 이벤트 리스너 등록
+    const handler = (_: any, status: any) => setServerStatus(status);
+    window.api?.on?.('server-status-changed', handler);
+    return () => {
+      window.api?.removeListener?.('server-status-changed', handler);
+    };
+  }, []);
+
   // 테마 초기화 및 감지
   useEffect(() => {
     // 로컬 스토리지에서 테마 가져오기
@@ -537,6 +554,7 @@ export default function HomePage() {
                 <ActionButtons
                   selectedAction={selectedAction}
                   onActionSelect={handleActionSelect}
+                  serverStatus={serverStatus}
                 />
               </div>
             </div>

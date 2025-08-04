@@ -29,5 +29,8 @@
     "processing": "Applying watermark...",
     "success": "Watermark applied!"
   },
-  "error": "An unknown error has occurred"
-}
+  "error": "An unknown error has occurred",
+  "serverConnecting": "Connecting to server...",
+  "serverConnected": "Server connected",
+  "serverError": "Server connection failed"
+  }

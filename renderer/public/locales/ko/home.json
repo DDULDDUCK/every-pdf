@@ -29,5 +29,8 @@
     "processing": "워터마크 적용 중...",
     "success": "워터마크 적용 완료!"
   },
-  "error": "알 수 없는 오류가 발생했습니다"
-}
+  "error": "알 수 없는 오류가 발생했습니다",
+  "serverConnecting": "서버 연결 중입니다...",
+  "serverConnected": "서버 연결됨",
+  "serverError": "서버 연결 실패"
+  }

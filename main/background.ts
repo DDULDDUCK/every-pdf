@@ -24,6 +24,9 @@ let isQuitting = false;
 let mainWindow: any = null;
 let backendPort: number | null = null;
 
+// 서버 상태: 'connecting' | 'connected' | 'error'
+let serverStatus: 'connecting' | 'connected' | 'error' = 'connecting';
+
 const startPythonProcess = () => {
   return new Promise<void>((resolve, reject) => {
     let executablePath: string;
@@ -108,7 +111,11 @@ const startPythonProcess = () => {
         if (mainWindow) {
           mainWindow.webContents.send('backend-port', backendPort);
         }
-        
+        // 서버 상태 변경: connected
+        serverStatus = 'connected';
+        if (mainWindow) {
+          mainWindow.webContents.send('server-status-changed', serverStatus);
+        }
         clearTimeout(timeoutId);
         resolve();
       }
@@ -127,13 +134,28 @@ const startPythonProcess = () => {
         
         if (!portFound) {
           console.error('Backend process failed with errors:', errorOutput);
+          // 서버 상태 변경: error
+          serverStatus = 'error';
+          if (mainWindow) {
+            mainWindow.webContents.send('server-status-changed', serverStatus);
+          }
           reject(new Error(`Backend process failed with code ${code}: ${errorOutput}`));
         } else {
           console.error('Backend process crashed, attempting to restart...');
           setTimeout(() => {
+            serverStatus = 'connecting';
+            if (mainWindow) {
+              mainWindow.webContents.send('server-status-changed', serverStatus);
+            }
             startPythonProcess()
               .then(() => console.log('Backend restarted successfully'))
-              .catch(err => console.error('Failed to restart backend:', err));
+              .catch(err => {
+                serverStatus = 'error';
+                if (mainWindow) {
+                  mainWindow.webContents.send('server-status-changed', serverStatus);
+                }
+                console.error('Failed to restart backend:', err);
+              });
           }, 1000);
         }
       }
@@ -154,6 +176,11 @@ ipcMain.handle('get-backend-port', () => {
   return backendPort;
 });
 
+// 서버 상태 조회 IPC 핸들러
+ipcMain.handle('get-server-status', () => {
+  return serverStatus;
+});
+
 // 파일 저장 대화상자를 위한 IPC 핸들러
 ipcMain.handle('show-save-dialog', async (event, options) => {
   const window = BrowserWindow.fromWebContents(event.sender);
@@ -171,10 +198,10 @@ autoUpdater.on('checking-for-update', () => {
 autoUpdater.on('update-available', (info) => {
   dialog.showMessageBox({
     type: 'info',
-    title: '업데이트 알림',
-    message: '새로운 버전이 있습니다.',
-    detail: `새 버전 ${info.version}이(가) 사용 가능합니다. 지금 업데이트하시겠습니까?`,
-    buttons: ['지금 업데이트', '나중에'],
+    title: 'Update Available',
+    message: 'A new version is available.',
+    detail: `Version ${info.version} is available. Would you like to update now?`,
+    buttons: ['Update Now', 'Later'],
     cancelId: 1
   }).then(result => {
     if (result.response === 0) {
@@ -184,16 +211,16 @@ autoUpdater.on('update-available', (info) => {
 });
 
 autoUpdater.on('update-not-available', () => {
-  console.log('현재 최신 버전입니다.');
+  console.log('You are running the latest version.');
 });
 
 autoUpdater.on('error', (err) => {
-  dialog.showErrorBox('오류', '업데이트 중 오류가 발생했습니다: ' + err.message);
+  dialog.showErrorBox('Error', 'An error occurred during update: ' + err.message);
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
-  let message = `다운로드 속도: ${progressObj.bytesPerSecond}`;
-  message += ` - 다운로드됨 ${progressObj.percent}%`;
+  let message = `Download speed: ${progressObj.bytesPerSecond}`;
+  message += ` - Downloaded ${progressObj.percent}%`;
   message += ` (${progressObj.transferred}/${progressObj.total})`;
   console.log(message);
 });
@@ -201,10 +228,10 @@ autoUpdater.on('download-progress', (progressObj) => {
 autoUpdater.on('update-downloaded', (info) => {
   dialog.showMessageBox({
     type: 'info',
-    title: '업데이트 준비 완료',
-    message: '업데이트가 다운로드되었습니다.',
-    detail: '애플리케이션을 다시 시작하여 업데이트를 적용하시겠습니까?',
-    buttons: ['다시 시작', '나중에'],
+    title: 'Update Ready',
+    message: 'The update has been downloaded.',
+    detail: 'Would you like to restart the application to apply the update?',
+    buttons: ['Restart', 'Later'],
     cancelId: 1
   }).then(result => {
     if (result.response === 0) {
@@ -215,7 +242,7 @@ autoUpdater.on('update-downloaded', (info) => {
 
 (async () => {
   await app.whenReady();
-  
+
   if (isProd) {
     // 프로덕션 환경에서만 자동 업데이트 체크
     try {
@@ -228,83 +255,83 @@ autoUpdater.on('update-downloaded', (info) => {
   // 메뉴 템플릿 생성
   const template: MenuItemConstructorOptions[] = [
     {
-      label: '파일',
+      label: 'File',
       submenu: [
-        { role: 'quit', label: '종료' }
+        { role: 'quit', label: 'Quit' }
       ]
     },
     {
-      label: '편집',
+      label: 'Edit',
       submenu: [
-        { role: 'undo', label: '실행 취소' },
-        { role: 'redo', label: '다시 실행' },
+        { role: 'undo', label: 'Undo' },
+        { role: 'redo', label: 'Redo' },
         { type: 'separator' },
-        { role: 'cut', label: '잘라내기' },
-        { role: 'copy', label: '복사' },
-        { role: 'paste', label: '붙여넣기' },
-        { role: 'delete', label: '삭제' },
-        { role: 'selectAll', label: '모두 선택' }
+        { role: 'cut', label: 'Cut' },
+        { role: 'copy', label: 'Copy' },
+        { role: 'paste', label: 'Paste' },
+        { role: 'delete', label: 'Delete' },
+        { role: 'selectAll', label: 'Select All' }
       ]
     },
     {
-      label: '보기',
+      label: 'View',
       submenu: [
-        { role: 'reload', label: '새로고침' },
-        { role: 'resetZoom', label: '실제 크기' },
-        { role: 'zoomIn', label: '확대' },
-        { role: 'zoomOut', label: '축소' },
+        { role: 'reload', label: 'Reload' },
+        { role: 'resetZoom', label: 'Actual Size' },
+        { role: 'zoomIn', label: 'Zoom In' },
+        { role: 'zoomOut', label: 'Zoom Out' },
         { type: 'separator' },
-        { role: 'togglefullscreen', label: '전체 화면' }
+        { role: 'togglefullscreen', label: 'Toggle Full Screen' }
       ]
     },
     {
       role: 'help',
-      label: '도움말',
+      label: 'Help',
       submenu: [
         {
-          label: '정보',
+          label: 'About',
           click: async () => {
             dialog.showMessageBox({
               type: 'info',
-              title: 'PDF Studio 정보',
+              title: 'About PDF Studio',
               message: 'PDF Studio',
-              detail: `버전: ${app.getVersion()}\n제작: DDULDDUCK\n\nPDF 문서를 쉽게 편집할 수 있는 도구입니다.`,
-              buttons: ['확인'],
+              detail: `Version: ${app.getVersion()}\nAuthor: DDULDDUCK\n\nA tool for easy PDF document editing.`,
+              buttons: ['OK'],
               noLink: true
             });
-          }
-        },
-        {
-          label: '라이센스 정보',
-          click: async () => {
+            }
+          },
+          {
+            label: 'License Info',
+            click: async () => {
             dialog.showMessageBox({
               type: 'info',
-              title: '라이센스 정보',
-              message: '사용된 오픈소스 라이브러리',
-              detail: `본 프로그램은 다음의 오픈소스 라이브러리를 사용합니다:
+              title: 'License Information',
+              message: 'Open Source Libraries Used',
+              detail: `This program uses the following open source libraries:
+              
+      Backend libraries:
+      - FastAPI (MIT License)
+      - Uvicorn (BSD License)
+      - PyPDF (MIT License)
+      - Pillow (Historical Permission Notice and Disclaimer - HPND)
+      - python-multipart (Apache License 2.0)
+      - PyInstaller (GPL v2)
+      - img2pdf (LGPL v3)
+      - xhtml2pdf (Apache License 2.0)
+      - ReportLab (BSD License)
+      - pdf2image (MIT License)
+      - pdfplumber (MIT License)
+      - python-docx (MIT License)
 
-Backend 라이브러리:
-- FastAPI (MIT License)
-- Uvicorn (BSD License)
-- PyPDF (MIT License)
-- Pillow (Historical Permission Notice and Disclaimer - HPND)
-- python-multipart (Apache License 2.0)
-- PyInstaller (GPL v2)
-- img2pdf (LGPL v3)
-- xhtml2pdf (Apache License 2.0)
-- ReportLab (BSD License)
-- pdf2image (MIT License)
-- pdfplumber (MIT License)
-- python-docx (MIT License)
+      Frontend libraries:
+      - Electron (MIT License)
+      - React (MIT License)
+      - Next.js (MIT License)
+      - Tailwind CSS (MIT License)
 
-Frontend 라이브러리:
-- Electron (MIT License)
-- React (MIT License)
-- Next.js (MIT License)
-- Tailwind CSS (MIT License)
-
-각 라이브러리의 라이센스 전문은 해당 프로젝트의 GitHub 페이지에서 확인하실 수 있습니다.`,
-              buttons: ['확인'],
+      You can find the full license texts for each library on their respective GitHub project pages.`,
+              buttons: ['OK'],
               noLink: true
             });
           }
@@ -335,17 +362,7 @@ Frontend 라이브러리:
     },
   });
 
-  try {
-    console.log('Starting backend process...');
-    await startPythonProcess();
-    console.log('Backend process started successfully');
-  } catch (error) {
-    console.error('Failed to start backend:', error);
-    dialog.showErrorBox('Error', `Failed to start backend service!: ${error.message}`);
-    app.quit();
-    return;
-  }
-
+  // UI를 먼저 표시
   if (isProd) {
     await mainWindow.loadURL('app://./welcome');
   } else {
@@ -353,6 +370,29 @@ Frontend 라이브러리:
     await mainWindow.loadURL(`http://localhost:${port}/welcome`);
     mainWindow.webContents.openDevTools();
   }
+
+  // 서버 상태: connecting으로 설정 및 알림
+  serverStatus = 'connecting';
+  if (mainWindow) {
+    mainWindow.webContents.send('server-status-changed', serverStatus);
+  }
+
+  // 백엔드 서버 비동기 시작
+  (async () => {
+    try {
+      console.log('Starting backend process...');
+      await startPythonProcess();
+      console.log('Backend process started successfully');
+    } catch (error) {
+      console.error('Failed to start backend:', error);
+      serverStatus = 'error';
+      if (mainWindow) {
+        mainWindow.webContents.send('server-status-changed', serverStatus);
+      }
+      dialog.showErrorBox('Error', `Failed to start backend service!: ${error.message}`);
+      app.quit();
+    }
+  })();
 })();
 
 app.on('window-all-closed', () => {
