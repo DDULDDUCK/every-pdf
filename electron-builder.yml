@@ -1,5 +1,5 @@
-appId: com.pdf.studio
-productName: PDF Studio
+appId: com.dduldduck.every_pdf
+productName: Every PDF
 copyright: Copyright © 2025 DDULDDUCK
 directories:
   output: dist
@@ -36,7 +36,7 @@ linux:
 publish:
   provider: github
   owner: DDULDDUCK
-  repo: pdf-studio
+  repo: every-pdf
   private: false
   #token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
   releaseType: release

@@ -247,7 +247,7 @@ const EditorPageContent = () => {
     return (
         <>
             <Head>
-                <title>PDF 편집기 - PDF Studio</title>
+                <title>PDF 편집기 - Every PDF</title>
             </Head>
             <div className="app-container min-h-screen flex flex-col">
                 <input type="file" ref={fileInputRef} onChange={onFileChange} accept="application/pdf" style={{ display: 'none' }} />

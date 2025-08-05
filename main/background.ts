@@ -316,8 +316,8 @@ autoUpdater.on('update-downloaded', (info) => {
           click: async () => {
             dialog.showMessageBox({
               type: 'info',
-              title: 'About PDF Studio',
-              message: 'PDF Studio',
+              title: 'About Every PDF',
+              message: 'Every PDF',
               detail: `Version: ${app.getVersion()}\nAuthor: DDULDDUCK\n\nA tool for easy PDF document editing.`,
               buttons: ['OK'],
               noLink: true

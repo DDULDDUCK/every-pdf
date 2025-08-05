@@ -547,7 +547,7 @@ export default function HomePage() {
                 className="content-title cursor-pointer hover:text-primary transition-colors" 
                 onClick={goToWelcome}
               >
-                PDF Studio
+                Every PDF
               </h1>
               <div className="flex items-center gap-4">
                 <BuyMeCoffeeButton />
