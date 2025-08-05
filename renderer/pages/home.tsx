@@ -10,6 +10,7 @@ import WatermarkPanel from '../components/WatermarkPanel';
 import SecurityPanel from '../components/SecurityPanel';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
 import { useTranslation } from "react-i18next";
+import { Button } from "@mui/material";
 
 interface ProcessingStatus {
   isProcessing: boolean;
@@ -22,6 +23,11 @@ export default function HomePage() {
   const router = useRouter();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
+
+  // PDF 편집 페이지로 이동
+  const goToPdfEditor = () => {
+    router.push('/pdf-editor');
+  };
 
   // 서버 상태 관리
   const [serverStatus, setServerStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -556,6 +562,16 @@ export default function HomePage() {
                   onActionSelect={handleActionSelect}
                   serverStatus={serverStatus}
                 />
+                {/* PDF 편집 페이지 이동 버튼 */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={goToPdfEditor}
+                  sx={{ ml: 2 }}
+                >
+                  PDF 편집
+                </Button>
               </div>
             </div>
 

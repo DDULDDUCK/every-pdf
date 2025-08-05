@@ -1,4 +1,5 @@
 import { app, ipcMain, dialog, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron';
+import fs from 'fs/promises';
 import serve from 'electron-serve';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
@@ -6,7 +7,6 @@ import { createWindow } from './helpers';
 import { join } from 'path';
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
-
 // 자동 업데이트 로그 설정
 autoUpdater.logger = log;
 log.transports.file.level = 'info';
@@ -169,6 +169,29 @@ const startPythonProcess = () => {
     });
   });
 };
+
+ipcMain.handle('save-file-dialog', async (event, options, data) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) {
+    console.error('IPC "save-file-dialog" call: BrowserWindow not found.');
+    return null;
+  }
+  
+  const { canceled, filePath } = await dialog.showSaveDialog(window, options);
+
+  if (canceled || !filePath) {
+    return null; // 사용자가 취소한 경우
+  }
+
+  try {
+    await fs.writeFile(filePath, data);
+    return filePath; // 성공 시 저장된 경로 반환
+  } catch (err) {
+    console.error('Failed to save file:', err);
+    dialog.showErrorBox('Save Error', 'An error occurred while saving the file: ' + err.message);
+    return null;
+  }
+});
 
 // 백엔드 포트를 요청하는 IPC 핸들러
 ipcMain.handle('get-backend-port', () => {

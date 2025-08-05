@@ -2,31 +2,28 @@ import uvicorn
 import sys
 import socket
 from pathlib import Path
-from pdf_processor.api import app
+
+# 수정된 부분: app.py에서 app 객체를 직접 임포트합니다.
+from .app import app
+
+# 수정된 부분: api 패키지에서 라우터 등록 함수를 임포트합니다.
+from pdf_processor.api import register_routers
+
+# FastAPI 앱이 실행되기 전에 라우터를 등록합니다.
+register_routers(app)
 
 def find_free_port(start_port: int = 3000, max_attempts: int = 100) -> int:
     """사용 가능한 포트 찾기"""
     for port in range(start_port, start_port + max_attempts):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.bind(('localhost', port))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('localhost', port)) != 0:
                 return port
-        except socket.error:
-            continue
     raise RuntimeError("사용 가능한 포트를 찾을 수 없습니다")
-
-def get_app_dir() -> Path:
-    """애플리케이션 디렉토리 가져오기"""
-    if getattr(sys, 'frozen', False):
-        # PyInstaller로 패키징된 경우
-        return Path(sys._MEIPASS)
-    else:
-        # 개발 모드
-        return Path(__file__).parent
 
 def main():
     """메인 실행 함수"""
     try:
+        
         # 사용 가능한 포트 찾기
         port = find_free_port()
         
@@ -43,6 +40,7 @@ def main():
     except Exception as e:
         print(f"ERROR={str(e)}", file=sys.stderr, flush=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

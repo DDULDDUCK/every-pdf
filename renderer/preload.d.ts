@@ -1,7 +1,17 @@
+// renderer/types/renderer.d.ts (또는 프로젝트의 다른 .d.ts 파일)
+
 declare global {
   interface Window {
     electron: {
       pdf: {
+        /**
+         * PDF 파일을 편집 요소(텍스트, 서명 등)를 추가하여 수정
+         * @param file 원본 PDF 파일
+         * @param elements 편집 요소 객체의 배열
+         * @returns 편집된 PDF 파일의 Blob
+         */
+        editPdf: (file: File, elements: any[]) => Promise<Blob>;
+
         /**
          * PDF 파일을 지정된 페이지들로 분할
          * @param file PDF 파일
@@ -43,10 +53,10 @@ declare global {
          * @param outputPath (선택) DOCX 변환 시 저장할 경로
          * @returns 변환된 파일의 Blob (이미지 변환 시 여러 페이지면 ZIP 파일, DOCX는 백엔드 저장 후 빈 Blob 반환 가능)
          */
-                convertFromPdf: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png', outputPath?: string) => Promise<Blob>;
+        convertFromPdf: (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png', outputPath?: string) => Promise<Blob>;
                 
-                /**
-                 * PDF 파일 암호화
+        /**
+         * PDF 파일 암호화
          * @param file PDF 파일
          * @param password 암호화에 사용할 비밀번호
          * @returns 암호화된 PDF 파일의 Blob
@@ -84,14 +94,24 @@ declare global {
           }
         ) => Promise<Blob>;
       };
+
       /**
-       * 파일 저장 대화상자를 표시
+       * 네이티브 파일 저장 대화상자를 열고, 전달된 데이터를 파일로 저장
        * @param options Electron SaveDialogOptions
-       * @returns Electron SaveDialogReturnValue
+       * @param data 저장할 파일 데이터 (Uint8Array)
+       * @returns 저장 성공 시 파일 경로, 취소 또는 실패 시 null
        */
-      showSaveDialog: (options: Electron.SaveDialogOptions) => Promise<Electron.SaveDialogReturnValue>;
+      saveFile: (options: Electron.SaveDialogOptions, data: Uint8Array) => Promise<string | null>;
+    };
+    
+    // api 객체에 대한 타입 정의 (기존에 있었다면 유지)
+    api: {
+        invoke: (channel: string, ...args: any[]) => Promise<any>;
+        on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+        removeListener: (channel: string, listener: (...args: any[]) => void) => void;
     };
   }
 }
 
+// 이 파일이 모듈임을 TypeScript에 알리기 위해 export {} 를 추가합니다.
 export {};
