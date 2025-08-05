@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { HexColorPicker } from "react-colorful";
 import { PDFSignatureElement } from "../contexts/PDFEditContext";
+import { useTranslation } from "react-i18next";
 
 type SignatureEditToolProps = {
   open: boolean;
@@ -25,6 +26,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
   // [추가] 배경 관련 상태 추가
   const [hasBackground, setHasBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const { t } = useTranslation("editor");
 
   useEffect(() => {
     if (editingElement) {
@@ -89,7 +91,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <h3 className="text-lg font-medium text-text mb-2 theme-transition">서명 편집</h3>
+      <h3 className="text-lg font-medium text-text mb-2 theme-transition">{t("editSignature")}</h3>
       
       <div className="flex border-b border-border mb-4">
         <button
@@ -100,7 +102,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
               : 'text-button-text hover:text-text'
           }`}
         >
-          그리기
+          {t("draw")}
         </button>
         <button
           onClick={() => setTab(1)}
@@ -110,7 +112,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
               : 'text-button-text hover:text-text'
           }`}
         >
-          업로드
+          {t("upload")}
         </button>
       </div>
 
@@ -128,7 +130,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
             onClick={handleClear}
             className="mt-2 px-3 py-1 text-sm rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
           >
-            지우기
+            {t("clear")}
           </button>
         </div>
       )}
@@ -136,7 +138,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
       {tab === 1 && (
         <div className="mb-4 p-4 border-2 border-dashed border-border rounded text-center">
           <label className="px-4 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition cursor-pointer">
-            파일 선택
+            {t("upload")}
             <input type="file" hidden accept="image/png,image/jpeg" onChange={handleUpload} />
           </label>
         </div>
@@ -145,7 +147,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
       {imageData && (
         <>
           <div className="mb-4">
-            <label className="panel-label">미리보기 및 크기 조절</label>
+            <label className="panel-label">{t("preview")}</label>
             <div
               className="p-2 border border-border flex justify-center items-center mb-2 min-h-[100px] rounded theme-transition"
               style={{ backgroundColor: hasBackground ? backgroundColor : 'transparent' }}
@@ -157,7 +159,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
               />
             </div>
             
-            <label className="panel-label">너비: {Math.round(size.width)}px</label>
+            <label className="panel-label">{t("width")}: {Math.round(size.width)}px</label>
             <input
               type="range"
               min={50}
@@ -167,7 +169,7 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
               className="w-full mb-2 theme-transition"
             />
             
-            <label className="panel-label">높이: {Math.round(size.height)}px</label>
+            <label className="panel-label">{t("height")}: {Math.round(size.height)}px</label>
             <input
               type="range"
               min={20}
@@ -188,13 +190,13 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
                 onChange={e => setHasBackground(e.target.checked)}
                 className="theme-transition"
               />
-              배경 사용
+              {t("background")}
             </label>
           </div>
 
           {hasBackground && (
             <div className="mb-4">
-              <label className="panel-label">배경 색상: <strong>{backgroundColor}</strong></label>
+              <label className="panel-label">{t("backgroundColor")}: <strong>{backgroundColor}</strong></label>
               <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
             </div>
           )}
@@ -206,14 +208,14 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
           onClick={onClose}
           className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
         >
-          취소
+          {t("cancel")}
         </button>
         <button
           onClick={() => onSubmit(imageData, size.width, size.height, hasBackground, backgroundColor)}
           disabled={!imageData}
           className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          확인
+          {t("confirm")}
         </button>
       </div>
     </div>

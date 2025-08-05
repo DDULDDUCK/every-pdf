@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { PDFCheckboxElement } from "../contexts/PDFEditContext";
+import { useTranslation } from "react-i18next";
 
 type CheckboxEditToolProps = {
   open: boolean;
@@ -25,6 +26,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
   // [추가] isTransparent, hasBorder 상태 추가
   const [isTransparent, setIsTransparent] = useState(false);
   const [hasBorder, setHasBorder] = useState(true);
+  const { t } = useTranslation("editor");
 
   useEffect(() => {
     if (editingElement) {
@@ -58,7 +60,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <h3 className="text-lg font-medium text-text mb-2 theme-transition">체크박스 편집</h3>
+      <h3 className="text-lg font-medium text-text mb-2 theme-transition">{t("editCheckbox")}</h3>
       
       <div className="flex justify-between items-center mb-4">
         <label className="flex items-center gap-2 text-text theme-transition">
@@ -68,7 +70,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
             onChange={e => setChecked(e.target.checked)}
             className="theme-transition"
           />
-          체크 상태
+          {t("checked")}
         </label>
         
         <div className="border border-border p-2 rounded bg-panel-bg theme-transition">
@@ -93,7 +95,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
             onChange={e => setIsTransparent(e.target.checked)}
             className="theme-transition"
           />
-          배경 투명
+          {t("transparent")}
         </label>
         <label className="flex items-center gap-2 text-text theme-transition">
           <input
@@ -102,12 +104,12 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
             onChange={e => setHasBorder(e.target.checked)}
             className="theme-transition"
           />
-          테두리 표시
+          {t("showBorder")}
         </label>
       </div>
 
       <div className="mb-4">
-        <label className="panel-label">크기: <strong>{size}px</strong></label>
+        <label className="panel-label">{t("size")}: <strong>{size}px</strong></label>
         <input
           type="range"
           min={10}
@@ -120,7 +122,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
       
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="panel-label">채우기: <strong>{isTransparent ? '투명' : color}</strong></label>
+          <label className="panel-label">{t("fill")}: <strong>{isTransparent ? t("transparent") : color}</strong></label>
           <HexColorPicker
             color={color}
             onChange={setColor}
@@ -133,7 +135,7 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
           />
         </div>
         <div className="flex-1">
-          <label className="panel-label">테두리: <strong>{hasBorder ? borderColor : '없음'}</strong></label>
+          <label className="panel-label">{t("border")}: <strong>{hasBorder ? borderColor : t("transparent")}</strong></label>
           <HexColorPicker
             color={borderColor}
             onChange={setBorderColor}
@@ -152,13 +154,13 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
           onClick={onClose}
           className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
         >
-          취소
+          {t("cancel")}
         </button>
         <button
           onClick={() => onSubmit(checked, size, color, borderColor, isTransparent, hasBorder)}
           className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition"
         >
-          확인
+          {t("confirm")}
         </button>
       </div>
     </div>

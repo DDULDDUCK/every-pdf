@@ -24,13 +24,29 @@ type EditingToolState = {
 } | null;
 
 const EditorPageContent = () => {
-    const { state, setPdfFile, addElement, updateElement, removeElement, setSelectedElementId, setPendingElementType } = usePDFEdit();
+    const {
+        state,
+        setPdfFile,
+        addElement,
+        updateElement,
+        removeElement,
+        setSelectedElementId,
+        setPendingElementType,
+        undo,
+        redo,
+        copyElement,
+        pasteElement,
+        canUndo,
+        canRedo,
+        hasClipboard
+    } = usePDFEdit();
     const [editingTool, setEditingTool] = useState<EditingToolState>(null);
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const viewerRef = useRef<PDFViewerHandle>(null);
     const router = useRouter();
-    const { t } = useTranslation("home");
+    const { t: tHome } = useTranslation("home");
+    const { t: tEditor } = useTranslation("editor");
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -71,7 +87,7 @@ const EditorPageContent = () => {
         let newElement: PDFEditElement;
         switch (type) {
             case 'text': 
-                newElement = { ...baseElement, type: 'text', text: "텍스트 입력", fontSize: 20, color: "#222222", hasBackground: false, backgroundColor: "#ffffff" }; 
+                newElement = { ...baseElement, type: 'text', text: tEditor("textPlaceholder"), fontSize: 20, color: "#222222", hasBackground: false, backgroundColor: "#ffffff" };
                 break;
             case 'signature': 
                 newElement = { ...baseElement, type: 'signature', imageData: "", width: 200, height: 80, hasBackground: false, backgroundColor: "#ffffff" }; 
@@ -131,14 +147,85 @@ const EditorPageContent = () => {
     
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Escape 키 처리
             if (e.key === 'Escape') {
                 setPendingElementType(null);
                 handleCloseTool();
+                return;
+            }
+
+            // 입력 필드에서는 단축키 무시
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+                return;
+            }
+
+            // Ctrl/Cmd 키 조합 처리
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+
+            if (ctrlKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'z':
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            // Ctrl+Shift+Z 또는 Cmd+Shift+Z = 다시하기
+                            if (canRedo()) {
+                                redo();
+                            }
+                        } else {
+                            // Ctrl+Z 또는 Cmd+Z = 되돌리기
+                            if (canUndo()) {
+                                undo();
+                            }
+                        }
+                        break;
+                    case 'y':
+                        // Ctrl+Y = 다시하기 (Windows)
+                        if (!isMac) {
+                            e.preventDefault();
+                            if (canRedo()) {
+                                redo();
+                            }
+                        }
+                        break;
+                    case 'c':
+                        // Ctrl+C 또는 Cmd+C = 복사
+                        if (state.selectedElementId) {
+                            e.preventDefault();
+                            const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
+                            if (selectedElement) {
+                                copyElement(selectedElement);
+                            }
+                        }
+                        break;
+                    case 'v':
+                        // Ctrl+V 또는 Cmd+V = 붙여넣기
+                        if (hasClipboard()) {
+                            e.preventDefault();
+                            // 현재 페이지의 중앙에 붙여넣기
+                            pasteElement(200, 200, state.currentPage);
+                        }
+                        break;
+                }
+            } else {
+                // 단일 키 처리
+                switch (e.key) {
+                    case 'Delete':
+                    case 'Backspace':
+                        // Delete 또는 Backspace = 삭제
+                        if (state.selectedElementId) {
+                            e.preventDefault();
+                            removeElement(state.selectedElementId);
+                        }
+                        break;
+                }
             }
         };
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [editingTool]);
+    }, [editingTool, state.selectedElementId, state.currentPage, state.elements, undo, redo, copyElement, pasteElement, removeElement, canUndo, canRedo, hasClipboard]);
 
     // [수정] renderEditingTool에서 각 도구로 전달하는 onSubmit 콜백 수정
     const renderEditingTool = () => {

@@ -1,6 +1,7 @@
 // --- contexts/PDFEditContext.tsx ---
 
 import React, { createContext, useReducer, useContext, Dispatch } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 // [수정] Text, Signature Element에 배경 관련 속성 추가
 export type PDFTextElement = {
@@ -31,6 +32,11 @@ type PDFEditState = {
   elements: PDFEditElement[];
   selectedElementId: string | null;
   pendingElementType: 'text' | 'signature' | 'checkbox' | null;
+  // 히스토리 관리를 위한 상태
+  history: PDFEditElement[][];
+  historyIndex: number;
+  // 클립보드 기능을 위한 상태
+  clipboard: PDFEditElement | null;
 };
 
 type Action =
@@ -42,7 +48,12 @@ type Action =
   | { type: 'REMOVE_ELEMENT'; payload: string }
   | { type: 'SET_SELECTED_ELEMENT_ID'; payload: string | null }
   | { type: 'SET_ELEMENTS'; payload: PDFEditElement[] }
-  | { type: 'SET_PENDING_ELEMENT_TYPE', payload: 'text' | 'signature' | 'checkbox' | null };
+  | { type: 'SET_PENDING_ELEMENT_TYPE', payload: 'text' | 'signature' | 'checkbox' | null }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
+  | { type: 'COPY_ELEMENT'; payload: PDFEditElement }
+  | { type: 'PASTE_ELEMENT'; payload: { x: number; y: number; page: number } }
+  | { type: 'SAVE_HISTORY' };
 
 const initialState: PDFEditState = {
   pdfFile: null,
@@ -52,6 +63,9 @@ const initialState: PDFEditState = {
   elements: [],
   selectedElementId: null,
   pendingElementType: null,
+  history: [[]],
+  historyIndex: 0,
+  clipboard: null,
 };
 
 const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
@@ -63,20 +77,35 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
     case 'SET_CURRENT_PAGE':
       return { ...state, currentPage: action.payload };
     case 'ADD_ELEMENT':
-      return { ...state, elements: [...state.elements, action.payload] };
-    case 'UPDATE_ELEMENT':
+      const newStateWithAdd = { ...state, elements: [...state.elements, action.payload] };
       return {
+        ...newStateWithAdd,
+        history: [...state.history.slice(0, state.historyIndex + 1), newStateWithAdd.elements],
+        historyIndex: state.historyIndex + 1,
+      };
+    case 'UPDATE_ELEMENT':
+      const newStateWithUpdate = {
         ...state,
         elements: state.elements.map((el) =>
           el.id === action.payload.id ? action.payload : el
         ),
       };
+      return {
+        ...newStateWithUpdate,
+        history: [...state.history.slice(0, state.historyIndex + 1), newStateWithUpdate.elements],
+        historyIndex: state.historyIndex + 1,
+      };
     case 'REMOVE_ELEMENT':
       const newSelectedId = state.selectedElementId === action.payload ? null : state.selectedElementId;
-      return {
+      const newStateWithRemove = {
         ...state,
         elements: state.elements.filter((el) => el.id !== action.payload),
         selectedElementId: newSelectedId,
+      };
+      return {
+        ...newStateWithRemove,
+        history: [...state.history.slice(0, state.historyIndex + 1), newStateWithRemove.elements],
+        historyIndex: state.historyIndex + 1,
       };
     case 'SET_SELECTED_ELEMENT_ID':
       return { ...state, selectedElementId: action.payload, pendingElementType: null };
@@ -84,6 +113,54 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
       return { ...state, elements: action.payload };
     case 'SET_PENDING_ELEMENT_TYPE':
       return { ...state, pendingElementType: action.payload, selectedElementId: null };
+    case 'UNDO':
+      if (state.historyIndex > 0) {
+        const previousIndex = state.historyIndex - 1;
+        return {
+          ...state,
+          elements: state.history[previousIndex],
+          historyIndex: previousIndex,
+          selectedElementId: null,
+        };
+      }
+      return state;
+    case 'REDO':
+      if (state.historyIndex < state.history.length - 1) {
+        const nextIndex = state.historyIndex + 1;
+        return {
+          ...state,
+          elements: state.history[nextIndex],
+          historyIndex: nextIndex,
+          selectedElementId: null,
+        };
+      }
+      return state;
+    case 'COPY_ELEMENT':
+      return { ...state, clipboard: action.payload };
+    case 'PASTE_ELEMENT':
+      if (state.clipboard) {
+        const newElement = {
+          ...state.clipboard,
+          id: uuidv4(),
+          x: action.payload.x,
+          y: action.payload.y,
+          page: action.payload.page,
+        };
+        const newStateWithPaste = { ...state, elements: [...state.elements, newElement] };
+        return {
+          ...newStateWithPaste,
+          history: [...state.history.slice(0, state.historyIndex + 1), newStateWithPaste.elements],
+          historyIndex: state.historyIndex + 1,
+          selectedElementId: newElement.id,
+        };
+      }
+      return state;
+    case 'SAVE_HISTORY':
+      return {
+        ...state,
+        history: [...state.history.slice(0, state.historyIndex + 1), state.elements],
+        historyIndex: state.historyIndex + 1,
+      };
     default:
       return state;
   }
@@ -124,5 +201,15 @@ export const usePDFEdit = () => {
     setSelectedElementId: (payload: string | null) => dispatch({ type: 'SET_SELECTED_ELEMENT_ID', payload }),
     setElements: (payload: PDFEditElement[]) => dispatch({ type: 'SET_ELEMENTS', payload }),
     setPendingElementType: (payload: 'text' | 'signature' | 'checkbox' | null) => dispatch({ type: 'SET_PENDING_ELEMENT_TYPE', payload }),
+    // 새로운 히스토리 및 클립보드 기능
+    undo: () => dispatch({ type: 'UNDO' }),
+    redo: () => dispatch({ type: 'REDO' }),
+    copyElement: (element: PDFEditElement) => dispatch({ type: 'COPY_ELEMENT', payload: element }),
+    pasteElement: (x: number, y: number, page: number) => dispatch({ type: 'PASTE_ELEMENT', payload: { x, y, page } }),
+    saveHistory: () => dispatch({ type: 'SAVE_HISTORY' }),
+    // 편의 함수들
+    canUndo: () => state.historyIndex > 0,
+    canRedo: () => state.historyIndex < state.history.length - 1,
+    hasClipboard: () => !!state.clipboard,
   };
 };

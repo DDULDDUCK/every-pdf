@@ -9,6 +9,7 @@ import koTheme from './public/locales/ko/theme.json';
 import koToll from './public/locales/ko/tools.json';
 import koSecurity from './public/locales/ko/security.json';
 import koWatermark from './public/locales/ko/watermark.json';
+import koEditor from './public/locales/ko/editor.json';
 
 // English
 import enWelcome from './public/locales/en/welcome.json';
@@ -16,6 +17,7 @@ import enHome from './public/locales/en/home.json';
 import enActions from './public/locales/en/actions.json';
 import enTheme from './public/locales/en/theme.json';
 import enTool from './public/locales/en/tools.json';
+import enEditor from './public/locales/en/editor.json';
 import enSecurity from './public/locales/en/security.json';
 import enWatermark from './public/locales/en/watermark.json';
 // Japanese
@@ -26,7 +28,7 @@ import jaTheme from './public/locales/ja/theme.json';
 import jaTools from './public/locales/ja/tools.json';
 import jaSecurity from './public/locales/ja/security.json';
 import jaWatermark from './public/locales/ja/watermark.json';
-
+import jaEditor from './public/locales/ja/editor.json';
 // Chinese (Simplified)
 import zhCNWelcome from './public/locales/zh-CN/welcome.json';
 import zhCNHome from './public/locales/zh-CN/home.json';
@@ -35,6 +37,7 @@ import zhCNTheme from './public/locales/zh-CN/theme.json';
 import zhCNTools from './public/locales/zh-CN/tools.json';
 import zhCNSecurity from './public/locales/zh-CN/security.json';
 import zhCNWatermark from './public/locales/zh-CN/watermark.json';
+import zhCNEditor from './public/locales/zh-CN/editor.json';
 
 
 
@@ -46,7 +49,8 @@ const resources = {
     theme: koTheme,
     tools: koToll,
     security: koSecurity,
-    watermark: koWatermark
+    watermark: koWatermark,
+    editor: koEditor
   },
   ja: {
     welcome: jaWelcome,
@@ -55,7 +59,8 @@ const resources = {
     theme: jaTheme,
     tools: jaTools,
     security: jaSecurity,
-    watermark: jaWatermark
+    watermark: jaWatermark,
+    editor: jaEditor
   },
   en: {
     welcome: enWelcome,
@@ -64,7 +69,8 @@ const resources = {
     tools: enTool,
     home: enHome,
     security: enSecurity,
-    watermark: enWatermark
+    watermark: enWatermark,
+    editor: enEditor
   },
   'zh-CN': {
     welcome: zhCNWelcome,
@@ -73,7 +79,8 @@ const resources = {
     theme: zhCNTheme,
     tools: zhCNTools,
     security: zhCNSecurity,
-    watermark: zhCNWatermark
+    watermark: zhCNWatermark,
+    editor: zhCNEditor
   }
 };
 

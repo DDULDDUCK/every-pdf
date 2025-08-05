@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { PDFTextElement } from "../contexts/PDFEditContext";
+import { useTranslation } from "react-i18next";
 
 type TextEditToolProps = {
   open: boolean;
@@ -20,6 +21,7 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
   // [추가] 배경 관련 상태 추가
   const [hasBackground, setHasBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
+  const { t } = useTranslation("editor");
 
   useEffect(() => {
     if (editingElement) {
@@ -51,11 +53,11 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <h3 className="text-lg font-medium text-text mb-4 theme-transition">텍스트 편집</h3>
+      <h3 className="text-lg font-medium text-text mb-4 theme-transition">{t("editText")}</h3>
       
       <div className="mb-4">
         <textarea
-          placeholder="텍스트 내용"
+          placeholder={t("textPlaceholder")}
           value={text}
           onChange={e => setText(e.target.value)}
           className="w-full form-input resize-none"
@@ -65,7 +67,7 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
       </div>
 
       <div className="mb-4">
-        <label className="panel-label">폰트 크기: <strong>{fontSize}px</strong></label>
+        <label className="panel-label">{t("fontSize")}: <strong>{fontSize}px</strong></label>
         <input
           type="range"
           min={10}
@@ -77,7 +79,7 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
       </div>
 
       <div className="mb-4">
-        <label className="panel-label">글자 색상: <strong>{color}</strong></label>
+        <label className="panel-label">{t("fontColor")}: <strong>{color}</strong></label>
         <HexColorPicker color={color} onChange={setColor} style={{width: '100%', height: 120}}/>
       </div>
 
@@ -91,13 +93,13 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
             onChange={e => setHasBackground(e.target.checked)}
             className="theme-transition"
           />
-          배경 사용
+          {t("background")}
         </label>
       </div>
 
       {hasBackground && (
         <div className="mb-4">
-          <label className="panel-label">배경 색상: <strong>{backgroundColor}</strong></label>
+          <label className="panel-label">{t("backgroundColor")}: <strong>{backgroundColor}</strong></label>
           <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
         </div>
       )}
@@ -107,14 +109,14 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
           onClick={onClose}
           className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
         >
-          취소
+          {t("cancel")}
         </button>
         <button
           onClick={() => onSubmit(text, fontSize, color, hasBackground, backgroundColor)}
           disabled={!text.trim()}
           className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          확인
+          {t("confirm")}
         </button>
       </div>
     </div>

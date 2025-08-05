@@ -10,7 +10,6 @@ import WatermarkPanel from '../components/WatermarkPanel';
 import SecurityPanel from '../components/SecurityPanel';
 import BuyMeCoffeeButton from '../components/BuyMeCoffeeButton';
 import { useTranslation } from "react-i18next";
-import { Button } from "@mui/material";
 
 interface ProcessingStatus {
   isProcessing: boolean;
@@ -23,11 +22,6 @@ export default function HomePage() {
   const router = useRouter();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAction, setSelectedAction] = useState<'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security' | null>(null);
-
-  // PDF 편집 페이지로 이동
-  const goToPdfEditor = () => {
-    router.push('/pdf-editor');
-  };
 
   // 서버 상태 관리
   const [serverStatus, setServerStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
@@ -314,17 +308,17 @@ export default function HomePage() {
       // DOCX로 변환 시 저장 경로 묻기
       if (targetFormat === 'docx') {
         const defaultPath = `${file.name.replace('.pdf', '.docx')}`;
-        const result = await window.electron.showSaveDialog({
+        const result = await window.electron.saveFile({
           title: 'Word 파일 저장',
           defaultPath: defaultPath,
           filters: [{ name: 'Word 문서', extensions: ['docx'] }]
-        });
+        }, new Uint8Array()); // 임시로 빈 데이터 전달
 
-        if (result.canceled || !result.filePath) {
+        if (!result) {
           setStatus({ isProcessing: false, message: '저장이 취소되었습니다.', type: 'error' });
           return; // 저장 취소 시 중단
         }
-        outputPath = result.filePath;
+        outputPath = result;
       }
 
       // 백엔드 API 호출 (outputPath 추가)
@@ -562,16 +556,6 @@ export default function HomePage() {
                   onActionSelect={handleActionSelect}
                   serverStatus={serverStatus}
                 />
-                {/* PDF 편집 페이지 이동 버튼 */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={goToPdfEditor}
-                  sx={{ ml: 2 }}
-                >
-                  PDF 편집
-                </Button>
               </div>
             </div>
 

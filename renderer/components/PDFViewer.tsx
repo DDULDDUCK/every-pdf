@@ -14,6 +14,7 @@ import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { usePDFEdit, PDFEditElement } from "../contexts/PDFEditContext";
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { editingCanvasPlugin } from './EditingCanvasPlugin';
+import { useTranslation } from "react-i18next";
 
 // [개선] Props 타입 정의 변경
 type PDFViewerProps = {
@@ -30,6 +31,7 @@ export type PDFViewerHandle = {
 // [수정] forwardRef의 props 타입 변경
 const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, onPlaceElement, onCancelPlaceElement, onUploadClick }, ref) => {
   const { state, setCurrentPage, setNumPages } = usePDFEdit();
+  const { t } = useTranslation("editor");
   
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
@@ -93,39 +95,40 @@ const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, 
               
               {/* 제목 */}
               <h1 className="text-4xl font-bold text-text mb-6 theme-transition">
-                PDF 편집을 시작하세요
+                {t("startTitle")}
               </h1>
               
               {/* 설명 */}
               <p className="text-lg text-button-text mb-12 leading-relaxed theme-transition max-w-xl">
-                <span className="text-primary font-semibold cursor-pointer" onClick={onUploadClick}>위의 아이콘을 클릭</span>하거나 상단 버튼을 눌러 PDF 파일을 업로드하세요. 텍스트, 서명, 체크박스를 추가하고 편집할 수 있습니다.
+                <span className="text-primary font-semibold cursor-pointer" onClick={onUploadClick}>{t("startDesc").split("<icon>")[1]?.split("</icon>")[0] || t("openPdf")}</span>
+                {t("startDesc").replace(/<icon>.*?<\/icon>/, "")}
               </p>
               
               {/* 단계별 안내 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 w-full max-w-4xl">
                 <div className="flex flex-col items-center text-center p-6 bg-card-bg rounded-lg border border-border shadow-sm theme-transition">
                   <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-lg font-bold mb-4">1</div>
-                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">PDF 열기</h3>
-                  <p className="text-sm text-button-text theme-transition">상단의 'PDF 열기' 버튼을 클릭하세요</p>
+                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">{t("step1Title")}</h3>
+                  <p className="text-sm text-button-text theme-transition">{t("step1Desc")}</p>
                 </div>
                 
                 <div className="flex flex-col items-center text-center p-6 bg-card-bg rounded-lg border border-border shadow-sm theme-transition">
                   <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-lg font-bold mb-4">2</div>
-                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">파일 선택</h3>
-                  <p className="text-sm text-button-text theme-transition">편집할 PDF 파일을 선택하세요</p>
+                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">{t("step2Title")}</h3>
+                  <p className="text-sm text-button-text theme-transition">{t("step2Desc")}</p>
                 </div>
                 
                 <div className="flex flex-col items-center text-center p-6 bg-card-bg rounded-lg border border-border shadow-sm theme-transition">
                   <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-lg font-bold mb-4">3</div>
-                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">편집 시작</h3>
-                  <p className="text-sm text-button-text theme-transition">도구를 선택하여 편집을 시작하세요</p>
+                  <h3 className="text-lg font-semibold text-text mb-2 theme-transition">{t("step3Title")}</h3>
+                  <p className="text-sm text-button-text theme-transition">{t("step3Desc")}</p>
                 </div>
               </div>
             </div>
             
             {/* 하단 정보 */}
             <div className="text-sm text-button-text opacity-75 theme-transition">
-              지원 형식: PDF | 안전한 로컬 처리 | 파일이 서버에 업로드되지 않습니다
+              {t("bottomInfo")}
             </div>
           </div>
         </div>

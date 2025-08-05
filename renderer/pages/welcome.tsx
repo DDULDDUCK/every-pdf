@@ -81,10 +81,6 @@ export default function WelcomePage() {
                     onClick={() => setIsLangOpen(!isLangOpen)}
                     className="flex items-center gap-1 px-3 py-1 rounded-md bg-card-bg hover:bg-card-hover text-text theme-transition"
                   >
-                    {i18n.language === 'ko' && '🇰🇷'}
-                    {i18n.language === 'ja' && '🇯🇵'}
-                    {i18n.language === 'en' && '🇺🇸'}
-                    {i18n.language === 'zh-CN' && '🇨🇳'}
                     <span className="text-sm font-medium">
                       {i18n.language === 'ko' && '한국어'}
                       {i18n.language === 'ja' && '日本語'}
@@ -103,25 +99,25 @@ export default function WelcomePage() {
                         onClick={() => i18n.changeLanguage('ko')}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
                       >
-                        🇰🇷 한국어
+                        한국어
                       </button>
                       <button
                         onClick={() => i18n.changeLanguage('ja')}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
                       >
-                        🇯🇵 日本語
+                        日本語
                       </button>
                       <button
                         onClick={() => i18n.changeLanguage('en')}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
                       >
-                        🇺🇸 English
+                        English
                       </button>
                       <button
                         onClick={() => i18n.changeLanguage('zh-CN')}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
                       >
-                        🇨🇳 中文
+                        中文
                       </button>
                     </div>
                   </div>
