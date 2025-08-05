@@ -1,7 +1,6 @@
 // --- components/TextEditTool.tsx ---
 
 import React, { useState, useEffect } from "react";
-import { Box, Button, TextField, Slider, Typography, Switch, FormControlLabel, Divider } from "@mui/material";
 import { HexColorPicker } from "react-colorful";
 import { PDFTextElement } from "../contexts/PDFEditContext";
 
@@ -43,56 +42,82 @@ const TextEditTool = ({ open, position, editingElement, onClose, onSubmit }: Tex
   if (!open || !position) return null;
 
   return (
-    <Box
-      sx={{
-        position: "absolute",
+    <div
+      className="absolute bg-card-bg border border-border rounded-lg shadow-lg p-4 z-20 theme-transition"
+      style={{
         top: position.y,
         left: position.x,
         width: 300,
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: 2,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        p: 2,
-        zIndex: 20,
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>텍스트 편집</Typography>
-      <TextField
-        label="텍스트 내용"
-        value={text}
-        onChange={e => setText(e.target.value)}
-        fullWidth multiline rows={2} size="small" sx={{ mb: 2 }} autoFocus
-      />
-      <Box sx={{ mb: 2 }}>
-        <Typography gutterBottom>폰트 크기: <strong>{fontSize}px</strong></Typography>
-        <Slider min={10} max={72} value={fontSize} onChange={(_, v) => setFontSize(Number(v))} valueLabelDisplay="auto" />
-      </Box>
-      <Box sx={{ mb: 2 }}>
-        <Typography gutterBottom>글자 색상: <strong>{color}</strong></Typography>
-        <HexColorPicker color={color} onChange={setColor} style={{width: '100%', height: 120}}/>
-      </Box>
+      <h3 className="text-lg font-medium text-text mb-4 theme-transition">텍스트 편집</h3>
+      
+      <div className="mb-4">
+        <textarea
+          placeholder="텍스트 내용"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          className="w-full form-input resize-none"
+          rows={2}
+          autoFocus
+        />
+      </div>
 
-      {/* [추가] 배경 옵션 UI */}
-      <Divider sx={{ my: 2 }} />
-      <FormControlLabel 
-        control={<Switch checked={hasBackground} onChange={e => setHasBackground(e.target.checked)} />} 
-        label="배경 사용" 
-        sx={{ mb: 1 }}
-      />
+      <div className="mb-4">
+        <label className="panel-label">폰트 크기: <strong>{fontSize}px</strong></label>
+        <input
+          type="range"
+          min={10}
+          max={72}
+          value={fontSize}
+          onChange={e => setFontSize(Number(e.target.value))}
+          className="w-full theme-transition"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="panel-label">글자 색상: <strong>{color}</strong></label>
+        <HexColorPicker color={color} onChange={setColor} style={{width: '100%', height: 120}}/>
+      </div>
+
+      <hr className="border-border my-4" />
+      
+      <div className="mb-2">
+        <label className="flex items-center gap-2 text-text theme-transition">
+          <input
+            type="checkbox"
+            checked={hasBackground}
+            onChange={e => setHasBackground(e.target.checked)}
+            className="theme-transition"
+          />
+          배경 사용
+        </label>
+      </div>
+
       {hasBackground && (
-        <Box>
-            <Typography gutterBottom>배경 색상: <strong>{backgroundColor}</strong></Typography>
-            <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
-        </Box>
+        <div className="mb-4">
+          <label className="panel-label">배경 색상: <strong>{backgroundColor}</strong></label>
+          <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
+        </div>
       )}
       
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 3 }}>
-        <Button variant="outlined" size="small" onClick={onClose}>취소</Button>
-        <Button variant="contained" size="small" onClick={() => onSubmit(text, fontSize, color, hasBackground, backgroundColor)} disabled={!text.trim()}>확인</Button>
-      </Box>
-    </Box>
+      <div className="flex gap-2 justify-end mt-6">
+        <button
+          onClick={onClose}
+          className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
+        >
+          취소
+        </button>
+        <button
+          onClick={() => onSubmit(text, fontSize, color, hasBackground, backgroundColor)}
+          disabled={!text.trim()}
+          className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          확인
+        </button>
+      </div>
+    </div>
   );
 };
 

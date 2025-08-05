@@ -1,7 +1,6 @@
 // --- components/SignatureEditTool.tsx ---
 
 import React, { useRef, useState, useEffect } from "react";
-import { Box, Button, Slider, Tabs, Tab, Typography, Switch, FormControlLabel, Divider } from "@mui/material";
 import SignatureCanvas from "react-signature-canvas";
 import { HexColorPicker } from "react-colorful";
 import { PDFSignatureElement } from "../contexts/PDFEditContext";
@@ -81,60 +80,143 @@ const SignatureEditTool = ({ open, position, editingElement, onClose, onSubmit }
   };
 
   return (
-    <Box sx={{ position: "absolute", top: position.y, left: position.x, width: 360, background: "#fff", border: "1px solid #ddd", borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", p: 2, zIndex: 20 }} onClick={(e) => e.stopPropagation()} >
-      <Typography variant="h6" sx={{ mb: 1, fontWeight: 500 }}>서명 편집</Typography>
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} variant="fullWidth">
-        <Tab label="그리기" />
-        <Tab label="업로드" />
-      </Tabs>
+    <div
+      className="absolute bg-card-bg border border-border rounded-lg shadow-lg p-4 z-20 theme-transition"
+      style={{
+        top: position.y,
+        left: position.x,
+        width: 360,
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3 className="text-lg font-medium text-text mb-2 theme-transition">서명 편집</h3>
+      
+      <div className="flex border-b border-border mb-4">
+        <button
+          onClick={() => setTab(0)}
+          className={`flex-1 py-2 px-4 text-sm font-medium theme-transition ${
+            tab === 0
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-button-text hover:text-text'
+          }`}
+        >
+          그리기
+        </button>
+        <button
+          onClick={() => setTab(1)}
+          className={`flex-1 py-2 px-4 text-sm font-medium theme-transition ${
+            tab === 1
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-button-text hover:text-text'
+          }`}
+        >
+          업로드
+        </button>
+      </div>
+
       {tab === 0 && (
-        <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box sx={{ border: "1px dashed #bbb", borderRadius: 1, overflow: 'hidden' }}>
-            <SignatureCanvas ref={sigCanvasRef} penColor="black" canvasProps={{ width: 320, height: 150 }} onEnd={handleSaveDraw} />
-          </Box>
-          <Button size="small" onClick={handleClear} sx={{mt: 1}}>지우기</Button>
-        </Box>
+        <div className="mb-4 flex flex-col items-center">
+          <div className="border-2 border-dashed border-border rounded overflow-hidden">
+            <SignatureCanvas
+              ref={sigCanvasRef}
+              penColor="black"
+              canvasProps={{ width: 320, height: 150 }}
+              onEnd={handleSaveDraw}
+            />
+          </div>
+          <button
+            onClick={handleClear}
+            className="mt-2 px-3 py-1 text-sm rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
+          >
+            지우기
+          </button>
+        </div>
       )}
+
       {tab === 1 && (
-        <Box sx={{ mb: 2, p: 2, border: '1px dashed #bbb', borderRadius: 1, textAlign: 'center' }}>
-          <Button variant="outlined" component="label">파일 선택<input type="file" hidden accept="image/png,image/jpeg" onChange={handleUpload} /></Button>
-        </Box>
+        <div className="mb-4 p-4 border-2 border-dashed border-border rounded text-center">
+          <label className="px-4 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition cursor-pointer">
+            파일 선택
+            <input type="file" hidden accept="image/png,image/jpeg" onChange={handleUpload} />
+          </label>
+        </div>
       )}
       
       {imageData && (
         <>
-        <Box sx={{ mb: 2 }}>
-          <Typography gutterBottom>미리보기 및 크기 조절</Typography>
-          {/* [수정] 미리보기 Box에 배경색 적용 */}
-          <Box sx={{ p:1, border: '1px solid #eee', display:'flex', justifyContent:'center', alignItems: 'center', mb: 1, minHeight: 100, backgroundColor: hasBackground ? backgroundColor : 'transparent' }}>
-            <img src={`data:image/png;base64,${imageData}`} alt="signature-preview" style={{ width: size.width, height: size.height, objectFit: 'contain' }} />
-          </Box>
-          <Typography gutterBottom sx={{fontSize: '0.9rem'}}>너비: {Math.round(size.width)}px</Typography>
-          <Slider min={50} max={400} value={size.width} onChange={(_, v) => setSize({ ...size, width: Number(v)})} />
-          <Typography gutterBottom sx={{fontSize: '0.9rem'}}>높이: {Math.round(size.height)}px</Typography>
-          <Slider min={20} max={300} value={size.height} onChange={(_, v) => setSize({ ...size, height: Number(v)})} />
-        </Box>
-        {/* [추가] 배경 옵션 UI */}
-        <Divider sx={{ my: 2 }} />
-        <FormControlLabel 
-          control={<Switch checked={hasBackground} onChange={e => setHasBackground(e.target.checked)} />} 
-          label="배경 사용" 
-          sx={{ mb: 1 }}
-        />
-        {hasBackground && (
-            <Box>
-                <Typography gutterBottom>배경 색상: <strong>{backgroundColor}</strong></Typography>
-                <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
-            </Box>
-        )}
+          <div className="mb-4">
+            <label className="panel-label">미리보기 및 크기 조절</label>
+            <div
+              className="p-2 border border-border flex justify-center items-center mb-2 min-h-[100px] rounded theme-transition"
+              style={{ backgroundColor: hasBackground ? backgroundColor : 'transparent' }}
+            >
+              <img
+                src={`data:image/png;base64,${imageData}`}
+                alt="signature-preview"
+                style={{ width: size.width, height: size.height, objectFit: 'contain' }}
+              />
+            </div>
+            
+            <label className="panel-label">너비: {Math.round(size.width)}px</label>
+            <input
+              type="range"
+              min={50}
+              max={400}
+              value={size.width}
+              onChange={e => setSize({ ...size, width: Number(e.target.value)})}
+              className="w-full mb-2 theme-transition"
+            />
+            
+            <label className="panel-label">높이: {Math.round(size.height)}px</label>
+            <input
+              type="range"
+              min={20}
+              max={300}
+              value={size.height}
+              onChange={e => setSize({ ...size, height: Number(e.target.value)})}
+              className="w-full theme-transition"
+            />
+          </div>
+
+          <hr className="border-border my-4" />
+          
+          <div className="mb-2">
+            <label className="flex items-center gap-2 text-text theme-transition">
+              <input
+                type="checkbox"
+                checked={hasBackground}
+                onChange={e => setHasBackground(e.target.checked)}
+                className="theme-transition"
+              />
+              배경 사용
+            </label>
+          </div>
+
+          {hasBackground && (
+            <div className="mb-4">
+              <label className="panel-label">배경 색상: <strong>{backgroundColor}</strong></label>
+              <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} style={{width: '100%', height: 120}}/>
+            </div>
+          )}
         </>
       )}
 
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 2 }}>
-        <Button variant="outlined" size="small" onClick={onClose}>취소</Button>
-        <Button variant="contained" size="small" onClick={() => onSubmit(imageData, size.width, size.height, hasBackground, backgroundColor)} disabled={!imageData}>확인</Button>
-      </Box>
-    </Box>
+      <div className="flex gap-2 justify-end mt-4">
+        <button
+          onClick={onClose}
+          className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
+        >
+          취소
+        </button>
+        <button
+          onClick={() => onSubmit(imageData, size.width, size.height, hasBackground, backgroundColor)}
+          disabled={!imageData}
+          className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          확인
+        </button>
+      </div>
+    </div>
   );
 };
 

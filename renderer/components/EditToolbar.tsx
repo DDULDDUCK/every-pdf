@@ -1,12 +1,13 @@
 // --- components/EditToolbar.tsx ---
 
 import React from "react";
-import { Button, Stack, CircularProgress, Box } from "@mui/material";
+import { Button, Stack, CircularProgress } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import GestureIcon from '@mui/icons-material/Gesture';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { usePDFEdit } from "../contexts/PDFEditContext";
 
 type EditToolbarProps = {
@@ -15,34 +16,77 @@ type EditToolbarProps = {
   onSave: () => void;
   isSaving: boolean;
   onUploadClick: () => void;
+  onGoBack: () => void;
 };
 
-const EditToolbar = ({ onSetPendingElement, onSave, isSaving, onUploadClick }: EditToolbarProps) => {
+const EditToolbar = ({ onSetPendingElement, onSave, isSaving, onUploadClick, onGoBack }: EditToolbarProps) => {
   const { state } = usePDFEdit();
 
   return (
-    <Box sx={{ p: 1.5, borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', zIndex: 30 }}>
-      <Button variant="contained" onClick={onUploadClick} startIcon={<UploadFileIcon />}>
-        PDF 열기
-      </Button>
-      
-      <Stack direction="row" spacing={1}>
-        {/* [수정] onClick 핸들러에서 onSetPendingElement 호출 */}
-        <Button variant="outlined" onClick={() => onSetPendingElement('text')} startIcon={<TextFieldsIcon />} disabled={!state.pdfFile}>텍스트</Button>
-        <Button variant="outlined" onClick={() => onSetPendingElement('signature')} startIcon={<GestureIcon />} disabled={!state.pdfFile}>서명</Button>
-        <Button variant="outlined" onClick={() => onSetPendingElement('checkbox')} startIcon={<CheckBoxOutlineBlankIcon />} disabled={!state.pdfFile}>체크박스</Button>
-      </Stack>
+    <header className="py-4 px-6 border-b border-border theme-transition bg-card-bg">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onGoBack}
+            className="group flex items-center gap-2 px-3 py-2 rounded-md bg-button-bg hover:bg-button-hover text-text theme-transition transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+          >
+            <ArrowBackIcon className="w-4 h-4 group-hover:transform group-hover:-translate-x-0.5 transition-transform" />
+            <span className="text-sm font-medium">뒤로가기</span>
+          </button>
+          <h1 className="text-2xl font-bold text-text theme-transition">PDF 편집기</h1>
+        </div>
 
-      <Button 
-        variant="contained" 
-        color="primary" 
-        onClick={onSave} 
-        disabled={isSaving || !state.pdfFile} 
-        startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-      >
-        {isSaving ? "PDF 생성 중..." : "저장"}
-      </Button>
-    </Box>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onUploadClick}
+            className="group flex items-center gap-2 px-4 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+          >
+            <UploadFileIcon className="w-4 h-4 group-hover:transform group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium">PDF 열기</span>
+          </button>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => onSetPendingElement('text')}
+              disabled={!state.pdfFile}
+              className="group flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover hover:border-primary text-text theme-transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+            >
+              <TextFieldsIcon className="w-4 h-4 group-hover:text-primary transition-colors" />
+              <span className="text-sm group-hover:text-primary transition-colors">텍스트</span>
+            </button>
+            <button
+              onClick={() => onSetPendingElement('signature')}
+              disabled={!state.pdfFile}
+              className="group flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover hover:border-primary text-text theme-transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+            >
+              <GestureIcon className="w-4 h-4 group-hover:text-primary transition-colors" />
+              <span className="text-sm group-hover:text-primary transition-colors">서명</span>
+            </button>
+            <button
+              onClick={() => onSetPendingElement('checkbox')}
+              disabled={!state.pdfFile}
+              className="group flex items-center gap-2 px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover hover:border-primary text-text theme-transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+            >
+              <CheckBoxOutlineBlankIcon className="w-4 h-4 group-hover:text-primary transition-colors" />
+              <span className="text-sm group-hover:text-primary transition-colors">체크박스</span>
+            </button>
+          </div>
+
+          <button
+            onClick={onSave}
+            disabled={isSaving || !state.pdfFile}
+            className="group flex items-center gap-2 px-4 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transform hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+          >
+            {isSaving ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : (
+              <SaveIcon className="w-4 h-4 group-hover:transform group-hover:scale-110 transition-transform" />
+            )}
+            <span className="text-sm font-medium">{isSaving ? "PDF 생성 중..." : "저장"}</span>
+          </button>
+        </div>
+      </div>
+    </header>
   );
 };
 

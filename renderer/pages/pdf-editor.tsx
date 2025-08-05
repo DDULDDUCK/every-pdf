@@ -1,10 +1,13 @@
 // --- renderer/pages/pdf-editor.tsx ---
 
 import React, { useState, useRef, useEffect } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 import * as pdfjs from 'pdfjs-dist';
 import { v4 as uuidv4 } from "uuid";
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { usePDFEdit, PDFEditProvider, PDFEditElement, PDFTextElement, PDFSignatureElement, PDFCheckboxElement } from '../contexts/PDFEditContext';
+import { useTranslation } from "react-i18next";
 
 import EditToolbar from '../components/EditToolbar';
 import TextEditTool from '../components/TextEditTool';
@@ -23,10 +26,39 @@ type EditingToolState = {
 const EditorPageContent = () => {
     const { state, setPdfFile, addElement, updateElement, removeElement, setSelectedElementId, setPendingElementType } = usePDFEdit();
     const [editingTool, setEditingTool] = useState<EditingToolState>(null);
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const viewerRef = useRef<PDFViewerHandle>(null);
+    const router = useRouter();
+    const { t } = useTranslation("home");
 
     const [isSaving, setIsSaving] = useState(false);
+
+    // 테마 초기화 및 감지
+    useEffect(() => {
+        // 로컬 스토리지에서 테마 가져오기
+        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+        // 사용자가 다크 모드를 선호하는지 확인
+        const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // 저장된 테마가 있으면 그것을 사용, 없으면 사용자 선호에 따라 설정
+        const initialTheme = savedTheme || (prefersDarkMode ? 'dark' : 'light');
+        setTheme(initialTheme);
+        
+        // HTML 데이터 속성 설정
+        document.documentElement.setAttribute('data-theme', initialTheme);
+    }, []);
+
+    // 테마 변경 시 HTML 데이터 속성 업데이트 및 로컬 스토리지 저장
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    // 뒤로가기 함수
+    const handleGoBack = () => {
+        router.push('/home');
+    };
 
     const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -126,26 +158,33 @@ const EditorPageContent = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#e8e8e8' }}>
-            <input type="file" ref={fileInputRef} onChange={onFileChange} accept="application/pdf" style={{ display: 'none' }} />
-            
-            <EditToolbar
-                onSetPendingElement={type => { setEditingTool(null); setPendingElementType(type); }}
-                onSave={handleSave}
-                isSaving={isSaving}
-                onUploadClick={() => fileInputRef.current?.click()}
-            />
-
-            <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-                <PDFViewer
-                  ref={viewerRef}
-                  onEditElement={handleEditElement}
-                  onPlaceElement={handlePlaceElement}
-                  onCancelPlaceElement={() => setPendingElementType(null)}
+        <>
+            <Head>
+                <title>PDF 편집기 - PDF Studio</title>
+            </Head>
+            <div className="app-container min-h-screen flex flex-col">
+                <input type="file" ref={fileInputRef} onChange={onFileChange} accept="application/pdf" style={{ display: 'none' }} />
+                
+                <EditToolbar
+                    onSetPendingElement={type => { setEditingTool(null); setPendingElementType(type); }}
+                    onSave={handleSave}
+                    isSaving={isSaving}
+                    onUploadClick={() => fileInputRef.current?.click()}
+                    onGoBack={handleGoBack}
                 />
-                {renderEditingTool()}
-            </Box>
-        </Box>
+
+                <div className="flex flex-1 overflow-hidden relative">
+                    <PDFViewer
+                      ref={viewerRef}
+                      onEditElement={handleEditElement}
+                      onPlaceElement={handlePlaceElement}
+                      onCancelPlaceElement={() => setPendingElementType(null)}
+                      onUploadClick={() => fileInputRef.current?.click()}
+                    />
+                    {renderEditingTool()}
+                </div>
+            </div>
+        </>
     );
 };
 
@@ -155,10 +194,10 @@ const EditorPage = () => {
 
   if (!isClient) {
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#e8e8e8' }}>
+        <div className="app-container min-h-screen flex flex-col items-center justify-center">
             <CircularProgress />
-            <Typography sx={{ mt: 2 }}>PDF 에디터를 불러오는 중입니다...</Typography>
-        </Box>
+            <Typography sx={{ mt: 2 }} className="text-text">PDF 에디터를 불러오는 중입니다...</Typography>
+        </div>
     );
   }
 

@@ -1,7 +1,6 @@
 // --- components/CheckboxEditTool.tsx ---
 
 import React, { useState, useEffect } from "react";
-import { Box, Button, Slider, Switch, Typography, FormControlLabel } from "@mui/material";
 import { HexColorPicker } from "react-colorful";
 import { PDFCheckboxElement } from "../contexts/PDFEditContext";
 
@@ -50,68 +49,119 @@ const CheckboxEditTool = ({ open, position, editingElement, onClose, onSubmit }:
   if (!open || !position) return null;
 
   return (
-    <Box
-      sx={{
-        position: "absolute",
+    <div
+      className="absolute bg-card-bg border border-border rounded-lg shadow-lg p-4 z-20 theme-transition"
+      style={{
         top: position.y,
         left: position.x,
         width: 300,
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: 2,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        p: 2,
-        zIndex: 20,
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <Typography variant="h6" sx={{ mb: 1, fontWeight: 500 }}>체크박스 편집</Typography>
+      <h3 className="text-lg font-medium text-text mb-2 theme-transition">체크박스 편집</h3>
       
-      <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-        <FormControlLabel control={<Switch checked={checked} onChange={e => setChecked(e.target.checked)} />} label="체크 상태" />
-        {/* [수정] 미리보기에 isTransparent, hasBorder 속성 반영 */}
-        <Box sx={{border: '1px solid #ccc', p: 1, borderRadius: 1}}>
+      <div className="flex justify-between items-center mb-4">
+        <label className="flex items-center gap-2 text-text theme-transition">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={e => setChecked(e.target.checked)}
+            className="theme-transition"
+          />
+          체크 상태
+        </label>
+        
+        <div className="border border-border p-2 rounded bg-panel-bg theme-transition">
           <svg width={size} height={size}>
-            <rect 
-              x={1} y={1} 
-              width={size-2} height={size-2} 
-              fill={isTransparent ? 'transparent' : color} 
-              stroke={hasBorder ? borderColor : 'transparent'} 
-              strokeWidth={1.5} rx={2} 
+            <rect
+              x={1} y={1}
+              width={size-2} height={size-2}
+              fill={isTransparent ? 'transparent' : color}
+              stroke={hasBorder ? borderColor : 'transparent'}
+              strokeWidth={1.5} rx={2}
             />
             {checked && <polyline points={`${size*0.2},${size*0.5} ${size*0.45},${size*0.75} ${size*0.8},${size*0.25}`} fill="none" stroke="#000" strokeWidth={size/8} strokeLinecap="round" strokeLinejoin="round"/>}
           </svg>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* [추가] 투명도 및 테두리 제어 UI */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
-        <FormControlLabel control={<Switch checked={isTransparent} onChange={e => setIsTransparent(e.target.checked)} />} label="배경 투명" />
-        <FormControlLabel control={<Switch checked={hasBorder} onChange={e => setHasBorder(e.target.checked)} />} label="테두리 표시" />
-      </Box>
+      <div className="flex justify-around mb-4">
+        <label className="flex items-center gap-2 text-text theme-transition">
+          <input
+            type="checkbox"
+            checked={isTransparent}
+            onChange={e => setIsTransparent(e.target.checked)}
+            className="theme-transition"
+          />
+          배경 투명
+        </label>
+        <label className="flex items-center gap-2 text-text theme-transition">
+          <input
+            type="checkbox"
+            checked={hasBorder}
+            onChange={e => setHasBorder(e.target.checked)}
+            className="theme-transition"
+          />
+          테두리 표시
+        </label>
+      </div>
 
-      <Box sx={{ mb: 2 }}>
-        <Typography gutterBottom>크기: <strong>{size}px</strong></Typography>
-        <Slider min={10} max={50} value={size} onChange={(_, v) => setSize(Number(v))} />
-      </Box>
+      <div className="mb-4">
+        <label className="panel-label">크기: <strong>{size}px</strong></label>
+        <input
+          type="range"
+          min={10}
+          max={50}
+          value={size}
+          onChange={e => setSize(Number(e.target.value))}
+          className="w-full theme-transition"
+        />
+      </div>
       
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Box sx={{ flex: 1 }}>
-            <Typography gutterBottom>채우기: <strong>{isTransparent ? '투명' : color}</strong></Typography>
-            <HexColorPicker color={color} onChange={setColor} style={{width: '100%', height: 100, pointerEvents: isTransparent ? 'none' : 'auto', opacity: isTransparent ? 0.5 : 1}} />
-        </Box>
-        <Box sx={{ flex: 1 }}>
-            <Typography gutterBottom>테두리: <strong>{hasBorder ? borderColor : '없음'}</strong></Typography>
-            <HexColorPicker color={borderColor} onChange={setBorderColor} style={{width: '100%', height: 100, pointerEvents: !hasBorder ? 'none' : 'auto', opacity: !hasBorder ? 0.5 : 1}} />
-        </Box>
-      </Box>
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <label className="panel-label">채우기: <strong>{isTransparent ? '투명' : color}</strong></label>
+          <HexColorPicker
+            color={color}
+            onChange={setColor}
+            style={{
+              width: '100%',
+              height: 100,
+              pointerEvents: isTransparent ? 'none' : 'auto',
+              opacity: isTransparent ? 0.5 : 1
+            }}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="panel-label">테두리: <strong>{hasBorder ? borderColor : '없음'}</strong></label>
+          <HexColorPicker
+            color={borderColor}
+            onChange={setBorderColor}
+            style={{
+              width: '100%',
+              height: 100,
+              pointerEvents: !hasBorder ? 'none' : 'auto',
+              opacity: !hasBorder ? 0.5 : 1
+            }}
+          />
+        </div>
+      </div>
 
-      <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 3 }}>
-        <Button variant="outlined" size="small" onClick={onClose}>취소</Button>
-        {/* [수정] onSubmit 콜백에 isTransparent, hasBorder 값 전달 */}
-        <Button variant="contained" size="small" onClick={() => onSubmit(checked, size, color, borderColor, isTransparent, hasBorder)}>확인</Button>
-      </Box>
-    </Box>
+      <div className="flex gap-2 justify-end mt-6">
+        <button
+          onClick={onClose}
+          className="px-3 py-2 rounded-md border border-border bg-card-bg hover:bg-button-hover text-text theme-transition"
+        >
+          취소
+        </button>
+        <button
+          onClick={() => onSubmit(checked, size, color, borderColor, isTransparent, hasBorder)}
+          className="px-3 py-2 rounded-md bg-primary hover:bg-primary-hover text-white theme-transition"
+        >
+          확인
+        </button>
+      </div>
+    </div>
   );
 };
 
