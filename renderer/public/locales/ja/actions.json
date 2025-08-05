@@ -7,5 +7,6 @@
   "convertFromPdf": "PDFから変換",
   "security": "セキュリティ",
   "seletedFile": "選択したファイル: {{fileName}}",
-  "selectedImg": "選択した画像: {{count}}"
+  "selectedImg": "選択した画像: {{count}}",
+  "edit": "PDF編集"
 }

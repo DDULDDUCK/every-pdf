@@ -14,7 +14,7 @@ from io import BytesIO
 from xhtml2pdf import pisa
 import img2pdf
 
-from ..utils import get_session_dir, parse_page_ranges
+from pdf_processor.utils import get_session_dir, parse_page_ranges
 
 router = APIRouter()
 

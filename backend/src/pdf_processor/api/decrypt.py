@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 import shutil
 from pypdf import PdfReader, PdfWriter
-from ..utils import get_session_dir
+from pdf_processor.utils import get_session_dir
 
 router = APIRouter()
 

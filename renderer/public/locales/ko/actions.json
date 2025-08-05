@@ -7,5 +7,6 @@
   "convertFromPdf": "다른 형식으로 변환",
   "security": "보안",
   "seletedFile": "선택된 파일: {{fileName}}",
-  "selectedImg": "선택된 이미지: {{count}}장"
+  "selectedImg": "선택된 이미지: {{count}}장",
+  "edit": "PDF 편집"
 }

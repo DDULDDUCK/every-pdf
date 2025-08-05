@@ -8,7 +8,7 @@ from pypdf import PdfReader, PdfWriter
 import os
 import uuid
 
-from ..utils import get_session_dir, parse_page_ranges
+from pdf_processor.utils import get_session_dir, parse_page_ranges
 
 router = APIRouter()
 

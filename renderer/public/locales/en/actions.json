@@ -7,5 +7,6 @@
   "convertFromPdf": "convert from PDF",
   "security": "security",
   "seletedFile": "Selected file: {{fileName}}",
-  "selectedImg": "Selected images: {{count}}"
+  "selectedImg": "Selected images: {{count}}",
+  "edit": "PDF edit"
 }

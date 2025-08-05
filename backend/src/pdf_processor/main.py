@@ -4,7 +4,7 @@ import socket
 from pathlib import Path
 
 # 수정된 부분: app.py에서 app 객체를 직접 임포트합니다.
-from .app import app
+from pdf_processor.app import app
 
 # 수정된 부분: api 패키지에서 라우터 등록 함수를 임포트합니다.
 from pdf_processor.api import register_routers

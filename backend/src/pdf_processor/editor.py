@@ -15,26 +15,39 @@ from PIL import Image
 import tempfile
 from pathlib import Path
 
-# --- Font setup (no changes) ---
+# --- Enhanced font setup based on addWatermark.py ---
 DEFAULT_FONT_NAME = "Helvetica"
+REGULAR_FONT_NAME = "NotoSansKR-Regular"
+BOLD_FONT_NAME = "NotoSansKR-Bold"
+REGULAR_FONT_FILE = "NotoSansKR-Regular.ttf"
+BOLD_FONT_FILE = "NotoSansKR-Bold.ttf"
+
 try:
-    FONT_NAME_TO_REGISTER = "NotoSansKR-Regular"
-    FONT_FILENAME = "NotoSansKR-Regular.ttf"
-    font_path = None
-    if getattr(sys, '_MEIPASS', False):
-        font_path = os.path.join(sys._MEIPASS, 'fonts', FONT_FILENAME)
+    # PyInstaller가 생성한 임시 경로 확인
+    if getattr(sys, '_MEIPASS', None):
+        font_path = os.path.join(sys._MEIPASS, 'pdf_processor', 'fonts')
     else:
-        base_dir = Path(__file__).resolve().parent.parent
-        font_path = base_dir / "fonts" / FONT_FILENAME
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        font_path = os.path.join(base_dir, '..', '..', 'fonts')
     
-    if os.path.exists(font_path):
-        pdfmetrics.registerFont(TTFont(FONT_NAME_TO_REGISTER, str(font_path)))
-        DEFAULT_FONT_NAME = FONT_NAME_TO_REGISTER
-        print(f"SUCCESS: Font '{DEFAULT_FONT_NAME}' loaded successfully.")
+    regular_font_path = os.path.join(font_path, REGULAR_FONT_FILE)
+    bold_font_path = os.path.join(font_path, BOLD_FONT_FILE)
+    
+    if os.path.exists(regular_font_path) and os.path.exists(bold_font_path):
+        # 일반 폰트와 볼드 폰트 등록
+        pdfmetrics.registerFont(TTFont(REGULAR_FONT_NAME, regular_font_path))
+        pdfmetrics.registerFont(TTFont(BOLD_FONT_NAME, bold_font_path))
+        DEFAULT_FONT_NAME = REGULAR_FONT_NAME
+        print(f"SUCCESS: Fonts '{REGULAR_FONT_NAME}' and '{BOLD_FONT_NAME}' loaded successfully.")
     else:
-        print(f"ERROR: Font file not found.")
+        missing_fonts = []
+        if not os.path.exists(regular_font_path):
+            missing_fonts.append(REGULAR_FONT_FILE)
+        if not os.path.exists(bold_font_path):
+            missing_fonts.append(BOLD_FONT_FILE)
+        print(f"ERROR: Font files not found: {', '.join(missing_fonts)}")
 except Exception as e:
-    print(f"ERROR: Failed to load font. Error: {e}")
+    print(f"CRITICAL ERROR: Failed to load fonts. Error: {e}")
 # --- End of font setup ---
 
 def hex_to_color(hex_color: str):

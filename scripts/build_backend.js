@@ -38,6 +38,7 @@ async function buildBackend() {
         '--add-data',
         `${join(backendPath, 'src', 'poppler', 'mac', '25.03.0', 'lib')}:poppler/lib`
       ] : []),
+      '--hidden-import', 'pdf_processor',
       '--hidden-import', 'PyPDF2',
       '--hidden-import', 'fastapi',
       '--hidden-import', 'uvicorn',

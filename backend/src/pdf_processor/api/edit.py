@@ -5,7 +5,7 @@ import json
 from urllib.parse import quote # <<< urllib.parse.quote 임포트
 from fastapi import APIRouter, HTTPException, File, UploadFile, Form
 from fastapi.responses import StreamingResponse
-from .. import editor
+from pdf_processor import editor
 
 router = APIRouter()
 

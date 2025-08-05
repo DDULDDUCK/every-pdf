@@ -7,7 +7,7 @@ from pypdf import PdfReader, PdfWriter
 import shutil
 import os
 
-from ..utils import get_session_dir
+from pdf_processor.utils import get_session_dir
 
 router = APIRouter()
 

@@ -14,7 +14,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
 
-from ..utils import get_session_dir, parse_page_ranges
+from pdf_processor.utils import get_session_dir, parse_page_ranges
 
 router = APIRouter()
 

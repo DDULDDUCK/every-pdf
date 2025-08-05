@@ -31,7 +31,7 @@ from docx.shared import Pt, Inches, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 
-from ..utils import get_session_dir
+from pdf_processor.utils import get_session_dir
 
 logger = logging.getLogger(__name__)
 

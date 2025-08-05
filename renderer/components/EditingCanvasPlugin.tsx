@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plugin, PluginRenderPageLayer } from '@react-pdf-viewer/core';
-import Draggable from 'react-draggable';
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { Box, Typography } from '@mui/material';
 import { usePDFEdit, PDFEditElement, PDFTextElement, PDFSignatureElement, PDFCheckboxElement } from '../contexts/PDFEditContext';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -31,7 +31,7 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
     const elementsOnPage = state.elements.filter((el) => el.page === pageIndex + 1);
 
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        setContextMenu(null); // 컨텍스트 메뉴 닫기
+        setContextMenu(null);
         if (state.pendingElementType) {
             const x = e.nativeEvent.offsetX / scale;
             const y = e.nativeEvent.offsetY / scale;
@@ -81,6 +81,21 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (state.pendingElementType) setPendingPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
     };
+    
+     // [수정] 드래그 시작 시 요소를 선택하는 로직 추가
+    const handleDrag = (el: PDFEditElement, e: DraggableEvent, data: DraggableData) => {
+        // 드래그가 시작될 때 해당 요소가 선택되지 않았다면 선택해준다.
+        if (state.selectedElementId !== el.id) {
+            setSelectedElementId(el.id);
+        }
+        updateElement({ ...el, x: data.x / scale, y: data.y / scale });
+    };
+
+    // [수정] 클릭 대신 마우스 다운 시점에 선택
+    const handleElementMouseDown = (e: React.MouseEvent, el: PDFEditElement) => {
+        e.stopPropagation();
+        setSelectedElementId(el.id);
+    };
 
     const renderPendingElement = () => {
         if (!state.pendingElementType || !pendingPosition) return null;
@@ -109,22 +124,26 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                 return (
                     <Draggable
                         key={el.id}
+                        // [핵심 수정] 제어 컴포넌트로 만들기 위해 position을 명시적으로 전달
                         position={{ x: el.x * scale, y: el.y * scale }}
-                        onStop={(e, data) => { updateElement({ ...el, x: data.x / scale, y: data.y / scale }); }}
-                        bounds="parent" scale={1}
+                        // [핵심 수정] onStop -> onDrag 로 변경하여 실시간 위치 업데이트
+                        // 이렇게 하면 드래그가 훨씬 부드러워지고, 서명 요소 등의 초기 위치 오류가 사라집니다.
+                        onDrag={(e, data) => handleDrag(el, e, data)}
+                        bounds="parent" 
+                        // react-draggable의 scale은 1로 두고, 우리 앱의 scale은 직접 계산에 사용합니다.
+                        scale={1} 
                     >
                         <Box
                             onDoubleClick={() => onEditElement(el)}
-                            onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
+                            onMouseDown={(e) => handleElementMouseDown(e, el)}
                             onContextMenu={(e) => handleElementContextMenu(e, el)}
                             sx={{
                                 position: 'absolute', cursor: 'move',
-                                border: isSelected ? '2px dashed #007BFF' : '1px dashed transparent',
+                                border: isSelected ? '2px dashed #007BFF' : '1px solid transparent',
                                 '&:hover': { border: isSelected ? '2px dashed #007BFF' : '1px dashed grey' },
                                 backgroundColor: el.type === 'text' && (el as PDFTextElement).hasBackground ? (el as PDFTextElement).backgroundColor :
                                                  el.type === 'signature' && (el as PDFSignatureElement).hasBackground ? (el as PDFSignatureElement).backgroundColor :
                                                  'transparent',
-                                // 패딩을 Box 자체에 적용하여 자식 요소들이 올바르게 위치하도록 함
                                 p: '2px', 
                             }}
                         >
@@ -136,7 +155,6 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                             {el.type === 'signature' && (el as PDFSignatureElement).imageData && (
                                 <img src={`data:image/png;base64,${(el as PDFSignatureElement).imageData}`} alt="signature" style={{ width: (el as PDFSignatureElement).width * scale, height: (el as PDFSignatureElement).height * scale, userSelect: 'none', display: 'block' }} />
                             )}
-                            {/* [핵심 수정] 체크박스 렌더링을 SVG로 통일 */}
                             {el.type === 'checkbox' && (() => {
                                 const checkboxEl = el as PDFCheckboxElement;
                                 const size = checkboxEl.size * scale;
@@ -168,7 +186,6 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                 );
             })}
             
-            {/* 컨텍스트 메뉴 */}
             <ContextMenu
                 anchorPosition={contextMenu?.position || null}
                 onClose={handleContextMenuClose}

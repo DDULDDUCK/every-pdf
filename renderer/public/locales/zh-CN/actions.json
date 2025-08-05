@@ -7,5 +7,6 @@
   "convertFromPdf": "从PDF转换",
   "security": "安全",
   "seletedFile": "已选择文件：{{fileName}}",
-  "selectedImg": "已选择图片：{{count}}"
+  "selectedImg": "已选择图片：{{count}}",
+  "edit": "PDF编辑"
 }

@@ -11,7 +11,7 @@ from .decrypt import router as decrypt_router
 from .edit import router as edit_router
 
 # get_session_dir, parse_page_ranges는 utils에서 import
-from ..utils import get_session_dir, parse_page_ranges
+from pdf_processor.utils import get_session_dir, parse_page_ranges
 
 def register_routers(app: FastAPI):
     app.include_router(split_router)
