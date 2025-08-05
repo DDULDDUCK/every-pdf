@@ -80,10 +80,9 @@ def create_overlay(page_width_pt: float, page_height_pt: float, elements: List[D
                 text_object.setFont(DEFAULT_FONT_NAME, font_size_px)
                 text_object.setFillColor(hex_to_color(el.get("color", "#000000")))
                 text_object.setLeading(line_height)
-
-                # [핵심 수정] 텍스트 위치 미세 조정 (+2px 오른쪽, +7px 아래로)
-                start_x = px + 2  # 2px 오른쪽으로 이동
-                start_y = py_top - font_size_px - 7  # 7px 아래로 이동
+ 
+                start_x = px
+                start_y = py_top - font_size_px 
 
                 text_object.setTextOrigin(start_x, start_y)
 
@@ -118,12 +117,22 @@ def create_overlay(page_width_pt: float, page_height_pt: float, elements: List[D
             py_bottom = py_top - size_px
             is_transparent = el.get("isTransparent", False)
             has_border = el.get("hasBorder", True)
+            
+            # 위치 보정을 위한 조정된 좌표
+            adj_px = px + 1.3
+            adj_py_bottom = py_bottom - 1.3
 
             if has_border or not is_transparent:
                 c.setStrokeColor(hex_to_color(el.get("borderColor", "#000000")))
                 c.setFillColor(hex_to_color(el.get("color", "#FFFFFF")))
-                c.setLineWidth(1.5)
-                c.rect(px, py_bottom, size_px, size_px, stroke=(1 if has_border else 0), fill=(0 if is_transparent else 1))
+                # 두께를 1.0으로 줄여서 프론트엔드와 시각적으로 맞춤
+                c.setLineWidth(1.0) 
+                c.rect(
+                    adj_px, adj_py_bottom, 
+                    size_px, size_px, 
+                    stroke=(1 if has_border else 0), 
+                    fill=(0 if is_transparent else 1)
+                )
 
             if el.get("checked", False):
                 c.setStrokeColor(HexColor("#000000"))

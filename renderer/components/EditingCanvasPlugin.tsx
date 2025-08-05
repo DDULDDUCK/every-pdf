@@ -22,6 +22,7 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
     const [pendingPosition, setPendingPosition] = React.useState<{ x: number; y: number } | null>(null);
     const elementsOnPage = state.elements.filter((el) => el.page === pageIndex + 1);
 
+    // ... (handleOverlayClick, handleMouseMove, renderPendingElement 함수는 변경 없음) ...
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (state.pendingElementType) {
             const x = e.nativeEvent.offsetX / scale;
@@ -36,40 +37,18 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (state.pendingElementType) setPendingPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
     };
-    
-    // [수정] renderPendingElement 함수
+
     const renderPendingElement = () => {
         if (!state.pendingElementType || !pendingPosition) return null;
-
-        const ghostStyle: React.CSSProperties = {
-            position: 'absolute',
-            top: pendingPosition.y,
-            left: pendingPosition.x,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 25,
-            opacity: 0.7,
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            background: 'rgba(0, 123, 255, 0.8)',
-            color: 'white',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            whiteSpace: 'nowrap',
-        };
-
+        const ghostStyle: React.CSSProperties = { position: 'absolute', top: pendingPosition.y, left: pendingPosition.x, transform: 'translate(-50%, -50%)', zIndex: 25, opacity: 0.7, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0, 123, 255, 0.8)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '14px', whiteSpace: 'nowrap' };
         switch (state.pendingElementType) {
             case 'text': return <Box sx={ghostStyle}><TextFieldsIcon fontSize="small" /> 텍스트 추가</Box>;
             case 'signature': return <Box sx={ghostStyle}><GestureIcon fontSize="small" /> 서명 추가</Box>;
             case 'checkbox': return <Box sx={ghostStyle}><CheckBoxOutlineBlankIcon fontSize="small" /> 체크박스 추가</Box>;
-            default: 
-                // *** 여기가 수정된 부분입니다 ***
-                // default case에서 명시적으로 null을 반환하여 TypeScript 오류를 해결합니다.
-                return null;
+            default: return null;
         }
     };
+
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}>
@@ -96,27 +75,47 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                             sx={{
                                 position: 'absolute', cursor: 'move',
                                 border: isSelected ? '2px dashed #007BFF' : '1px dashed transparent',
-                                p: '2px',
                                 '&:hover': { border: isSelected ? '2px dashed #007BFF' : '1px dashed grey' },
                                 backgroundColor: el.type === 'text' && (el as PDFTextElement).hasBackground ? (el as PDFTextElement).backgroundColor :
                                                  el.type === 'signature' && (el as PDFSignatureElement).hasBackground ? (el as PDFSignatureElement).backgroundColor :
-                                                 'transparent'
+                                                 'transparent',
+                                // 패딩을 Box 자체에 적용하여 자식 요소들이 올바르게 위치하도록 함
+                                p: '2px', 
                             }}
                         >
                             {el.type === 'text' && (
-                                <Typography sx={{ color: (el as PDFTextElement).color, fontSize: `${(el as PDFTextElement).fontSize * scale}px`, whiteSpace: 'pre-wrap', userSelect: 'none' }}>
+                                <Typography sx={{ color: (el as PDFTextElement).color, fontSize: `${(el as PDFTextElement).fontSize * scale}px`, whiteSpace: 'pre-wrap', userSelect: 'none', lineHeight: 1.2 }}>
                                     {(el as PDFTextElement).text}
                                 </Typography>
                             )}
                             {el.type === 'signature' && (el as PDFSignatureElement).imageData && (
                                 <img src={`data:image/png;base64,${(el as PDFSignatureElement).imageData}`} alt="signature" style={{ width: (el as PDFSignatureElement).width * scale, height: (el as PDFSignatureElement).height * scale, userSelect: 'none', display: 'block' }} />
                             )}
+                            {/* [핵심 수정] 체크박스 렌더링을 SVG로 통일 */}
                             {el.type === 'checkbox' && (() => {
                                 const checkboxEl = el as PDFCheckboxElement;
+                                const size = checkboxEl.size * scale;
                                 return (
-                                    <Box sx={{ width: checkboxEl.size * scale, height: checkboxEl.size * scale, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: checkboxEl.isTransparent ? 'transparent' : checkboxEl.color, border: checkboxEl.hasBorder ? `1.5px solid ${checkboxEl.borderColor}` : '1.5px solid transparent', borderRadius: '2px' }}>
-                                        {checkboxEl.checked && <Typography sx={{color: '#000', fontSize: `${checkboxEl.size * scale * 0.8}px`, lineHeight: 1, userSelect: 'none'}}>✓</Typography>}
-                                    </Box>
+                                    <svg width={size} height={size}>
+                                        <rect 
+                                            x={1} y={1}
+                                            width={size - 2} height={size - 2}
+                                            fill={checkboxEl.isTransparent ? 'transparent' : checkboxEl.color} 
+                                            stroke={checkboxEl.hasBorder ? checkboxEl.borderColor : 'transparent'} 
+                                            strokeWidth={1.5} 
+                                            rx={2}
+                                        />
+                                        {checkboxEl.checked && (
+                                            <polyline 
+                                                points={`${size*0.2},${size*0.5} ${size*0.45},${size*0.75} ${size*0.8},${size*0.25}`} 
+                                                fill="none" 
+                                                stroke="#000" 
+                                                strokeWidth={size/8} 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round"
+                                            />
+                                        )}
+                                    </svg>
                                 );
                             })()}
                         </Box>
