@@ -1,6 +1,6 @@
 // --- components/EditingCanvasPlugin.tsx ---
 
-import * as React from 'react';
+import React, { useState } from 'react'; // React import 확인
 import { useTranslation } from 'react-i18next';
 import { Plugin, PluginRenderPageLayer } from '@react-pdf-viewer/core';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
@@ -15,19 +15,23 @@ interface EditingCanvasPluginProps {
   onEditElement: (element: PDFEditElement) => void;
   onPlaceElement: (type: 'text' | 'signature' | 'checkbox', page: number, x: number, y: number) => void;
   onCancelPlaceElement: () => void;
+  onDeselect: () => void;
 }
 
 const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps> = ({
-    pageIndex, scale, onEditElement, onPlaceElement, onCancelPlaceElement,
+    pageIndex, scale, onEditElement, onPlaceElement, onCancelPlaceElement, onDeselect
 }) => {
-    const { state, updateElement, setSelectedElementId } = usePDFEdit();
+    const { state, updateElement, setSelectedElementId, saveHistory } = usePDFEdit();
     const { t } = useTranslation('editor');
-    const [pendingPosition, setPendingPosition] = React.useState<{ x: number; y: number } | null>(null);
-    const [contextMenu, setContextMenu] = React.useState<{
+
+    // [오류 수정] 누락된 useState 선언부 추가
+    const [pendingPosition, setPendingPosition] = useState<{ x: number; y: number } | null>(null);
+    const [contextMenu, setContextMenu] = useState<{
         position: { left: number; top: number };
         selectedElement?: PDFEditElement | null;
         pastePosition?: { x: number; y: number; page: number } | null;
     } | null>(null);
+    
     const elementsOnPage = state.elements.filter((el) => el.page === pageIndex + 1);
 
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -37,24 +41,19 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
             const y = e.nativeEvent.offsetY / scale;
             onPlaceElement(state.pendingElementType, pageIndex + 1, x, y);
         } else {
-            setSelectedElementId(null);
+            onDeselect();
         }
         e.preventDefault(); e.stopPropagation();
     };
 
     const handleOverlayContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
+        e.preventDefault(); e.stopPropagation();
         if (state.pendingElementType) {
             onCancelPlaceElement();
             return;
         }
-
-        const rect = e.currentTarget.getBoundingClientRect();
         const x = e.nativeEvent.offsetX / scale;
         const y = e.nativeEvent.offsetY / scale;
-        
         setContextMenu({
             position: { left: e.clientX, top: e.clientY },
             selectedElement: null,
@@ -63,9 +62,7 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
     };
 
     const handleElementContextMenu = (e: React.MouseEvent, element: PDFEditElement) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
+        e.preventDefault(); e.stopPropagation();
         setSelectedElementId(element.id);
         setContextMenu({
             position: { left: e.clientX, top: e.clientY },
@@ -74,27 +71,22 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
         });
     };
 
-    const handleContextMenuClose = () => {
-        setContextMenu(null);
-    };
+    const handleContextMenuClose = () => setContextMenu(null);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         if (state.pendingElementType) setPendingPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
     };
-    
-     // [수정] 드래그 시작 시 요소를 선택하는 로직 추가
-    const handleDrag = (el: PDFEditElement, e: DraggableEvent, data: DraggableData) => {
-        // 드래그가 시작될 때 해당 요소가 선택되지 않았다면 선택해준다.
-        if (state.selectedElementId !== el.id) {
-            setSelectedElementId(el.id);
-        }
-        updateElement({ ...el, x: data.x / scale, y: data.y / scale });
+
+    const handleDragStart = (el: PDFEditElement) => {
+        setSelectedElementId(el.id);
     };
 
-    // [수정] 클릭 대신 마우스 다운 시점에 선택
-    const handleElementMouseDown = (e: React.MouseEvent, el: PDFEditElement) => {
-        e.stopPropagation();
-        setSelectedElementId(el.id);
+    const handleDrag = (el: PDFEditElement, e: DraggableEvent, data: DraggableData) => {
+        updateElement({ ...el, x: data.x / scale, y: data.y / scale }, false);
+    };
+
+    const handleDragStop = () => {
+        saveHistory();
     };
 
     const renderPendingElement = () => {
@@ -124,18 +116,14 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                 return (
                     <Draggable
                         key={el.id}
-                        // [핵심 수정] 제어 컴포넌트로 만들기 위해 position을 명시적으로 전달
                         position={{ x: el.x * scale, y: el.y * scale }}
-                        // [핵심 수정] onStop -> onDrag 로 변경하여 실시간 위치 업데이트
-                        // 이렇게 하면 드래그가 훨씬 부드러워지고, 서명 요소 등의 초기 위치 오류가 사라집니다.
+                        onStart={() => handleDragStart(el)}
                         onDrag={(e, data) => handleDrag(el, e, data)}
+                        onStop={handleDragStop}
                         bounds="parent" 
-                        // react-draggable의 scale은 1로 두고, 우리 앱의 scale은 직접 계산에 사용합니다.
                         scale={1} 
                     >
                         <Box
-                            onDoubleClick={() => onEditElement(el)}
-                            onMouseDown={(e) => handleElementMouseDown(e, el)}
                             onContextMenu={(e) => handleElementContextMenu(e, el)}
                             sx={{
                                 position: 'absolute', cursor: 'move',
@@ -152,8 +140,29 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                                     {(el as PDFTextElement).text}
                                 </Typography>
                             )}
-                            {el.type === 'signature' && (el as PDFSignatureElement).imageData && (
-                                <img src={`data:image/png;base64,${(el as PDFSignatureElement).imageData}`} alt="signature" style={{ width: (el as PDFSignatureElement).width * scale, height: (el as PDFSignatureElement).height * scale, userSelect: 'none', display: 'block' }} />
+                            {el.type === 'signature' && (
+                                <>
+                                    {(el as PDFSignatureElement).imageData ? (
+                                        <img src={`data:image/png;base64,${(el as PDFSignatureElement).imageData}`} alt="signature" style={{ width: (el as PDFSignatureElement).width * scale, height: (el as PDFSignatureElement).height * scale, userSelect: 'none', display: 'block' }} />
+                                    ) : (
+                                        <Box sx={{
+                                            width: (el as PDFSignatureElement).width * scale,
+                                            height: (el as PDFSignatureElement).height * scale,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: '1px dashed #999',
+                                            borderRadius: '4px',
+                                            backgroundColor: 'rgba(0,0,0,0.05)',
+                                            userSelect: 'none',
+                                            p: 1,
+                                        }}>
+                                            <Typography sx={{ color: '#666', fontSize: 12 * scale, textAlign: 'center' }}>
+                                                {t("addSignaturePlaceholder", "Click to add signature")}
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </>
                             )}
                             {el.type === 'checkbox' && (() => {
                                 const checkboxEl = el as PDFCheckboxElement;

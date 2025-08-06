@@ -43,5 +43,7 @@
   "step3Title": "开始编辑",
   "step3Desc": "选择工具开始编辑",
   "bottomInfo": "支持格式：PDF | 安全本地处理 | 文件不会上传到服务器",
-  "textPlaceholder": "输入文本"
+  "textPlaceholder": "输入文本",
+  "properties": "属性",
+  "selectElementPrompt": "选择要编辑的元素"
 }

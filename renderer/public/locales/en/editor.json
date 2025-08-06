@@ -46,5 +46,7 @@
   "textPlaceholder": "Enter text",
   "addText": "Add Text",
   "addSignature": "Add Signature",
-  "addCheckbox": "Add Checkbox"
+  "addCheckbox": "Add Checkbox",
+  "properties": "Properties",
+  "selectElementPrompt": "Select an element to edit"
 }

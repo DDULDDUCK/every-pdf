@@ -43,5 +43,7 @@
   "step3Title": "編集開始",
   "step3Desc": "ツールを選択して編集を始めましょう",
   "bottomInfo": "対応形式: PDF | 安全なローカル処理 | ファイルはサーバーにアップロードされません",
-  "textPlaceholder": "テキストを入力"
+  "textPlaceholder": "テキストを入力",
+  "properties": "プロパティ",
+  "selectElementPrompt": "編集する要素を選択してください"
 }

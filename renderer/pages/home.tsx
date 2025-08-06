@@ -550,7 +550,7 @@ export default function HomePage() {
                 Every PDF
               </h1>
               <div className="flex items-center gap-4">
-                <BuyMeCoffeeButton />
+                {/* <BuyMeCoffeeButton /> */}
                 <ActionButtons
                   selectedAction={selectedAction}
                   onActionSelect={handleActionSelect}
