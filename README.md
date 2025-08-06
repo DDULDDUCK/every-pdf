@@ -92,7 +92,7 @@ Every PDF는 최신 기술을 바탕으로 최고의 성능과 안정성을 제�
 **Every PDF와 함께해주셔서 감사합니다!**
 
 ***
-# PDF-Studio
+# Every-PDF
 
 > Nextron(Electron + Next.js) 기반의 PDF 도구 데스크탑 애플리케이션입니다. TailwindCSS, Python 백엔드, 다양한 PDF 기능을 제공합니다.
 
