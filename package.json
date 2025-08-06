@@ -10,7 +10,7 @@
     "setup-backend": "node scripts/setup_venv.js",
     "build-backend": "node scripts/build_backend.js",
     "dev": "npm run copy-pdf-worker && npm run setup-backend && concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "copy-pdf-worker": "mkdir -p renderer/public/static && cp ./node_modules/pdfjs-dist/build/pdf.worker.min.js ./renderer/public/static/",
+    "copy-pdf-worker": "node ./scripts/copy-worker.js",
     "dev:frontend": "nextron",
     "dev:backend": "cd backend/src && ../../backend/venv/bin/python -m pdf_processor",
     "dev:backend:win": "cd backend/src && ..\\venv\\Scripts\\python -m pdf_processor",
