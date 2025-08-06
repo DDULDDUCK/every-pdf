@@ -2,14 +2,13 @@
 
 ### 이미지 (IMAGE)
 - 홈 이미지 (Home)
-  ![Welcome](./asset/welcome.png)
+<img width="998" height="793" alt="스크린샷 2025-08-06 오후 12 08 01" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
+### 동영상 (MOVIE)
+- Every PDF 편집 예시 (Demo video)
+![Edit](https://github.com/user-attachments/assets/b150e320-3204-44d0-9fe9-e6f84d4c7345)
 
 - 분할 기능 예시 (Split) 
-  ![Split Demo](./asset/split.png)
-
-### 동영상 (MOVIE)
-- Every PDF 사용 예시 (Demo video)
-![demo](https://github.com/user-attachments/assets/d51e5596-3274-4bcd-a8ca-b54241a85e70)
+![Split](https://github.com/user-attachments/assets/bcf83b87-b04a-436b-9e7f-f585f4c78faa)
 
 ## 다운로드 (Download)
 - 윈도우 와 Mac 지원 ( Window and Mac )
