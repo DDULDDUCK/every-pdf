@@ -3,9 +3,10 @@
 ### 이미지 (IMAGE)
 - 홈 이미지 (Home)
 <img width="998" height="793" alt="스크린샷 2025-08-06 오후 12 08 01" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
+
 ### 동영상 (MOVIE)
 - Every PDF 편집 예시 (Demo video)
-![Edit](https://github.com/user-attachments/assets/b150e320-3204-44d0-9fe9-e6f84d4c7345)
+![Edit](https://github.com/user-attachments/assets/e3ec427a-5a43-4d23-840b-9fbc73e1a8cb)
 
 - 분할 기능 예시 (Split) 
 ![Split](https://github.com/user-attachments/assets/bcf83b87-b04a-436b-9e7f-f585f4c78faa)
