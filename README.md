@@ -2,10 +2,10 @@
 
 ### 이미지 (IMAGE)
 - 홈 이미지 (Home)
-<img width="998" height="793" alt="스크린샷 2025-08-06 오후 12 08 01" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
+<img width="998" height="793" alt="스크린샷 2025-08-06 오후 12 08 01" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
 
 ### 동영상 (MOVIE)
-- Every PDF 편집 예시 (Demo video)
+- **Every PDF 편집 기능 예시 (v2.0.0 New Feature Demo)**
   
 ![Edit](https://github.com/user-attachments/assets/e3ec427a-5a43-4d23-840b-9fbc73e1a8cb)
 
@@ -14,20 +14,27 @@
 ![Split](https://github.com/user-attachments/assets/bcf83b87-b04a-436b-9e7f-f585f4c78faa)
 
 ## 다운로드 (Download)
+- **최신 릴리즈 (Latest Release) : v2.0.0**
 - 윈도우 와 Mac 지원 ( Window and Mac )
 - Window : exe
 - Mac : dmg
-- https://github.com/DDULDDUCK/pdf-studio/releases
+- https://github.com/DDULDDUCK/every-pdf/releases
 ***
-# 🎉 Announcing Every PDF!
+# 🎉 Announcing Every PDF 2.0.0!
 
-Hello everyone! We are thrilled to unveil the first official version of **Every PDF**, your new solution for working with PDF documents. Complex and tedious PDF editing is now a thing of the past—with Every PDF, it's simple and efficient.
+Hello everyone! We are thrilled to announce the release of **Every PDF 2.0.0**! This major update introduces a powerful new **PDF Editor**, making Every PDF a more comprehensive and essential tool for all your document needs.
 
-Every PDF is a powerful desktop application packed with all the essential features you need, from everyday document tasks to professional-level editing.
+Every PDF is a powerful desktop application packed with all the features you need, from everyday document tasks to professional-level editing.
 
 ## ✨ Key Features
 
-In this initial release, you can explore the following core features:
+With our 2.0.0 release, we've added robust editing tools alongside our existing features:
+
+*   **✍️ PDF Editor (New!)**
+    *   **Add Text:** Type and place new text anywhere on your PDF pages. Perfect for filling out forms or adding annotations.
+    *   **Add Signature:** Easily sign documents by drawing your signature directly or uploading an image of it.
+    *   **Add Image:** Insert images, logos, or stamps into your PDF files with ease.
+    *   **Add Checkbox:** Add checkmarks or other symbols to quickly fill out forms and checklists.
 
 *   **📄 Split:**
     *   Easily split large PDF files by a specific page range or individual page numbers.
@@ -56,15 +63,21 @@ Every PDF is built on modern technologies to deliver top-tier performance and st
 
 ***
 
-# 🎉 Every PDF 출시!
+# 🎉 Every PDF 2.0.0 출시!
 
-안녕하세요! PDF 문서 작업을 위한 새로운 솔루션, **Every PDF**의 첫 번째 정식 버전을 드디어 선보입니다. 복잡하고 번거로웠던 PDF 편집, 이제 Every PDF와 함께라면 간편해집니다.
+안녕하세요! **Every PDF 2.0.0** 버전 출시를 알립니다! 이번 대규모 업데이트에는 강력한 **PDF 편집 기능**이 새롭게 추가되어, 여러분의 문서 작업을 더욱 완벽하게 지원합니다.
 
 Every PDF는 일상적인 문서 작업부터 전문적인 편집까지, 필요한 모든 기능을 담은 강력한 데스크톱 애플리케이션입니다.
 
 ## ✨ 주요 기능 (Key Features)
 
-이번 첫 출시 버전에서는 다음과 같은 핵심 기능들을 만나보실 수 있습니다.
+2.0.0 버전부터 기존 기능과 더불어 강력한 편집 도구를 사용하실 수 있습니다.
+
+*   **✍️ PDF 편집기 (New!)**
+    *   **텍스트 추가:** PDF 페이지 어디에나 새로운 텍스트를 자유롭게 추가하세요. 양식을 채우거나 주석을 달 때 유용합니다.
+    *   **서명 추가:** 직접 서명을 그리거나 이미지 파일을 업로드하여 간편하게 전자 서명을 추가할 수 있습니다.
+    *   **이미지 추가:** 로고, 스탬프 등 필요한 이미지를 문서에 손쉽게 삽입하세요.
+    *   **체크박스 추가:** 체크 표시나 다양한 기호를 추가하여 서식이나 체크리스트를 빠르게 작성할 수 있습니다.
 
 *   **📄 문서 분할 (Split):**
     *   거대한 PDF 파일을 원하는 페이지 범위나 특정 페이지 번호로 손쉽게 분할하세요.
