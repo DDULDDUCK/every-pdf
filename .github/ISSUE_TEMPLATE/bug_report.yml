@@ -1,0 +1,90 @@
+name: "🐛 Bug Report"
+description: "Report something that is not working correctly."
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Bug Summary"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "e.g., The application crashes when trying to merge two specific PDF files."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: "Steps to Reproduce"
+      description: "How can we reproduce the issue?"
+      placeholder: |
+        1. Open the application.
+        2. Click on the 'Merge PDFs' button.
+        3. Select 'file_a.pdf' and 'file_b.pdf'.
+        4. The application freezes and then closes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen?"
+      placeholder: "The two PDFs should be merged into a new file, and a save dialog should appear."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened? Please include any error messages or logs."
+      placeholder: "The app window became unresponsive and then crashed. No error message was shown on the UI."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "Operating System"
+      description: "What operating system are you using?"
+      options:
+        - "Windows"
+        - "macOS"
+        - "Linux"
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: "Application Version"
+      description: "Which version of the PDF editor are you using?"
+      placeholder: "e.g., v1.2.3"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional Context"
+      description: |
+        Add any other context about the problem here. 
+        If possible, please attach the PDF file(s) that cause the issue (if they don't contain sensitive information).
+        You can drag and drop files or screenshots into this text area.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Bug Report Checklist"
+      description: "Before submitting, please make sure you have done the following."
+      options:
+        - label: "I have searched the existing issues to see if this bug has already been reported."
+          required: true
+        - label: "I have provided a minimal, reproducible example to help developers investigate the issue."
+          required: false

@@ -1,0 +1,48 @@
+name: "✨ Feature Request"
+description: "Suggest a new idea or enhancement for the application."
+title: "[Feature]: "
+labels: ["enhancement", "feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an idea to improve this project!
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: "Is your feature request related to a problem?"
+      description: "A clear and concise description of what the problem is. Ex. I'm always frustrated when..."
+      placeholder: "It's difficult to add watermarks to my documents. I have to use another tool for that."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: "Describe the solution you'd like"
+      description: "A clear and concise description of what you want to happen."
+      placeholder: "I would like a 'Watermark' button in the main toolbar. Clicking it would open a dialog where I can type text, choose a font/color, and apply it to all pages of the current PDF."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Describe alternatives you've considered"
+      description: "A clear and concise description of any alternative solutions or features you've considered."
+      placeholder: "An alternative could be to support adding an image as a watermark, not just text."
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional Context"
+      description: "Add any other context, mockups, or screenshots about the feature request here."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Feature Request Checklist"
+      options:
+        - label: "I have searched the existing issues to make sure this feature has not been requested yet."
+          required: true

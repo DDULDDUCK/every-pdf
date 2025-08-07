@@ -1,0 +1,31 @@
+name: "📚 Documentation Issue"
+description: "Report an issue or suggest an improvement for the documentation."
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: affected-doc
+    attributes:
+      label: "Affected Document"
+      description: "Which document has the issue? (e.g., README.md, CONTRIBUTING.md)"
+      placeholder: "README.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: "Description of the Issue"
+      description: "Please provide a clear and concise description of what is wrong or unclear in the documentation."
+      placeholder: "The installation instructions for Windows are missing a step."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-improvement
+    attributes:
+      label: "Suggested Improvement"
+      description: "How can we improve the documentation? Please be specific."
+      placeholder: "We should add a line that says 'Run `pip install -r requirements.txt`' before building the Python backend."
+    validations:
+      required: true

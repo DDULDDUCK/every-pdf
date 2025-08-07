@@ -1,0 +1,74 @@
+name: "Pull Request"
+description: "Default template for submitting a pull request."
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your contribution! Please provide the following information to help us review your PR.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What does this PR do? Please provide a clear and concise description of the changes."
+    validations:
+      required: true
+
+  - type: input
+    id: related-issue
+    attributes:
+      label: "Related Issue"
+      description: "Link to the issue that this PR addresses. (e.g., `Fixes #123`, `Closes #456`)"
+      placeholder: "Fixes #123"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type-of-change
+    attributes:
+      label: "Type of Change"
+      description: "What type of change does this PR introduce?"
+      options:
+        - "🐛 Bug fix (non-breaking change which fixes an issue)"
+        - "✨ New feature (non-breaking change which adds functionality)"
+        - "💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)"
+        - "📚 Documentation update"
+        - "💅 Code style and formatting"
+        - "♻️ Refactoring (no functional changes)"
+        - "⚙️ Build/CI/CD related changes"
+    validations:
+      required: true
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: "How has this been tested?"
+      description: "Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce."
+      placeholder: |
+        - [ ] Manually tested the UI flow on Windows/macOS/Linux.
+        - [ ] Added a new unit test for the Python backend logic.
+        - [ ] All existing tests pass.
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Screenshots or Videos"
+      description: "If your changes affect the UI, please add screenshots or a short video demonstrating the before and after."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "PR Checklist"
+      options:
+        - label: "My code follows the style guidelines of this project."
+          required: true
+        - label: "I have performed a self-review of my own code."
+          required: true
+        - label: "I have commented my code, particularly in hard-to-understand areas."
+          required: false
+        - label: "I have made corresponding changes to the documentation."
+          required: true
+        - label: "My changes generate no new warnings."
+          required: true
+        - label: "I have added tests that prove my fix is effective or that my feature works."
+          required: false
