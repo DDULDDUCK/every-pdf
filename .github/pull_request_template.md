@@ -51,7 +51,6 @@ about: 'Default template for submitting a pull request.'
 <!-- PR을 제출하기 전에 모든 항목을 확인해주세요. -->
 <!-- Before submitting the PR, please make sure you have checked all the following. -->
 
-- [ ] 제 코드는 이 프로젝트의 스타일 가이드라인을 따릅니다. (My code follows the style guidelines of this project.)
 - [ ] 제 코드에 대해 스스로 리뷰를 진행했습니다. (I have performed a self-review of my own code.)
 - [ ] 이해하기 어려운 부분에 주석을 추가했습니다. (I have commented my code, particularly in hard-to-understand areas.)
 - [ ] 관련 문서를 업데이트했습니다. (I have made corresponding changes to the documentation.)
