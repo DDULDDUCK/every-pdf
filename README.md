@@ -31,7 +31,7 @@ Every PDF is a powerful desktop application packed with all the features you nee
 *   **➕ Merge Files**: Effortlessly combine multiple PDF documents into a single file with a simple drag-and-drop.
 *   **💧 Watermark**: Protect your documents by adding custom text or image watermarks.
 *   **🔄 Manage Pages**: Rotate or reorder pages to take full control of your document's flow.
-
+*   **🔐 Encrypt/Decrypt**: Secure your PDF documents by adding or removing password protection.
 ---
 
 ## 📥 Download
