@@ -1,7 +1,3 @@
-<p align="right">
-  <a href="./README.ko.md">한국어 (Korean)</a>
-</p>
-
 # Every PDF
 
 <p align="center">
@@ -14,7 +10,10 @@
   <img alt="License" src="https://img.shields.io/github/license/DDULDDUCK/every-pdf?style=for-the-badge&color=blue">
   <!--<img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions">-->
 </p>
-
+<p align="center">
+  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
+  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
+</p>
 <p align="center">
   <img width="800" alt="Every PDF Home Screen" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
 </p>
