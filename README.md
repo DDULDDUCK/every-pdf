@@ -131,6 +131,7 @@ Thanks to these wonderful people for making this project better! ([emoji key](ht
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/DDULDDUCK"><img src="https://avatars.githubusercontent.com/u/126528992?v=4?s=100" width="100px;" alt="Jaeseok Song"/><br /><sub><b>Jaeseok Song</b></sub></a><br /><a href="https://github.com/DDULDDUK/every-pdf/commits?author=DDULDDUCK" title="Code">💻</a> <a href="#maintenance-DDULDDUCK" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Luo-YaFei"><img src="https://avatars.githubusercontent.com/u/37431486?v=4?s=100" width="100px;" alt="Luo"/><br /><sub><b>Luo</b></sub></a><br /><a href="https://github.com/DDULDDUK/every-pdf/issues?q=author%3ALuo-YaFei" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
   <tfoot>

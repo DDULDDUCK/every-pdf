@@ -19,6 +19,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "Luo-YaFei",
+      "name": "Luo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37431486?v=4",
+      "profile": "https://github.com/Luo-YaFei",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
