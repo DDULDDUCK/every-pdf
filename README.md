@@ -1,7 +1,3 @@
-<p align="right">
-  <a href="./README.ko.md">한국어 (Korean)</a>
-</p>
-
 # Every PDF
 
 <p align="center">
@@ -12,9 +8,12 @@
   <img alt="GitHub Release" src="https://img.shields.io/github/v/release/DDULDDUCK/every-pdf?style=for-the-badge">
   <img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/DDULDDUCK/every-pdf/total?style=for-the-badge&logo=github">
   <img alt="License" src="https://img.shields.io/github/license/DDULDDUCK/every-pdf?style=for-the-badge&color=blue">
-  <img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions">
+  <!--<img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions">-->
 </p>
-
+<p align="center">
+  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
+  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
+</p>
 <p align="center">
   <img width="800" alt="Every PDF Home Screen" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
 </p>
@@ -31,7 +30,7 @@ Every PDF is a powerful desktop application packed with all the features you nee
 *   **➕ Merge Files**: Effortlessly combine multiple PDF documents into a single file with a simple drag-and-drop.
 *   **💧 Watermark**: Protect your documents by adding custom text or image watermarks.
 *   **🔄 Manage Pages**: Rotate or reorder pages to take full control of your document's flow.
-
+*   **🔐 Encrypt/Decrypt**: Secure your PDF documents by adding or removing password protection.
 ---
 
 ## 📥 Download
@@ -110,7 +109,7 @@ every-pdf/
 -   **Framework**: Nextron (Next.js + Electron)
 -   **Frontend**: React, TypeScript, Tailwind CSS
 -   **Backend**: Python, FastAPI
--   **Build/Deployment**: Electron Builder, GitHub Actions
+-   **Build/Deployment**: Electron Builder
 
 ---
 
