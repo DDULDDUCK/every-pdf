@@ -1,21 +1,33 @@
 # Every PDF
 
+<p align="right">
+  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
+  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
+</p>
+
 <p align="center">
+  <!-- 프로젝트 로고를 여기에 추가할 수 있습니다. -->
+  <!-- <img src="path/to/your/logo.png" alt="Every PDF Logo" width="150"> -->
+  <br>
+  <h1>Every PDF</h1>
   <strong>A powerful and intuitive all-in-one desktop PDF editing tool.</strong>
 </p>
 
 <p align="center">
-  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/DDULDDUCK/every-pdf?style=for-the-badge">
-  <img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/DDULDDUCK/every-pdf/total?style=for-the-badge&logo=github">
-  <img alt="License" src="https://img.shields.io/github/license/DDULDDUCK/every-pdf?style=for-the-badge&color=blue">
-  <!--<img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions">-->
-</p>
-<p align="center">
-  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
-  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
-</p>
-<p align="center">
-  <img width="800" alt="Every PDF Home Screen" src="https://github.com/user-attachments/assets/445d1943-edf3-411c-a9e5-f1dc126affc6" />
+  <!-- 소셜 및 커뮤니티 배지 -->
+  <a href="https://github.com/DDULDDUCK/every-pdf/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=gold"></a>
+  <a href="https://github.com/DDULDDUCK/every-pdf/network/members"><img alt="GitHub Forks" src="https://img.shields.io/github/forks/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=blueviolet"></a>
+  <a href="https://github.com/DDULDDUCK/every-pdf/graphs/contributors"><img alt="All Contributors" src="https://img.shields.io/github/all-contributors/DDULDDUCK/every-pdf?style=for-the-badge&color=orange"></a>
+  <br>
+  <!-- 상태 및 릴리즈 배지 -->
+  <a href="https://github.com/DDULDDUCK/every-pdf/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/DDULDDUCK/every-pdf?style=for-the-badge&color=brightgreen"></a>
+  <a href="https://github.com/DDULDDUCK/every-pdf/releases"><img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/DDULDDUCK/every-pdf/total?style=for-the-badge&logo=github&color=success"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/DDULDDUCK/every-pdf?style=for-the-badge&color=informational"></a>
+  <br>
+  <!-- 개발 활동 배지 -->
+  <!--<a href="https://github.com/DDULDDUCK/every-pdf/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions"></a>-->
+  <a href="https://github.com/DDULDDUCK/every-pdf/issues"><img alt="GitHub Issues" src="https://img.shields.io/github/issues/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=red"></a>
+  <a href="https://github.com/DDULDDUCK/every-pdf/pulls"><img alt="GitHub Pull Requests" src="https://img.shields.io/github/issues-pr/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=yellow"></a>
 </p>
 
 ---
