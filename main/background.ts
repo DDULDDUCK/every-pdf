@@ -92,7 +92,8 @@ const startPythonProcess = () => {
         PYTHONPATH: isProd ? join(process.resourcesPath, 'backend') : join(app.getAppPath(), 'backend', 'src'),
         PYTHONIOENCODING: 'utf-8', // 인코딩 강제 설정
       },
-      shell: process.platform === 'win32'
+      // 제거 후 테스트
+      //shell: process.platform === 'win32'
     });
 
     let portFound = false;
