@@ -52,7 +52,7 @@ Every PDF는 일상적인 문서 작업부터 전문적인 편집까지, 필요�
 | :---: | :---: | :---: |
 | 💻 **Windows** | `.exe` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/최신_릴리즈-다운로드-brightgreen?style=flat-square" /></a> |
 | 🍏 **macOS** | `.dmg` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/최신_릴리즈-다운로드-brightgreen?style=flat-square" /></a> |
-| 🐧 **Linux** | `.AppImage` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/최신_릴리즈-다운로드-brightgreen?style=flat-square" /></a> |
+<!--| 🐧 **Linux** | `.AppImage` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/최신_릴리즈-다운로드-brightgreen?style=flat-square" /></a> |-->
 
 ---
 
