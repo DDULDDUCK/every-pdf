@@ -1,15 +1,8 @@
 # Every PDF
-
-<p align="right">
-  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
-  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
-</p>
-
 <p align="center">
   <!-- 프로젝트 로고를 여기에 추가할 수 있습니다. -->
   <!-- <img src="path/to/your/logo.png" alt="Every PDF Logo" width="150"> -->
   <br>
-  <h1>Every PDF</h1>
   <strong>A powerful and intuitive all-in-one desktop PDF editing tool.</strong>
 </p>
 
@@ -28,6 +21,11 @@
   <!--<a href="https://github.com/DDULDDUCK/every-pdf/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions"></a>-->
   <a href="https://github.com/DDULDDUCK/every-pdf/issues"><img alt="GitHub Issues" src="https://img.shields.io/github/issues/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=red"></a>
   <a href="https://github.com/DDULDDUCK/every-pdf/pulls"><img alt="GitHub Pull Requests" src="https://img.shields.io/github/issues-pr/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=yellow"></a>
+</p>
+
+<p align="center">
+  <a href="./README.md"><img alt="Language-English" src="https://img.shields.io/badge/Language-English-blue?style=for-the-badge"></a>
+  <a href="./README.ko.md"><img alt="Language-Korean" src="https://img.shields.io/badge/언어-한국어-blue?style=for-the-badge"></a>
 </p>
 
 ---
