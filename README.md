@@ -110,7 +110,7 @@ every-pdf/
 -   **Framework**: Nextron (Next.js + Electron)
 -   **Frontend**: React, TypeScript, Tailwind CSS
 -   **Backend**: Python, FastAPI
--   **Build/Deployment**: Electron Builder, GitHub Actions
+-   **Build/Deployment**: Electron Builder
 
 ---
 
