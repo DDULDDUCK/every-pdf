@@ -1,0 +1,26 @@
+{
+  "projectName": "every-pdf",
+  "projectOwner": "DDULDDUK",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "DDULDDUCK",
+      "name": "Jaeseok Song",
+      "avatar_url": "https://avatars.githubusercontent.com/u/126528992?v=4",
+      "profile": "https://github.com/DDULDDUCK",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "linkToUsage": true
+}
