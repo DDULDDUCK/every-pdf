@@ -51,7 +51,7 @@ Get the latest version of Every PDF for your operating system.
 | :---: | :---: | :---: |
 | 💻 **Windows** | `.exe` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/Latest_Release-Download-brightgreen?style=flat-square" /></a> |
 | 🍏 **macOS** | `.dmg` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/Latest_Release-Download-brightgreen?style=flat-square" /></a> |
-| 🐧 **Linux** | `.AppImage` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/Latest_Release-Download-brightgreen?style=flat-square" /></a> |
+<!--| 🐧 **Linux** | `.AppImage` | <a href="https://github.com/DDULDDUCK/every-pdf/releases/latest"><img src="https://img.shields.io/badge/Latest_Release-Download-brightgreen?style=flat-square" /></a> |-->
 
 ---
 
