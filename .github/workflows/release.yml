@@ -1,6 +1,6 @@
 # .github/workflows/release.yml
 
-name: Build & Release Every-PDF (Sequential)
+name: Build & Release Every-PDF
 
 on:
   push:
@@ -9,69 +9,67 @@ on:
 
 jobs:
   # =======================================================
-  # JOB 1: macOS 빌드 및 게시
+  # JOB 1: 각 OS에서 병렬로 '빌드'와 '패키징'을 수행
   # =======================================================
-  build-and-publish-mac:
-    runs-on: macos-latest
-    permissions:
-      contents: write # 릴리즈 생성 및 업로드 권한
-
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Python and Cache Pip
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
           cache: 'pip'
-
       - name: Setup Node.js and Cache NPM
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
 
-      # 이 작업이 먼저 실행되어 GitHub Release를 생성합니다.
-      - name: Build and Publish for macOS
-        run: npm run build:mac
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # --- 여기가 모든 마법을 제거한, 명시적인 제어 단계 ---
+      # 1. 공통으로 소스코드만 먼저 빌드합니다. (패키징 X)
+      - name: Build Source Code
+        run: npm run build:source
+
+      # 2. 각 OS에 맞는 패키징을 명시적으로 수행합니다.
+      - name: Package for Windows
+        if: runner.os == 'Windows'
+        run: npm run package:win
+      
+      - name: Package for macOS (Universal)
+        if: runner.os == 'macOS'
+        run: npm run package:mac
+      
+      # --- Artifact 업로드는 이전과 동일 ---
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: dist/
 
   # =======================================================
-  # JOB 2: Windows 빌드 및 게시 (macOS 작업이 끝난 후 실행)
+  # JOB 2: 모든 패키징이 끝난 후, 한 번에 릴리즈
   # =======================================================
-  build-and-publish-windows:
-    # 'needs' 키워드를 사용하여 순서를 강제합니다.
-    needs: build-and-publish-mac
-    runs-on: windows-latest
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
-      contents: write # 기존 릴리즈에 파일 추가 권한
-
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python and Cache Pip
-        uses: actions/setup-python@v5
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
         with:
-          python-version: '3.13'
-          cache: 'pip'
-
-      - name: Setup Node.js and Cache NPM
-        uses: actions/setup-node@v4
+          path: release-assets/
+          pattern: dist-*
+          merge-multiple: true
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
         with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      # 이 작업은 이미 생성된 릴리즈에 파일을 추가합니다.
-      - name: Build and Publish for Windows
-        run: npm run build:win
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: release-assets/*

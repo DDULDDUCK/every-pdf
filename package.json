@@ -14,16 +14,10 @@
     "dev:frontend": "nextron",
     "dev:backend": "cd backend/src && ../../backend/venv/bin/python -m pdf_processor",
     "dev:backend:win": "cd backend/src && ..\\venv\\Scripts\\python -m pdf_processor",
-    "build": "npm run copy-pdf-worker && npm run setup-backend && npm run build-backend && nextron build",
-    "build:win": "npm run setup-backend && npm run build-backend && nextron build --win --ia32",
-    "build:mac": "npm run setup-backend && npm run build-backend && nextron build --mac --x64",
-    "build:linux": "npm run setup-backend && npm run build-backend && nextron build --linux",
-    "clean": "rimraf backend/venv backend/dist backend/build",
-    "only-publish": "electron-builder --publish always",
-    "publish": "npm run build && electron-builder --publish always",
-    "publish:win": "npm run build:win && electron-builder --win --publish always",
-    "publish:mac": "npm run build:mac && electron-builder --mac --publish always",
-    "publish:linux": "npm run build:linux && electron-builder --linux --publish always"
+    "build:source": "npm run copy-pdf-worker && npm run setup-backend && npm run build-backend && nextron build --no-pack",
+    "package:win": "electron-builder --win --ia32",
+    "package:mac": "electron-builder --mac --x64 --arm64",
+    "clean": "rimraf backend/venv backend/dist backend/build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
