@@ -46,8 +46,23 @@ jobs:
         run: npm ci
 
       # 5. 플랫폼 및 아키텍처에 맞는 빌드 및 퍼블리시 실행
-      - name: Build and Release
-        # npm run publish -- --<arch> 형태로 아키텍처를 전달합니다.
+      - name: Build and Release for Windows
+        if: matrix.os == 'windows-latest'
         run: npm run publish -- --${{ matrix.arch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and Release for macOS
+        # macOS 빌드일 때만 실행하고, 서명/공증에 필요한 환경변수 설정
+        if: startsWith(matrix.os, 'macos')
+        run: npm run publish -- --${{ matrix.arch }}
+        env:
+          # GitHub Releases에 업로드하기 위한 토큰
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+          # === macOS 코드 서명 및 공증을 위한 환경 변수 ===
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
