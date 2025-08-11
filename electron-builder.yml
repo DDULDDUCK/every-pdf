@@ -19,18 +19,18 @@ extraResources:
       - "**/*"
 mac:
   icon: resources/logo.icns # macOS용 아이콘
-  artifactName: ${productName}_${version}.${ext}
+  artifactName: ${productName}_${version}_${arch}.${ext}
   target:
     - dmg
     - zip
 win:
   icon: resources/logo.ico # Windows용 아이콘
-  artifactName: ${productName}_${version}.${ext}
+  artifactName: ${productName}_${version}_${arch}.${ext}
   target:
     - nsis
 linux:
   icon: resources/logo.png # Linux용 아이콘 (resources 폴더에 logo.png 필요)
-  artifactName: ${productName}_${version}.${ext}
+  artifactName: ${productName}_${version}_${arch}.${ext}
   target:
     - AppImage
 
