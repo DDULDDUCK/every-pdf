@@ -18,7 +18,7 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/DDULDDUCK/every-pdf?style=for-the-badge&color=informational"></a>
   <br>
   <!-- 개발 활동 배지 -->
-  <!--<a href="https://github.com/DDULDDUCK/every-pdf/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions"></a>-->
+  <a href="https://github.com/DDULDDUCK/every-pdf/actions/workflows/release.yml"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/DDULDDUCK/every-pdf/release.yml?branch=main&style=for-the-badge&logo=githubactions"></a>
   <a href="https://github.com/DDULDDUCK/every-pdf/issues"><img alt="GitHub Issues" src="https://img.shields.io/github/issues/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=red"></a>
   <a href="https://github.com/DDULDDUCK/every-pdf/pulls"><img alt="GitHub Pull Requests" src="https://img.shields.io/github/issues-pr/DDULDDUCK/every-pdf?style=for-the-badge&logo=github&color=yellow"></a>
 </p>
