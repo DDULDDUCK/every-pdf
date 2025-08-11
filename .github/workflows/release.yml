@@ -24,7 +24,7 @@ jobs:
       - name: Setup Python and Cache Pip
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.13'
           cache: 'pip'
 
       - name: Setup Node.js and Cache NPM
