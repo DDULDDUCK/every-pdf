@@ -21,7 +21,9 @@ extraResources:
 mac:
   icon: resources/logo.icns # macOS용 아이콘
   artifactName: ${productName}_${version}_${arch}.${ext}
-  target: dmg
+  target:
+    - dmg
+    - zip
  
 win:
   icon: resources/logo.ico # Windows용 아이콘
