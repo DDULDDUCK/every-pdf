@@ -1,3 +1,16 @@
+> [!WARNING]
+> ### ⚠️ Important Notice for macOS Users Regarding Updates ⚠️
+>
+> To enhance the security of Every-PDF, we have updated our official code signature. As a result, **the auto-updater will fail for all previous versions.**
+>
+> **You must manually download and install version v2.0.2 to receive this update.**
+>
+> We apologize for this one-time inconvenience. All future updates will be delivered automatically as expected.
+>
+> **[➡️ Download the Latest Version Here](https://github.com/DDULDDUCK/every-pdf/releases/latest)**
+---
+
+
 # Every PDF
 <p align="center">
   <!-- 프로젝트 로고를 여기에 추가할 수 있습니다. -->
