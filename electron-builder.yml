@@ -25,7 +25,7 @@ mac:
     - dmg
   arch:
     - universal
-
+ 
 win:
   icon: resources/logo.ico # Windows용 아이콘
   artifactName: ${productName}_${version}_${arch}.${ext}
