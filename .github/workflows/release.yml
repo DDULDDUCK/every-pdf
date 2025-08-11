@@ -53,17 +53,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Build and Release for macOS
-        # macOS 빌드일 때만 실행하고, 서명/공증에 필요한 환경변수 설정
         if: startsWith(matrix.os, 'macos')
-        run: npm run publish -- --${{ matrix.arch }}
+        run: |
+          # 스크립트 실행 중 오류 발생 시 즉시 중단합니다. (매우 중요)
+          set -e
+
+          echo "🔐 1. API Key 파일을 생성합니다."
+          # APPLE_API_KEY Secret을 디코딩하여 임시 .p8 파일로 저장합니다.
+          # macOS에서는 --decode 대신 -D 옵션을 사용해야 합니다.
+          echo -n "${{ secrets.APPLE_API_KEY }}" | base64 -D -o AuthKey.p8
+          echo "✅ API Key 파일 생성 완료."
+
+          echo "🔐 2. 키체인에 자격 증명을 저장합니다."
+          # "NOTARY_PROFILE" 이라는 이름으로 프로파일을 생성합니다.
+          # xcrun이 성공하면 'Success.' 메시지를 출력합니다.
+          xcrun notarytool store-credentials "NOTARY_PROFILE" --key AuthKey.p8 --key-id "${{ secrets.APPLE_API_KEY_ID }}" --issuer "${{ secrets.APPLE_API_ISSUER }}"
+          echo "✅ 키체인 프로파일 생성 완료."
+
+          echo "📦 3. Electron-Builder를 실행하여 앱을 빌드하고 퍼블리시합니다."
+          npm run publish -- --${{ matrix.arch }}
+          echo "🚀 빌드 및 퍼블리시 성공!"
         env:
-          DEBUG: "electron-builder,electron-notarize:*"
-          # GitHub Releases에 업로드하기 위한 토큰
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-          # === macOS 코드 서명 및 공증을 위한 환경 변수 ===
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          # 릴리즈 업로드용
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # 코드 서명용
           CSC_LINK: ${{ secrets.MACOS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          
+          # 공증용 (키체인 프로파일 사용)
+          # electron-builder에게 사용할 키체인 프로파일 이름을 알려줍니다.
+          APPLE_KEYCHAIN_PROFILE: "NOTARY_PROFILE"
