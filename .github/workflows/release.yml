@@ -8,9 +8,7 @@ on:
       - 'v*'
 
 jobs:
-  # =======================================================
-  # JOB 1: 각 OS에서 병렬로 빌드하고 결과를 Artifact로 업로드
-  # =======================================================
+  # JOB 1: 각 OS에서 병렬로 빌드하고 결과를 Artifact로 업로드 (이전과 동일)
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,7 +22,7 @@ jobs:
       - name: Setup Python and Cache Pip
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.10'
           cache: 'pip'
 
       - name: Setup Node.js and Cache NPM
@@ -36,7 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 각 OS에 맞는 빌드 스크립트 실행 (게시(publish)는 하지 않음)
       - name: Build Application for Windows
         if: runner.os == 'Windows'
         run: npm run build:win
@@ -53,40 +50,27 @@ jobs:
           path: dist/
 
   # =======================================================
-  # JOB 2: 모든 빌드가 끝난 후, 한 번만 실행되어 릴리즈 게시
+  # JOB 2: 모든 빌드가 끝난 후, 'electron-builder' 대신 전용 Action으로 릴리즈
   # =======================================================
   publish:
-    # 'build' job이 모두 성공해야만 이 job이 실행됨
     needs: build
-    runs-on: ubuntu-latest # 릴리즈 작업은 어떤 OS에서든 상관없으므로 ubuntu 사용
+    runs-on: ubuntu-latest
 
     permissions:
-      contents: write # 릴리즈 생성을 위한 권한
+      contents: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-      
-      # 각 OS에서 빌드한 Artifact들을 다운로드
+      # 각 OS에서 빌드한 Artifact들을 release-assets 폴더로 다운로드
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: dist/
-          # 패턴을 사용하여 dist-windows-latest, dist-macos-latest 등을 모두 다운로드
-          pattern: dist-* 
-          merge-multiple: true # 여러 아티팩트를 하나의 폴더 구조로 병합
+          path: release-assets/
+          pattern: dist-*
+          merge-multiple: true
 
-      # 다운로드한 파일들을 가지고 'only-publish' 실행
-      - name: Publish to GitHub Releases
-        run: npm run only-publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # 다운로드한 파일들을 가지고 GitHub Release를 생성하고 모든 파일을 업로드
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 업로드할 파일들을 지정합니다. release-assets 폴더 안의 모든 파일을 의미합니다.
+          files: release-assets/*
