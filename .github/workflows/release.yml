@@ -57,6 +57,7 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: npm run publish -- --${{ matrix.arch }}
         env:
+          DEBUG: "electron-builder,electron-notarize:*"
           # GitHub Releases에 업로드하기 위한 토큰
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
