@@ -1,5 +1,5 @@
 appId: com.dduldduck.every_pdf
-productName: Every PDF
+productName: Every-PDF
 copyright: Copyright © 2025 DDULDDUCK
 directories:
   output: dist
@@ -17,20 +17,26 @@ extraResources:
     to: ./
     filter:
       - "**/*"
+
 mac:
   icon: resources/logo.icns # macOS용 아이콘
-  artifactName: ${productName}_${version}_${arch}.${ext}
+  artifactName: ${productName}_${version}.${ext}
   target:
     - dmg
-    - zip
+  arch:
+    - universal
+
 win:
   icon: resources/logo.ico # Windows용 아이콘
-  artifactName: ${productName}_${version}_${arch}.${ext}
+  artifactName: ${productName}_${version}.${ext}
   target:
     - nsis
+  arch:
+    - x64
+    
 linux:
   icon: resources/logo.png # Linux용 아이콘 (resources 폴더에 logo.png 필요)
-  artifactName: ${productName}_${version}_${arch}.${ext}
+  artifactName: ${productName}_${version}.${ext}
   target:
     - AppImage
 
