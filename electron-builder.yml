@@ -21,10 +21,7 @@ extraResources:
 mac:
   icon: resources/logo.icns # macOS용 아이콘
   artifactName: ${productName}_${version}_${arch}.${ext}
-  target:
-    - target: dmg
-      arch:
-        - universal
+  target: dmg
  
 win:
   icon: resources/logo.ico # Windows용 아이콘
