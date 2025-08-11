@@ -30,9 +30,9 @@ win:
   icon: resources/logo.ico # Windows용 아이콘
   artifactName: ${productName}_${version}_${arch}.${ext}
   target:
-    - nsis
-  arch:
-    - x64
+    - target: nsis  # target을 객체로 변경
+      arch:          # arch를 nsis 타겟 안으로 이동
+        - x64
 
 linux:
   icon: resources/logo.png # Linux용 아이콘 (resources 폴더에 logo.png 필요)
