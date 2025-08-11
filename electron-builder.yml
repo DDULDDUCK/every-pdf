@@ -34,13 +34,13 @@ linux:
   target:
     - AppImage
 
-publish: null
-#   provider: github
-#   owner: DDULDDUCK
-#   repo: every-pdf
-#   private: false
-#   #token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
-#   releaseType: release
+publish:
+  provider: github
+  owner: DDULDDUCK
+  repo: every-pdf
+  private: false
+  #token: ${env.GH_TOKEN}  # GitHub Personal Access Token from environment variable
+  releaseType: release
 
 # asar 설정
 asar: true

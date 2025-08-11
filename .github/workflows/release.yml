@@ -1,6 +1,6 @@
 # .github/workflows/release.yml
 
-name: Build & Release Every-PDF
+name: Build & Release Every-PDF (Sequential)
 
 on:
   push:
@@ -8,13 +8,14 @@ on:
       - 'v*'
 
 jobs:
-  # JOB 1: 각 OS에서 병렬로 빌드하고 결과를 Artifact로 업로드 (이전과 동일)
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-    
+  # =======================================================
+  # JOB 1: macOS 빌드 및 게시
+  # =======================================================
+  build-and-publish-mac:
+    runs-on: macos-latest
+    permissions:
+      contents: write # 릴리즈 생성 및 업로드 권한
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,43 +35,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Application for Windows
-        if: runner.os == 'Windows'
-        run: npm run build:win
-
-      - name: Build Application for macOS
-        if: runner.os == 'macOS'
+      # 이 작업이 먼저 실행되어 GitHub Release를 생성합니다.
+      - name: Build and Publish for macOS
         run: npm run build:mac
-
-      # 빌드 결과물(dist 폴더)을 Artifact로 업로드
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-${{ matrix.os }}
-          path: dist/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # =======================================================
-  # JOB 2: 모든 빌드가 끝난 후, 'electron-builder' 대신 전용 Action으로 릴리즈
+  # JOB 2: Windows 빌드 및 게시 (macOS 작업이 끝난 후 실행)
   # =======================================================
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-
+  build-and-publish-windows:
+    # 'needs' 키워드를 사용하여 순서를 강제합니다.
+    needs: build-and-publish-mac
+    runs-on: windows-latest
     permissions:
-      contents: write
+      contents: write # 기존 릴리즈에 파일 추가 권한
 
     steps:
-      # 각 OS에서 빌드한 Artifact들을 release-assets 폴더로 다운로드
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets/
-          pattern: dist-*
-          merge-multiple: true
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # 다운로드한 파일들을 가지고 GitHub Release를 생성하고 모든 파일을 업로드
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Setup Python and Cache Pip
+        uses: actions/setup-python@v5
         with:
-          # 업로드할 파일들을 지정합니다. release-assets 폴더 안의 모든 파일을 의미합니다.
-          files: release-assets/*
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Setup Node.js and Cache NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 이 작업은 이미 생성된 릴리즈에 파일을 추가합니다.
+      - name: Build and Publish for Windows
+        run: npm run build:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
