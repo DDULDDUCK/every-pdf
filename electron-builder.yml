@@ -34,7 +34,7 @@ linux:
   target:
     - AppImage
 
-# publish:
+publish: null
 #   provider: github
 #   owner: DDULDDUCK
 #   repo: every-pdf
