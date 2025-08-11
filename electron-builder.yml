@@ -24,6 +24,10 @@ mac:
   target:
     - dmg
     - zip
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  notarize:
+    teamId: process.env.APPLE_TEAM_ID
  
 win:
   icon: resources/logo.ico # Windows용 아이콘
