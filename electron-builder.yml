@@ -29,7 +29,8 @@ win:
   icon: resources/logo.ico # Windows용 아이콘
   artifactName: ${productName}_${version}_${arch}.${ext}
   target:
-    - nsis
+    - target: nsis
+      arch:
         - x64
 
 linux:
