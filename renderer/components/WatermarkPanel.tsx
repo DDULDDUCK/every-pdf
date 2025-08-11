@@ -1,30 +1,23 @@
+// components/WatermarkPanel.tsx
+
 import React, { useState } from 'react';
 import { SketchPicker } from 'react-color';
 import PDFDropzone from './PDFDropzone';
 import { useTranslation } from 'next-i18next';
+import { WatermarkOptions } from './WatermarkViewer'; // 이제 WatermarkViewer에서 타입을 가져옵니다.
 
-type WatermarkPosition = 'center' | 'tile' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-type WatermarkType = 'text' | 'image';
+type WatermarkPosition = WatermarkOptions['position'];
 
+// <<< 여기가 수정된 부분입니다 >>>
 interface WatermarkPanelProps {
   selectedFile: File | null;
   onFileSelect: (files: File[]) => void;
   isProcessing: boolean;
-  onAddWatermark: (
-    file: File,
-    options: {
-      watermarkType: WatermarkType;
-      watermarkText?: string;
-      watermarkImage?: File;
-      opacity: number;
-      rotation: number;
-      position: WatermarkPosition;
-      fontSize?: number;
-      fontColor?: string;
-      fontBold?: boolean;
-      pages: string;
-    }
-  ) => void;
+  onAddWatermark: () => void; // onAddWatermark는 이제 파라미터가 없습니다.
+  options: WatermarkOptions;
+  onOptionChange: <K extends keyof WatermarkOptions>(key: K, value: WatermarkOptions[K]) => void;
+  pages: string; // 'pages' prop 추가
+  onPagesChange: (value: string) => void; // 'onPagesChange' prop 추가
 }
 
 const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
@@ -32,40 +25,26 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
   onFileSelect,
   isProcessing,
   onAddWatermark,
+  options,
+  onOptionChange,
+  pages, // props로 받음
+  onPagesChange, // props로 받음
 }) => {
   const { t } = useTranslation('watermark');
-  const [watermarkType, setWatermarkType] = useState<WatermarkType>('text');
-  const [watermarkText, setWatermarkText] = useState<string>(t('securityDocument', '기밀 문서'));
-  const [watermarkImage, setWatermarkImage] = useState<File | null>(null);
-  const [opacity, setOpacity] = useState<number>(0.5);
-  const [rotation, setRotation] = useState<number>(45);
-  const [position, setPosition] = useState<WatermarkPosition>('center');
-  const [fontSize, setFontSize] = useState<number>(40);
-  const [fontColor, setFontColor] = useState<string>('#888888');
-  const [fontBold, setFontBold] = useState<boolean>(false);
-  const [pages, setPages] = useState<string>('all');
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
+  // const [pages, setPages] = useState<string>('all'); // <<< 이 줄을 삭제합니다.
 
   const handleImageSelect = (files: File[]) => {
     if (files.length > 0) {
-      setWatermarkImage(files[0]);
+      onOptionChange('watermarkImage', files[0]);
     }
   };
 
   const handleApplyWatermark = () => {
     if (!selectedFile) return;
-    onAddWatermark(selectedFile, {
-      watermarkType,
-      watermarkText: watermarkType === 'text' ? watermarkText : undefined,
-      watermarkImage: watermarkType === 'image' ? watermarkImage : undefined,
-      opacity,
-      rotation,
-      position,
-      fontSize: watermarkType === 'text' ? fontSize : undefined,
-      fontColor: watermarkType === 'text' ? fontColor : undefined,
-      fontBold: watermarkType === 'text' ? fontBold : undefined,
-      pages,
-    });
+    // 이제 onAddWatermark는 파라미터 없이 호출됩니다.
+    // 필요한 모든 상태(options, pages)는 부모인 home.tsx에 있습니다.
+    onAddWatermark();
   };
 
   const positionLabels = {
@@ -109,8 +88,8 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               <input
                 type="radio"
                 value="text"
-                checked={watermarkType === 'text'}
-                onChange={() => setWatermarkType('text')}
+                checked={options.watermarkType === 'text'}
+                onChange={() => onOptionChange('watermarkType', 'text')}
                 className="mr-2"
               />
               <span className="text-sm text-text theme-transition">{t('typeText', '텍스트')}</span>
@@ -119,8 +98,8 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               <input
                 type="radio"
                 value="image"
-                checked={watermarkType === 'image'}
-                onChange={() => setWatermarkType('image')}
+                checked={options.watermarkType === 'image'}
+                onChange={() => onOptionChange('watermarkType', 'image')}
                 className="mr-2"
               />
               <span className="text-sm text-text theme-transition">{t('typeImage', '이미지')}</span>
@@ -129,14 +108,14 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
         </div>
         
         {/* 텍스트 워터마크 옵션 */}
-        {watermarkType === 'text' && (
+        {options.watermarkType === 'text' && (
           <>
             <div>
               <label className="block text-sm font-medium text-text mb-2 theme-transition">{t('textLabel', '워터마크 텍스트')}</label>
               <input
                 type="text"
-                value={watermarkText}
-                onChange={(e) => setWatermarkText(e.target.value)}
+                value={options.watermarkText}
+                onChange={(e) => onOptionChange('watermarkText', e.target.value)}
                 placeholder={t('textPlaceholder', '워터마크 텍스트를 입력하세요')}
                 className="form-input w-full"
               />
@@ -149,11 +128,11 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
                   type="range"
                   min="10"
                   max="100"
-                  value={fontSize}
-                  onChange={(e) => setFontSize(parseInt(e.target.value))}
+                  value={options.fontSize}
+                  onChange={(e) => onOptionChange('fontSize', parseInt(e.target.value, 10))}
                   className="w-full h-2 bg-button-bg rounded-lg appearance-none cursor-pointer theme-transition"
                 />
-                <span className="ml-2 text-sm text-text theme-transition w-8 text-center">{fontSize}</span>
+                <span className="ml-2 text-sm text-text theme-transition w-8 text-center">{options.fontSize}</span>
               </div>
             </div>
             
@@ -166,16 +145,16 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
                   className="w-full p-2 border border-border rounded-md flex items-center justify-between bg-input-bg text-text theme-transition"
                 >
                   <div className="flex items-center">
-                    <div className="w-6 h-6 rounded mr-2" style={{ backgroundColor: fontColor }}></div>
-                    <span>{fontColor}</span>
+                    <div className="w-6 h-6 rounded mr-2" style={{ backgroundColor: options.fontColor }}></div>
+                    <span>{options.fontColor}</span>
                   </div>
                   <span>{showColorPicker ? t('closeColor', '닫기') : t('chooseColor', '색상 선택')}</span>
                 </button>
                 {showColorPicker && (
                   <div className="absolute z-10 mt-2">
                     <SketchPicker
-                      color={fontColor}
-                      onChange={(color) => setFontColor(color.hex)}
+                      color={options.fontColor}
+                      onChange={(color) => onOptionChange('fontColor', color.hex)}
                     />
                   </div>
                 )}
@@ -186,8 +165,8 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={fontBold}
-                  onChange={(e) => setFontBold(e.target.checked)}
+                  checked={options.fontBold}
+                  onChange={(e) => onOptionChange('fontBold', e.target.checked)}
                   className="form-checkbox h-4 w-4 text-primary rounded border-border focus:ring-primary theme-transition"
                 />
                 <span className="ml-2 text-sm font-medium text-text theme-transition">{t('bold', '굵은 글씨')}</span>
@@ -197,7 +176,7 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
         )}
         
         {/* 이미지 워터마크 옵션 */}
-        {watermarkType === 'image' && (
+        {options.watermarkType === 'image' && (
           <div>
             <label className="block text-sm font-medium text-text mb-2 theme-transition">{t('imageLabel', '워터마크 이미지')}</label>
             <PDFDropzone
@@ -208,9 +187,9 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               accept=".png,.jpg,.jpeg,.gif"
             >
               <div className="text-button-text text-center text-xs">
-                {watermarkImage ? (
+                {options.watermarkImage ? (
                   <p className="panel-selected-file-text">
-                    {t('selectedImage', { file: watermarkImage.name, defaultValue: '선택된 이미지: {{file}}' })}
+                    {t('selectedImage', { file: options.watermarkImage.name, defaultValue: '선택된 이미지: {{file}}' })}
                   </p>
                 ) : (
                   <>
@@ -232,11 +211,11 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               min="0"
               max="1"
               step="0.05"
-              value={opacity}
-              onChange={(e) => setOpacity(parseFloat(e.target.value))}
+              value={options.opacity}
+              onChange={(e) => onOptionChange('opacity', parseFloat(e.target.value))}
               className="w-full h-2 bg-button-bg rounded-lg appearance-none cursor-pointer theme-transition"
             />
-            <span className="ml-2 text-sm text-text theme-transition w-10 text-center">{Math.round(opacity * 100)}%</span>
+            <span className="ml-2 text-sm text-text theme-transition w-10 text-center">{Math.round(options.opacity * 100)}%</span>
           </div>
         </div>
         
@@ -248,19 +227,19 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
               min="0"
               max="360"
               step="5"
-              value={rotation}
-              onChange={(e) => setRotation(parseInt(e.target.value))}
+              value={options.rotation}
+              onChange={(e) => onOptionChange('rotation', parseInt(e.target.value, 10))}
               className="w-full h-2 bg-button-bg rounded-lg appearance-none cursor-pointer theme-transition"
             />
-            <span className="ml-2 text-sm text-text theme-transition w-10 text-center">{rotation}°</span>
+            <span className="ml-2 text-sm text-text theme-transition w-10 text-center">{options.rotation}°</span>
           </div>
         </div>
         
         <div>
           <label className="block text-sm font-medium text-text mb-2 theme-transition">{t('positionLabel', '위치')}</label>
           <select
-            value={position}
-            onChange={(e) => setPosition(e.target.value as WatermarkPosition)}
+            value={options.position}
+            onChange={(e) => onOptionChange('position', e.target.value as WatermarkPosition)}
             className="form-input w-full"
           >
             {Object.entries(positionLabels).map(([value, label]) => (
@@ -274,7 +253,7 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
           <input
             type="text"
             value={pages}
-            onChange={(e) => setPages(e.target.value)}
+            onChange={(e) => onPagesChange(e.target.value)}
             placeholder={t('pagesPlaceholder', "예: 1-3,5,7-9 또는 'all'")}
             className="form-input w-full"
           />
@@ -283,7 +262,7 @@ const WatermarkPanel: React.FC<WatermarkPanelProps> = ({
         
         <button
           onClick={handleApplyWatermark}
-          disabled={isProcessing || !selectedFile || (watermarkType === 'image' && !watermarkImage)}
+          disabled={isProcessing || !selectedFile || (options.watermarkType === 'image' && !options.watermarkImage)}
           className="w-full py-2 bg-primary text-button-text-selected rounded-lg hover:bg-primary-hover disabled:bg-button-bg disabled:text-button-text disabled:cursor-not-allowed transition-colors duration-200 theme-transition"
         >
           {t('apply', '워터마크 적용하기')}
