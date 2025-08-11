@@ -37,7 +37,7 @@ jobs:
 
       # 이 작업이 먼저 실행되어 GitHub Release를 생성합니다.
       - name: Build and Publish for macOS
-        run: npm run build:mac
+        run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,6 +72,6 @@ jobs:
 
       # 이 작업은 이미 생성된 릴리즈에 파일을 추가합니다.
       - name: Build and Publish for Windows
-        run: npm run build:win
+        run: npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
