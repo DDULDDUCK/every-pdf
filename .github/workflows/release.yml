@@ -1,0 +1,67 @@
+# .github/workflows/release.yml
+
+name: Build & Release Every-PDF
+
+on:
+  push:
+    tags:
+      - 'v*' # v로 시작하는 태그(e.g. v2.0.2)가 푸시되면 워크플로우를 실행합니다.
+
+jobs:
+  build-and-release:
+    # Windows, macOS, Linux에서 병렬로 작업을 실행합니다.
+    # 필요 없는 OS는 주석 처리하거나 삭제하세요.
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest] # ubuntu-latest
+
+    steps:
+      # 1. 소스 코드 가져오기
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Python 환경 설정 (백엔드 빌드를 위해 필수)
+      - name: Setup Python and Cache Pip
+        uses: actions/setup-python@v5
+        with:
+          # 프로젝트 백엔드가 사용하는 Python 버전에 맞게 수정하세요.
+          python-version: '3.13' 
+          # pip 의존성을 캐싱하여 빌드 속도를 향상시킵니다.
+          cache: 'pip'
+
+      # 3. Node.js 환경 설정
+      - name: Setup Node.js and Cache NPM
+        uses: actions/setup-node@v4
+        with:
+          # 프로젝트에 맞는 Node.js 버전을 사용하세요.
+          node-version: '18'
+          # npm 의존성을 캐싱하여 빌드 속도를 향상시킵니다.
+          cache: 'npm'
+
+      # 4. NPM 의존성 설치 (package-lock.json 기반으로 설치)
+      - name: Install dependencies
+        run: npm ci
+
+      # 5. 플랫폼에 맞는 빌드 및 퍼블리시 스크립트 실행
+      #    - 'npm run publish:win', 'publish:mac', 'publish:linux'를 실행합니다.
+      #    - GITHUB_TOKEN은 electron-builder가 GitHub Releases에 업로드할 때 자동으로 사용합니다.
+      
+      - name: Build and Release for Windows
+        if: runner.os == 'Windows'
+        run: npm run publish:win
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Release for macOS
+        if: runner.os == 'macOS'
+        run: npm run publish:mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and Release for Linux
+        if: runner.os == 'Linux'
+        run: npm run publish:linux
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
