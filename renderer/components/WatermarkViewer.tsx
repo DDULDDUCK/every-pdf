@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Viewer, Worker, RenderPageProps } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import * as pdfjs from 'pdfjs-dist';
+import { useTranslation } from "react-i18next";
 
 // home.tsx와 공유할 타입
 export interface WatermarkOptions {
@@ -29,7 +30,7 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [pagesSet, setPagesSet] = useState<Set<number>>(new Set());
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
-
+  const { t } = useTranslation(["home"]);
   useEffect(() => {
     if (file) {
       const url = URL.createObjectURL(file);
@@ -159,7 +160,7 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
   if (!fileUrl) {
     return (
         <div className="h-full flex items-center justify-center text-text">
-            워터마크를 적용할 PDF 파일을 선택해주세요.
+            {t('home:noFileSelected')}
         </div>
     );
   }

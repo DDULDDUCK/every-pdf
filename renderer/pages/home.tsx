@@ -28,7 +28,7 @@ interface ProcessingStatus {
 type PdfAction = 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security';
 
 export default function HomePage() {
-    const { t } = useTranslation(["common", "home"]);
+    const { t } = useTranslation(["common", "home", "watermark"]);
     const router = useRouter();
 
     // App-wide States
@@ -51,7 +51,7 @@ export default function HomePage() {
     // Watermark Tool States
     const [watermarkOptions, setWatermarkOptions] = useState<WatermarkOptions>({
         watermarkType: 'text',
-        watermarkText: '기밀 문서',
+        watermarkText: t('watermark:securityDocument'),
         watermarkImage: null,
         opacity: 0.5,
         rotation: 45,
