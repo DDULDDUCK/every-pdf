@@ -170,8 +170,6 @@ export default function HomePage() {
         }
     };
 
-    // (Other tool handlers like handleSplit, handleMerge would be here)
-    // ...
 
     const clearStatus = () => {
         setStatus({ isProcessing: false, message: null, type: null });
@@ -183,7 +181,7 @@ export default function HomePage() {
                 return (
                     <WatermarkPanel
                         selectedFile={selectedFile}
-                        onFileSelect={handleFileDrop}
+                        onFileSelect={handleFileDrop} 
                         isProcessing={status.isProcessing}
                         onAddWatermark={handleAddWatermark}
                         options={watermarkOptions}
@@ -196,18 +194,37 @@ export default function HomePage() {
                 return (
                     <SecurityPanel
                         selectedFile={selectedFile}
-                        onFileSelect={handleFileDrop}
-                        onEncrypt={() => {}} // Placeholder
-                        onDecrypt={() => {}} // Placeholder
+                        onFileSelect={handleFileDrop} 
+                        onEncrypt={() => { console.log('Encrypt handler to be implemented'); }} 
+                        onDecrypt={() => { console.log('Decrypt handler to be implemented'); }}
                         mode={securityMode}
                         setMode={setSecurityMode}
                     />
                 );
-            // case 'split':
-            // case 'merge':
-            // case 'rotate':
-            // etc.
-            //     return <ToolPanel ... />
+            case 'split':
+            case 'merge':
+            case 'rotate':
+            case 'convert-to-pdf':
+            case 'convert-from-pdf':
+                return (
+                    <ToolPanel
+                        selectedAction={selectedAction}
+                        onSplit={() => console.log('Split handler to be implemented')}
+                        onMerge={() => console.log('Merge handler to be implemented')}
+                        onRotate={() => console.log('Rotate handler to be implemented')}
+                        onConvertToPDF={() => console.log('ConvertToPDF handler to be implemented')}
+                        onConvertFromPDF={() => console.log('ConvertFromPDF handler to be implemented')}
+                        isProcessing={status.isProcessing}
+                        selectedFiles={selectedFiles}
+                        selectedFile={selectedFile}
+                        onFileSelect={handleFileDrop}
+                        onRemoveFile={() => console.log('Remove file handler to be implemented')} 
+                        onFilePreview={() => console.log('Preview handler to be implemented')} 
+                        onReorderFiles={() => console.log('Reorder handler to be implemented')} 
+                        selectedFormat={selectedFormat}
+                        onFormatSelect={() => console.log('Format select handler to be implemented')} 
+                    />
+                );
             default:
                 return (
                     <div className="bg-card-bg p-4 rounded-lg shadow-sm w-[400px] min-w-[400px] flex flex-col h-full theme-transition">
