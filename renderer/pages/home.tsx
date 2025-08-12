@@ -23,27 +23,23 @@ interface ProcessingStatus {
     type: 'success' | 'error' | 'processing' | null;
 }
 
-// <<< 여기가 수정된 부분입니다 (1/2) >>>
-// Action의 종류를 구체적인 타입으로 정의합니다.
 type PdfAction = 'split' | 'merge' | 'rotate' | 'convert-to-pdf' | 'convert-from-pdf' | 'watermark' | 'security';
 
 export default function HomePage() {
-    const { t } = useTranslation(["common", "home", "watermark"]);
+    const { t } = useTranslation(["common", "home", "watermark", "tools"]);
     const router = useRouter();
 
     // App-wide States
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const [serverStatus, setServerStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
-    // <<< 여기가 수정된 부분입니다 (2/2) >>>
-    // useState의 타입을 구체적인 PdfAction 타입으로 변경합니다.
     const [selectedAction, setSelectedAction] = useState<PdfAction | null>(null);
     const [status, setStatus] = useState<ProcessingStatus>({ isProcessing: false, message: null, type: null });
 
     // File States
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // For merge tool
-    const [pdfUrl, setPdfUrl] = useState<string | null>(null); // For non-viewer tools
-    const [selectedFormat, setSelectedFormat] = useState<'txt' | 'html' | 'image' | null>(null); // For convert tool
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // For merge and multi-image tools
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+    const [selectedFormat, setSelectedFormat] = useState<'txt' | 'html' | 'image' | null>(null);
 
     // Security Tool State
     const [securityMode, setSecurityMode] = useState<'encrypt' | 'decrypt'>('encrypt');
@@ -64,19 +60,15 @@ export default function HomePage() {
 
     // --- Effects ---
 
-    // Server Status Effect
     useEffect(() => {
         if (window.api?.invoke) {
             window.api.invoke('get-server-status').then((status: any) => setServerStatus(status));
             const handler = (_: any, status: any) => setServerStatus(status);
             window.api.on?.('server-status-changed', handler);
-            return () => {
-                window.api.removeListener?.('server-status-changed', handler);
-            };
+            return () => window.api.removeListener?.('server-status-changed', handler);
         }
     }, []);
 
-    // Theme Effect
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
         const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -90,15 +82,12 @@ export default function HomePage() {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    // Router Query Effect
     useEffect(() => {
         if (router.query.action) {
-            // as를 사용하여 타입을 단언해줍니다.
             setSelectedAction(router.query.action as PdfAction);
         }
     }, [router.query]);
 
-    // Cleanup PDF URL Effect
     useEffect(() => {
         return () => {
             if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -108,42 +97,205 @@ export default function HomePage() {
 
     // --- Handlers ---
 
-    // Resets states when a new action is selected
-    // 함수의 파라미터 타입도 PdfAction으로 변경합니다.
+    const clearStatus = () => setStatus({ isProcessing: false, message: null, type: null });
+
     const handleActionSelect = (action: PdfAction) => {
         setSelectedAction(action);
         setSelectedFile(null);
         setSelectedFiles([]);
         if (pdfUrl) URL.revokeObjectURL(pdfUrl);
         setPdfUrl(null);
+        setSelectedFormat(null);
+        clearStatus();
     };
 
-    // Generic file drop handler
     const handleFileDrop = (files: File[]) => {
         if (!files || files.length === 0) return;
-
-        // For single-file tools
-        if (selectedAction === 'watermark' || selectedAction === 'security' || selectedAction === 'split' || selectedAction === 'rotate' || selectedAction === 'convert-from-pdf') {
-            setSelectedFile(files[0]);
-        } 
-        // For multi-file tools
-        else if (selectedAction === 'merge') {
+        if (selectedAction === 'merge' || (selectedAction === 'convert-to-pdf' && selectedFormat === 'image')) {
             setSelectedFiles(prev => {
                 const newFiles = files.filter(f => !prev.some(pf => pf.name === f.name));
                 return [...prev, ...newFiles];
             });
-            if (!pdfUrl) setPdfUrl(URL.createObjectURL(files[0]));
+            if (!pdfUrl && files[0]) {
+                setPdfUrl(URL.createObjectURL(files[0]));
+            }
         } else {
-            // Fallback for other tools if needed
-            setSelectedFile(files[0]);
-            setPdfUrl(URL.createObjectURL(files[0]));
+            const file = files[0];
+            setSelectedFile(file);
+            setSelectedFiles([file]);
+            if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+            setPdfUrl(URL.createObjectURL(file));
+        }
+        clearStatus();
+    };
+
+    const handleRemoveFile = (index: number) => {
+        const newFiles = selectedFiles.filter((_, i) => i !== index);
+        setSelectedFiles(newFiles);
+        if (newFiles.length === 0) {
+            setPdfUrl(null);
+        } else {
+            handleFilePreview(newFiles[0]); // Preview the next file
         }
     };
     
-    // Watermark Handler
+    const handleReorderFiles = (startIndex: number, endIndex: number) => {
+        const result = Array.from(selectedFiles);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        setSelectedFiles(result);
+    };
+
+    const handleFilePreview = (file: File) => {
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        setPdfUrl(URL.createObjectURL(file));
+    };
+    
+    const handleFormatSelect = (format: 'txt' | 'html' | 'image' | null) => {
+        setSelectedFormat(format);
+        if (format !== 'image') {
+            setSelectedFile(null);
+            setSelectedFiles([]);
+            if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+            setPdfUrl(null);
+        }
+    };
+
+    const handleSplit = async (pages: string) => {
+        if (!selectedFile) return setStatus({ isProcessing: false, message: t('home:split.error'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:split.processing'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.splitPdf(selectedFile, pages);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `split_${selectedFile.name}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:split.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleMerge = async (files: File[]) => {
+        if (files.length < 2) return setStatus({ isProcessing: false, message: t('home:merge.error'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:merge.processing'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.mergePdfs(files);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'merged.pdf';
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:merge.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleRotate = async (pages: string, angle: number, includeUnspecified: boolean) => {
+        if (!selectedFile) return setStatus({ isProcessing: false, message: t('home:split.error'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:rotate.processing'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.rotatePdf(selectedFile, pages, angle, includeUnspecified);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rotated_${selectedFile.name}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:rotate.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleConvertToPDF = async (files: File[], sourceFormat: 'txt' | 'html' | 'image') => {
+        if (files.length === 0) return setStatus({ isProcessing: false, message: t('home:convert.noFile'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:convert.toPdf'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.convertToPdf(files, sourceFormat);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = files.length === 1 ? `${files[0].name.split('.')[0]}.pdf` : `combined_${Date.now()}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:convert.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleConvertFromPDF = async (file: File, targetFormat: 'docx' | 'image', imageFormat?: 'jpg' | 'png') => {
+        setStatus({ isProcessing: true, message: t('home:convert.fromPdf'), type: 'processing' });
+        try {
+            let outputPath: string | undefined = undefined;
+            if (targetFormat === 'docx') {
+                const result = await window.electron.saveFile({
+                    title: t('home:convert.saveDocxTitle'),
+                    defaultPath: `${file.name.replace(/\.pdf$/i, '.docx')}`,
+                    filters: [{ name: 'Word Document', extensions: ['docx'] }]
+                }, new Uint8Array());
+                if (!result) return setStatus({ isProcessing: false, message: t('home:convert.saveCancelled'), type: 'error' });
+                outputPath = result;
+            }
+
+            const blob = await window.electron.pdf.convertFromPdf(file, targetFormat, imageFormat, outputPath);
+            
+            if (targetFormat !== 'docx') {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const extension = blob.type.includes('zip') ? 'zip' : imageFormat || 'jpg';
+                a.download = `${file.name.replace(/\.pdf$/i, '')}.${extension}`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            setStatus({ isProcessing: false, message: t('home:convert.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleEncrypt = async (password: string) => {
+        if (!selectedFile) return setStatus({ isProcessing: false, message: t('home:split.error'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:security.encrypt'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.encryptPdf(selectedFile, password);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `encrypted_${selectedFile.name}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:security.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+
+    const handleDecrypt = async (password: string) => {
+        if (!selectedFile) return setStatus({ isProcessing: false, message: t('home:split.error'), type: 'error' });
+        setStatus({ isProcessing: true, message: t('home:security.decrypt'), type: 'processing' });
+        try {
+            const blob = await window.electron.pdf.decryptPdf(selectedFile, password);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `decrypted_${selectedFile.name}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            setStatus({ isProcessing: false, message: t('home:security.success'), type: 'success' });
+        } catch (err) {
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
+        }
+    };
+    
     const handleAddWatermark = async () => {
         if (!selectedFile) return;
-        
         setStatus({ isProcessing: true, message: t('home:watermark.processing'), type: 'processing' });
         try {
             const backendOptions = {
@@ -152,9 +304,7 @@ export default function HomePage() {
                 pages: pagesToApply,
                 fontName: 'NotoSansKR' as const,
             };
-
             const resultBlob = await window.electron.pdf.addWatermark(selectedFile, backendOptions);
-            
             const url = URL.createObjectURL(resultBlob);
             const a = document.createElement('a');
             a.href = url;
@@ -163,16 +313,10 @@ export default function HomePage() {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
             setStatus({ isProcessing: false, message: t('home:watermark.success'), type: 'success' });
         } catch (err) {
-            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다', type: 'error' });
+            setStatus({ isProcessing: false, message: err instanceof Error ? err.message : t('common:unknownError'), type: 'error' });
         }
-    };
-
-
-    const clearStatus = () => {
-        setStatus({ isProcessing: false, message: null, type: null });
     };
 
     const renderToolPanel = () => {
@@ -195,8 +339,8 @@ export default function HomePage() {
                     <SecurityPanel
                         selectedFile={selectedFile}
                         onFileSelect={handleFileDrop} 
-                        onEncrypt={() => { console.log('Encrypt handler to be implemented'); }} 
-                        onDecrypt={() => { console.log('Decrypt handler to be implemented'); }}
+                        onEncrypt={handleEncrypt} 
+                        onDecrypt={handleDecrypt}
                         mode={securityMode}
                         setMode={setSecurityMode}
                     />
@@ -209,20 +353,20 @@ export default function HomePage() {
                 return (
                     <ToolPanel
                         selectedAction={selectedAction}
-                        onSplit={() => console.log('Split handler to be implemented')}
-                        onMerge={() => console.log('Merge handler to be implemented')}
-                        onRotate={() => console.log('Rotate handler to be implemented')}
-                        onConvertToPDF={() => console.log('ConvertToPDF handler to be implemented')}
-                        onConvertFromPDF={() => console.log('ConvertFromPDF handler to be implemented')}
+                        onSplit={handleSplit}
+                        onMerge={handleMerge}
+                        onRotate={handleRotate}
+                        onConvertToPDF={handleConvertToPDF}
+                        onConvertFromPDF={handleConvertFromPDF}
                         isProcessing={status.isProcessing}
                         selectedFiles={selectedFiles}
                         selectedFile={selectedFile}
                         onFileSelect={handleFileDrop}
-                        onRemoveFile={() => console.log('Remove file handler to be implemented')} 
-                        onFilePreview={() => console.log('Preview handler to be implemented')} 
-                        onReorderFiles={() => console.log('Reorder handler to be implemented')} 
+                        onRemoveFile={handleRemoveFile}
+                        onFilePreview={handleFilePreview} 
+                        onReorderFiles={handleReorderFiles} 
                         selectedFormat={selectedFormat}
-                        onFormatSelect={() => console.log('Format select handler to be implemented')} 
+                        onFormatSelect={handleFormatSelect}
                     />
                 );
             default:
@@ -238,27 +382,30 @@ export default function HomePage() {
     const renderViewer = () => {
         switch (selectedAction) {
             case 'watermark':
-                return (
-                    <WatermarkViewer 
-                        file={selectedFile} 
-                        options={watermarkOptions}
-                        pagesToApply={pagesToApply}
-                    />
-                );
+                return <WatermarkViewer file={selectedFile} options={watermarkOptions} pagesToApply={pagesToApply} />;
             default:
-                if (pdfUrl) {
+                if (!pdfUrl) {
                     return (
-                        <iframe
+                        <div className="h-full flex items-center justify-center text-text">
+                            {t('home:noFileSelected')}
+                        </div>
+                    );
+                }
+                if (selectedAction === 'convert-to-pdf' && selectedFormat === 'image') {
+                    return (
+                        <img
                           src={pdfUrl}
-                          className="w-full h-full"
-                          title="PDF viewer"
+                          className="w-full h-full object-contain"
+                          alt="Image preview"
                         />
                     );
                 }
                 return (
-                    <div className="h-full flex items-center justify-center text-text">
-                        {t('home:noFileSelected')}
-                    </div>
+                    <iframe
+                      src={pdfUrl}
+                      className="w-full h-full"
+                      title="PDF viewer"
+                    />
                 );
         }
     };
