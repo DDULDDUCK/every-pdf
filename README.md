@@ -3,7 +3,7 @@
 >
 > To enhance the security of Every-PDF, we have updated our official code signature. As a result, **the auto-updater will fail for all previous versions.**
 >
-> **You must manually download and install version v2.0.2 to receive this update.**
+> **You must manually download and install v2.0.2 or later versions to receive this update.**
 >
 > We apologize for this one-time inconvenience. All future updates will be delivered automatically as expected.
 >
