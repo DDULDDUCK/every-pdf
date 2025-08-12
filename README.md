@@ -14,7 +14,7 @@
 # Every PDF
 <p align="center">
   <!-- 프로젝트 로고를 여기에 추가할 수 있습니다. -->
-  <!-- <img src="path/to/your/logo.png" alt="Every PDF Logo" width="150"> -->
+  <img src="resources/logo.png" alt="Every PDF Logo" width="150">
   <br>
   <strong>A powerful and intuitive all-in-one desktop PDF editing tool.</strong>
 </p>
