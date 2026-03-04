@@ -1,6 +1,6 @@
 // --- contexts/PDFEditContext.tsx ---
 
-import React, { createContext, useReducer, useContext, Dispatch } from 'react';
+import React, { createContext, Dispatch, useCallback, useContext, useMemo, useReducer } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export type PDFTextElement = {
@@ -30,6 +30,7 @@ type PDFEditState = {
   currentPage: number;
   preferredTextFontSize: number;
   elements: PDFEditElement[];
+  elementsByPage: Record<number, PDFEditElement[]>;
   selectedElementId: string | null;
   pendingElementType: 'text' | 'signature' | 'checkbox' | null;
   history: PDFEditElement[][];
@@ -53,18 +54,50 @@ type Action =
   | { type: 'PASTE_ELEMENT'; payload: { x: number; y: number; page: number } }
   | { type: 'SAVE_HISTORY' };
 
+const MAX_HISTORY_ENTRIES = 50;
+const initialElements: PDFEditElement[] = [];
+
 const initialState: PDFEditState = {
   pdfFile: null,
   pdfUrl: null,
   numPages: 0,
   currentPage: 1,
   preferredTextFontSize: 20,
-  elements: [],
+  elements: initialElements,
+  elementsByPage: {},
   selectedElementId: null,
   pendingElementType: null,
-  history: [[]],
+  history: [initialElements],
   historyIndex: 0,
   clipboard: null,
+};
+
+const appendHistory = (
+  history: PDFEditElement[][],
+  historyIndex: number,
+  elements: PDFEditElement[],
+) => {
+  const nextHistory = [...history.slice(0, historyIndex + 1), elements];
+  const trimmedHistory = nextHistory.slice(-MAX_HISTORY_ENTRIES);
+
+  return {
+    history: trimmedHistory,
+    historyIndex: trimmedHistory.length - 1,
+  };
+};
+
+const buildElementsByPage = (elements: PDFEditElement[]): Record<number, PDFEditElement[]> => {
+  const grouped: Record<number, PDFEditElement[]> = {};
+
+  elements.forEach((element) => {
+    if (!grouped[element.page]) {
+      grouped[element.page] = [];
+    }
+
+    grouped[element.page].push(element);
+  });
+
+  return grouped;
 };
 
 const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
@@ -76,23 +109,69 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
     case 'SET_CURRENT_PAGE':
       return { ...state, currentPage: action.payload };
     case 'ADD_ELEMENT': {
+      const nextElements = [...state.elements, action.payload];
       const newStateWithAdd = {
         ...state,
-        elements: [...state.elements, action.payload],
+        elements: nextElements,
+        elementsByPage: buildElementsByPage(nextElements),
         preferredTextFontSize: action.payload.type === 'text' ? action.payload.fontSize : state.preferredTextFontSize,
       };
       return {
         ...newStateWithAdd,
-        history: [...state.history.slice(0, state.historyIndex + 1), newStateWithAdd.elements],
-        historyIndex: state.historyIndex + 1,
+        ...appendHistory(state.history, state.historyIndex, newStateWithAdd.elements),
       };
     }
     case 'UPDATE_ELEMENT': {
+      const elementId = action.payload.element.id;
+      const currentElementIndex = state.elements.findIndex((el) => el.id === elementId);
+
+      if (currentElementIndex === -1) {
+        return state;
+      }
+
+      const previousElement = state.elements[currentElementIndex];
+      const nextElements = [...state.elements];
+      nextElements[currentElementIndex] = action.payload.element;
+
+      let nextElementsByPage: Record<number, PDFEditElement[]>;
+
+      if (previousElement.page === action.payload.element.page) {
+        const currentPage = previousElement.page;
+        const pageElements = state.elementsByPage[currentPage] || [];
+        const pageElementIndex = pageElements.findIndex((el) => el.id === elementId);
+
+        if (pageElementIndex === -1) {
+          nextElementsByPage = {
+            ...state.elementsByPage,
+            [currentPage]: [...pageElements, action.payload.element],
+          };
+        } else {
+          const nextPageElements = [...pageElements];
+          nextPageElements[pageElementIndex] = action.payload.element;
+          nextElementsByPage = {
+            ...state.elementsByPage,
+            [currentPage]: nextPageElements,
+          };
+        }
+      } else {
+        const previousPageElements = (state.elementsByPage[previousElement.page] || []).filter(
+          (el) => el.id !== elementId,
+        );
+        const targetPageElements = (state.elementsByPage[action.payload.element.page] || []).filter(
+          (el) => el.id !== elementId,
+        );
+
+        nextElementsByPage = {
+          ...state.elementsByPage,
+          [previousElement.page]: previousPageElements,
+          [action.payload.element.page]: [...targetPageElements, action.payload.element],
+        };
+      }
+
       const newStateWithUpdate = {
         ...state,
-        elements: state.elements.map((el) =>
-          el.id === action.payload.element.id ? action.payload.element : el
-        ),
+        elements: nextElements,
+        elementsByPage: nextElementsByPage,
         preferredTextFontSize: action.payload.element.type === 'text'
           ? action.payload.element.fontSize
           : state.preferredTextFontSize,
@@ -100,37 +179,39 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
       if (action.payload.saveHistory) {
         return {
           ...newStateWithUpdate,
-          history: [...state.history.slice(0, state.historyIndex + 1), newStateWithUpdate.elements],
-          historyIndex: state.historyIndex + 1,
+          ...appendHistory(state.history, state.historyIndex, newStateWithUpdate.elements),
         };
       }
       return newStateWithUpdate;
     }
     case 'REMOVE_ELEMENT': {
       const newSelectedId = state.selectedElementId === action.payload ? null : state.selectedElementId;
+      const nextElements = state.elements.filter((el) => el.id !== action.payload);
       const newStateWithRemove = {
         ...state,
-        elements: state.elements.filter((el) => el.id !== action.payload),
+        elements: nextElements,
+        elementsByPage: buildElementsByPage(nextElements),
         selectedElementId: newSelectedId,
       };
       return {
         ...newStateWithRemove,
-        history: [...state.history.slice(0, state.historyIndex + 1), newStateWithRemove.elements],
-        historyIndex: state.historyIndex + 1,
+        ...appendHistory(state.history, state.historyIndex, newStateWithRemove.elements),
       };
     }
     case 'SET_SELECTED_ELEMENT_ID':
       return { ...state, selectedElementId: action.payload, pendingElementType: null };
     case 'SET_ELEMENTS':
-        return { ...state, elements: action.payload };
+        return { ...state, elements: action.payload, elementsByPage: buildElementsByPage(action.payload) };
     case 'SET_PENDING_ELEMENT_TYPE':
       return { ...state, pendingElementType: action.payload, selectedElementId: null };
     case 'UNDO':
       if (state.historyIndex > 0) {
         const previousIndex = state.historyIndex - 1;
+        const previousElements = state.history[previousIndex];
         return {
           ...state,
-          elements: state.history[previousIndex],
+          elements: previousElements,
+          elementsByPage: buildElementsByPage(previousElements),
           historyIndex: previousIndex,
           selectedElementId: null,
         };
@@ -139,9 +220,11 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
     case 'REDO':
       if (state.historyIndex < state.history.length - 1) {
         const nextIndex = state.historyIndex + 1;
+        const nextElements = state.history[nextIndex];
         return {
           ...state,
-          elements: state.history[nextIndex],
+          elements: nextElements,
+          elementsByPage: buildElementsByPage(nextElements),
           historyIndex: nextIndex,
           selectedElementId: null,
         };
@@ -158,12 +241,16 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
           y: action.payload.y,
           page: action.payload.page,
         };
-        const newStateWithPaste = { ...state, elements: [...state.elements, newElement] };
+        const nextElements = [...state.elements, newElement];
+        const newStateWithPaste = {
+          ...state,
+          elements: nextElements,
+          elementsByPage: buildElementsByPage(nextElements),
+        };
         return {
           ...newStateWithPaste,
           preferredTextFontSize: newElement.type === 'text' ? newElement.fontSize : state.preferredTextFontSize,
-          history: [...state.history.slice(0, state.historyIndex + 1), newStateWithPaste.elements],
-          historyIndex: state.historyIndex + 1,
+          ...appendHistory(state.history, state.historyIndex, newStateWithPaste.elements),
           selectedElementId: newElement.id,
         };
       }
@@ -171,11 +258,10 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
     }
     case 'SAVE_HISTORY': {
       const currentHistory = state.history[state.historyIndex];
-      if (JSON.stringify(currentHistory) !== JSON.stringify(state.elements)) {
+      if (currentHistory !== state.elements) {
         return {
           ...state,
-          history: [...state.history.slice(0, state.historyIndex + 1), state.elements],
-          historyIndex: state.historyIndex + 1,
+          ...appendHistory(state.history, state.historyIndex, state.elements),
         };
       }
       return state;
@@ -206,27 +292,104 @@ export const usePDFEdit = () => {
   }
   const { state, dispatch } = context;
 
-  return {
+  const setPdfFile = useCallback((file: File | null) => {
+    const url = file ? URL.createObjectURL(file) : null;
+    dispatch({ type: 'SET_PDF_FILE', payload: { file, url } });
+  }, [dispatch]);
+
+  const setNumPages = useCallback((payload: number) => {
+    dispatch({ type: 'SET_NUM_PAGES', payload });
+  }, [dispatch]);
+
+  const setCurrentPage = useCallback((payload: number) => {
+    dispatch({ type: 'SET_CURRENT_PAGE', payload });
+  }, [dispatch]);
+
+  const addElement = useCallback((payload: PDFEditElement) => {
+    dispatch({ type: 'ADD_ELEMENT', payload });
+  }, [dispatch]);
+
+  const updateElement = useCallback((element: PDFEditElement, saveHistory: boolean = false) => {
+    dispatch({ type: 'UPDATE_ELEMENT', payload: { element, saveHistory } });
+  }, [dispatch]);
+
+  const removeElement = useCallback((payload: string) => {
+    dispatch({ type: 'REMOVE_ELEMENT', payload });
+  }, [dispatch]);
+
+  const setSelectedElementId = useCallback((payload: string | null) => {
+    dispatch({ type: 'SET_SELECTED_ELEMENT_ID', payload });
+  }, [dispatch]);
+
+  const setElements = useCallback((payload: PDFEditElement[]) => {
+    dispatch({ type: 'SET_ELEMENTS', payload });
+  }, [dispatch]);
+
+  const setPendingElementType = useCallback((payload: 'text' | 'signature' | 'checkbox' | null) => {
+    dispatch({ type: 'SET_PENDING_ELEMENT_TYPE', payload });
+  }, [dispatch]);
+
+  const undo = useCallback(() => {
+    dispatch({ type: 'UNDO' });
+  }, [dispatch]);
+
+  const redo = useCallback(() => {
+    dispatch({ type: 'REDO' });
+  }, [dispatch]);
+
+  const copyElement = useCallback((element: PDFEditElement) => {
+    dispatch({ type: 'COPY_ELEMENT', payload: element });
+  }, [dispatch]);
+
+  const pasteElement = useCallback((x: number, y: number, page: number) => {
+    dispatch({ type: 'PASTE_ELEMENT', payload: { x, y, page } });
+  }, [dispatch]);
+
+  const saveHistory = useCallback(() => {
+    dispatch({ type: 'SAVE_HISTORY' });
+  }, [dispatch]);
+
+  const canUndo = useCallback(() => state.historyIndex > 0, [state.historyIndex]);
+  const canRedo = useCallback(() => state.historyIndex < state.history.length - 1, [state.historyIndex, state.history.length]);
+  const hasClipboard = useCallback(() => !!state.clipboard, [state.clipboard]);
+
+  return useMemo(() => ({
     state,
-    setPdfFile: (file: File | null) => {
-        const url = file ? URL.createObjectURL(file) : null;
-        dispatch({ type: 'SET_PDF_FILE', payload: { file, url } });
-    },
-    setNumPages: (payload: number) => dispatch({ type: 'SET_NUM_PAGES', payload }),
-    setCurrentPage: (payload: number) => dispatch({ type: 'SET_CURRENT_PAGE', payload }),
-    addElement: (payload: PDFEditElement) => dispatch({ type: 'ADD_ELEMENT', payload }),
-    updateElement: (element: PDFEditElement, saveHistory: boolean = false) => dispatch({ type: 'UPDATE_ELEMENT', payload: { element, saveHistory } }),
-    removeElement: (payload: string) => dispatch({ type: 'REMOVE_ELEMENT', payload }),
-    setSelectedElementId: (payload: string | null) => dispatch({ type: 'SET_SELECTED_ELEMENT_ID', payload }),
-    setElements: (payload: PDFEditElement[]) => dispatch({ type: 'SET_ELEMENTS', payload }),
-    setPendingElementType: (payload: 'text' | 'signature' | 'checkbox' | null) => dispatch({ type: 'SET_PENDING_ELEMENT_TYPE', payload }),
-    undo: () => dispatch({ type: 'UNDO' }),
-    redo: () => dispatch({ type: 'REDO' }),
-    copyElement: (element: PDFEditElement) => dispatch({ type: 'COPY_ELEMENT', payload: element }),
-    pasteElement: (x: number, y: number, page: number) => dispatch({ type: 'PASTE_ELEMENT', payload: { x, y, page } }),
-    saveHistory: () => dispatch({ type: 'SAVE_HISTORY' }),
-    canUndo: () => state.historyIndex > 0,
-    canRedo: () => state.historyIndex < state.history.length - 1,
-    hasClipboard: () => !!state.clipboard,
-  };
+    setPdfFile,
+    setNumPages,
+    setCurrentPage,
+    addElement,
+    updateElement,
+    removeElement,
+    setSelectedElementId,
+    setElements,
+    setPendingElementType,
+    undo,
+    redo,
+    copyElement,
+    pasteElement,
+    saveHistory,
+    canUndo,
+    canRedo,
+    hasClipboard,
+  }), [
+    state,
+    setPdfFile,
+    setNumPages,
+    setCurrentPage,
+    addElement,
+    updateElement,
+    removeElement,
+    setSelectedElementId,
+    setElements,
+    setPendingElementType,
+    undo,
+    redo,
+    copyElement,
+    pasteElement,
+    saveHistory,
+    canUndo,
+    canRedo,
+    hasClipboard,
+  ]);
 };

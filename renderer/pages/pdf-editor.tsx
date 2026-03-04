@@ -1,11 +1,10 @@
 // --- renderer/pages/pdf-editor.tsx ---
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import * as pdfjs from 'pdfjs-dist';
 import { v4 as uuidv4 } from "uuid";
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import { usePDFEdit, PDFEditProvider, PDFEditElement } from '../contexts/PDFEditContext';
 import { useTranslation } from "react-i18next";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -13,8 +12,6 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import EditToolbar from '../components/EditToolbar';
 import PDFViewer, { PDFViewerHandle } from '../components/PDFViewer';
 import InspectorSidebar from '../components/InspectorSidebar';
-
-pdfjs.GlobalWorkerOptions.workerSrc = `/static/pdf.worker.min.js`;
 
 const EditorPageContent = () => {
     const {
@@ -36,10 +33,28 @@ const EditorPageContent = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const viewerRef = useRef<PDFViewerHandle>(null);
     const router = useRouter();
-    const { t: tHome } = useTranslation("home");
     const { t: tEditor } = useTranslation("editor");
 
     const [isSaving, setIsSaving] = useState(false);
+
+    const editorStateRef = useRef({
+        selectedElementId: state.selectedElementId,
+        currentPage: state.currentPage,
+        elements: state.elements,
+    });
+
+    const editorActionsRef = useRef({
+        undo,
+        redo,
+        copyElement,
+        pasteElement,
+        removeElement,
+        canUndo,
+        canRedo,
+        hasClipboard,
+        setPendingElementType,
+        setSelectedElementId,
+    });
 
     // 테마 초기화 및 감지
     useEffect(() => {
@@ -57,16 +72,16 @@ const EditorPageContent = () => {
     }, [theme]);
 
     // 뒤로가기 함수
-    const handleGoBack = () => {
+    const handleGoBack = useCallback(() => {
         router.push('/home');
-    };
+    }, [router]);
 
-    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) setPdfFile(file);
-    };
+    }, [setPdfFile]);
     
-    const handlePlaceElement = (type: "text" | "signature" | "checkbox", page: number, x: number, y: number) => {
+    const handlePlaceElement = useCallback((type: "text" | "signature" | "checkbox", page: number, x: number, y: number) => {
         const baseElement = { id: uuidv4(), page, x, y };
         let newElement: PDFEditElement;
         switch (type) {
@@ -91,16 +106,24 @@ const EditorPageContent = () => {
         addElement(newElement);
         setSelectedElementId(newElement.id);
         setPendingElementType(null);
-    };
+    }, [addElement, setPendingElementType, setSelectedElementId, state.preferredTextFontSize, tEditor]);
 
-    const handleEditElement = (element: PDFEditElement) => {
+    const handleEditElement = useCallback((element: PDFEditElement) => {
         setPendingElementType(null);
         setSelectedElementId(element.id);
-    };
+    }, [setPendingElementType, setSelectedElementId]);
 
-    const handleDeselect = () => {
+    const handleDeselect = useCallback(() => {
         setSelectedElementId(null);
-    };
+    }, [setSelectedElementId]);
+
+    const handleCancelPlaceElement = useCallback(() => {
+        setPendingElementType(null);
+    }, [setPendingElementType]);
+
+    const handleUploadClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
 
     const handleSave = async () => {
         if (!state.pdfFile) return;
@@ -119,12 +142,65 @@ const EditorPageContent = () => {
             setIsSaving(false);
         }
     };
+
+    useEffect(() => {
+        editorStateRef.current = {
+            selectedElementId: state.selectedElementId,
+            currentPage: state.currentPage,
+            elements: state.elements,
+        };
+    }, [state.selectedElementId, state.currentPage, state.elements]);
+
+    useEffect(() => {
+        editorActionsRef.current = {
+            undo,
+            redo,
+            copyElement,
+            pasteElement,
+            removeElement,
+            canUndo,
+            canRedo,
+            hasClipboard,
+            setPendingElementType,
+            setSelectedElementId,
+        };
+    }, [
+        undo,
+        redo,
+        copyElement,
+        pasteElement,
+        removeElement,
+        canUndo,
+        canRedo,
+        hasClipboard,
+        setPendingElementType,
+        setSelectedElementId,
+    ]);
     
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            const {
+                selectedElementId,
+                currentPage,
+                elements,
+            } = editorStateRef.current;
+
+            const {
+                undo: doUndo,
+                redo: doRedo,
+                copyElement: doCopyElement,
+                pasteElement: doPasteElement,
+                removeElement: doRemoveElement,
+                canUndo: canUndoNow,
+                canRedo: canRedoNow,
+                hasClipboard: hasClipboardNow,
+                setPendingElementType: setPendingElementTypeNow,
+                setSelectedElementId: setSelectedElementIdNow,
+            } = editorActionsRef.current;
+
             if (e.key === 'Escape') {
-                setPendingElementType(null);
-                setSelectedElementId(null);
+                setPendingElementTypeNow(null);
+                setSelectedElementIdNow(null);
                 return;
             }
 
@@ -140,22 +216,35 @@ const EditorPageContent = () => {
                 switch (e.key.toLowerCase()) {
                     case 'z':
                         e.preventDefault();
-                        if (e.shiftKey) { if (canRedo()) redo(); } else { if (canUndo()) undo(); }
+                        if (e.shiftKey) {
+                            if (canRedoNow()) {
+                                doRedo();
+                            }
+                        } else if (canUndoNow()) {
+                            doUndo();
+                        }
                         break;
                     case 'y':
-                        if (!isMac) { e.preventDefault(); if (canRedo()) redo(); }
+                        if (!isMac) {
+                            e.preventDefault();
+                            if (canRedoNow()) {
+                                doRedo();
+                            }
+                        }
                         break;
                     case 'c':
-                        if (state.selectedElementId) {
+                        if (selectedElementId) {
                             e.preventDefault();
-                            const selectedElement = state.elements.find(el => el.id === state.selectedElementId);
-                            if (selectedElement) copyElement(selectedElement);
+                            const selectedElement = elements.find((el) => el.id === selectedElementId);
+                            if (selectedElement) {
+                                doCopyElement(selectedElement);
+                            }
                         }
                         break;
                     case 'v':
-                        if (hasClipboard()) {
+                        if (hasClipboardNow()) {
                             e.preventDefault();
-                            pasteElement(200, 200, state.currentPage);
+                            doPasteElement(200, 200, currentPage);
                         }
                         break;
                 }
@@ -163,9 +252,9 @@ const EditorPageContent = () => {
                 switch (e.key) {
                     case 'Delete':
                     case 'Backspace':
-                        if (state.selectedElementId) {
+                        if (selectedElementId) {
                             e.preventDefault();
-                            removeElement(state.selectedElementId);
+                            doRemoveElement(selectedElementId);
                         }
                         break;
                 }
@@ -174,7 +263,7 @@ const EditorPageContent = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [state.selectedElementId, state.currentPage, state.elements, undo, redo, copyElement, pasteElement, removeElement, canUndo, canRedo, hasClipboard, setPendingElementType, setSelectedElementId]);
+    }, []);
 
     return (
         <>
@@ -188,7 +277,7 @@ const EditorPageContent = () => {
                     onSetPendingElement={type => { setSelectedElementId(null); setPendingElementType(type); }}
                     onSave={handleSave}
                     isSaving={isSaving}
-                    onUploadClick={() => fileInputRef.current?.click()}
+                    onUploadClick={handleUploadClick}
                     onGoBack={handleGoBack}
                 />
 
@@ -199,8 +288,8 @@ const EditorPageContent = () => {
                               ref={viewerRef}
                               onEditElement={handleEditElement}
                               onPlaceElement={handlePlaceElement}
-                              onCancelPlaceElement={() => setPendingElementType(null)}
-                              onUploadClick={() => fileInputRef.current?.click()}
+                              onCancelPlaceElement={handleCancelPlaceElement}
+                              onUploadClick={handleUploadClick}
                               onDeselect={handleDeselect}
                             />
                         </div>

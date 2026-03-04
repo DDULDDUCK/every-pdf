@@ -1,6 +1,6 @@
 // --- components/PDFViewer.tsx ---
 
-import React, { useMemo, forwardRef, useImperativeHandle } from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import {
     Worker,
     Viewer,
@@ -33,19 +33,15 @@ export type PDFViewerHandle = {
 const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, onPlaceElement, onCancelPlaceElement, onUploadClick, onDeselect }, ref) => {
   const { state, setCurrentPage, setNumPages } = usePDFEdit();
   const { t } = useTranslation("editor");
-  
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
-  // [수정] memoizedEditingCanvasPlugin에 onDeselect 전달
-  const memoizedEditingCanvasPlugin = useMemo(() => {
-    return editingCanvasPlugin({
-      onEditElement,
-      onPlaceElement,
-      onCancelPlaceElement,
-      onDeselect
-    });
-  }, [onEditElement, onPlaceElement, onCancelPlaceElement, onDeselect]);
-  
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
+  const memoizedEditingCanvasPlugin = editingCanvasPlugin({
+    onEditElement,
+    onPlaceElement,
+    onCancelPlaceElement,
+    onDeselect,
+  });
+
   useImperativeHandle(ref, () => ({
     jumpToElement: (element) => {
         const pageSelector = `.rpv-core__page-layer[data-page-index="${element.page - 1}"]`;
@@ -134,6 +130,7 @@ const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, 
       ) : (
         <Worker workerUrl="/static/pdf.worker.min.js">
           <Viewer
+            key={state.pdfUrl || 'empty'}
             fileUrl={state.pdfUrl}
             plugins={[defaultLayoutPluginInstance, memoizedEditingCanvasPlugin]}
             defaultScale={SpecialZoomLevel.PageFit}

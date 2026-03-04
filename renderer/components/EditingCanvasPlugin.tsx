@@ -1,6 +1,6 @@
 // --- components/EditingCanvasPlugin.tsx ---
 
-import React, { useState } from 'react'; // React import 확인
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plugin, PluginRenderPageLayer } from '@react-pdf-viewer/core';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
@@ -31,10 +31,20 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
         selectedElement?: PDFEditElement | null;
         pastePosition?: { x: number; y: number; page: number } | null;
     } | null>(null);
-    
-    const elementsOnPage = state.elements.filter((el) => el.page === pageIndex + 1);
 
-    const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const nodeRefs = useRef<Record<string, React.RefObject<HTMLDivElement>>>({});
+
+    const elementsOnPage = state.elementsByPage[pageIndex + 1] || [];
+
+    const getNodeRef = (elementId: string) => {
+        if (!nodeRefs.current[elementId]) {
+            nodeRefs.current[elementId] = React.createRef<HTMLDivElement>();
+        }
+
+        return nodeRefs.current[elementId];
+    };
+
+    const handleOverlayClick = (e: React.MouseEvent<HTMLElement>) => {
         setContextMenu(null);
         if (state.pendingElementType) {
             const x = e.nativeEvent.offsetX / scale;
@@ -46,7 +56,7 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
         e.preventDefault(); e.stopPropagation();
     };
 
-    const handleOverlayContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleOverlayContextMenu = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault(); e.stopPropagation();
         if (state.pendingElementType) {
             onCancelPlaceElement();
@@ -73,21 +83,51 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
 
     const handleContextMenuClose = () => setContextMenu(null);
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (state.pendingElementType) setPendingPosition({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+    const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+        if (!state.pendingElementType) {
+            return;
+        }
+
+        const nextPosition = { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY };
+        setPendingPosition((prev) => {
+            if (prev && prev.x === nextPosition.x && prev.y === nextPosition.y) {
+                return prev;
+            }
+
+            return nextPosition;
+        });
     };
 
     const handleDragStart = (el: PDFEditElement) => {
         setSelectedElementId(el.id);
     };
 
-    const handleDrag = (el: PDFEditElement, e: DraggableEvent, data: DraggableData) => {
-        updateElement({ ...el, x: data.x / scale, y: data.y / scale }, false);
-    };
+    const handleDragStop = (el: PDFEditElement, _e: DraggableEvent, data: DraggableData) => {
+        const nextX = data.x / scale;
+        const nextY = data.y / scale;
 
-    const handleDragStop = () => {
+        if (el.x === nextX && el.y === nextY) {
+            return;
+        }
+
+        updateElement({ ...el, x: nextX, y: nextY }, false);
         saveHistory();
     };
+
+    useEffect(() => {
+        return () => {
+            nodeRefs.current = {};
+        };
+    }, []);
+
+    useEffect(() => {
+        const activeIds = new Set(elementsOnPage.map((element) => element.id));
+        Object.keys(nodeRefs.current).forEach((id) => {
+            if (!activeIds.has(id)) {
+                delete nodeRefs.current[id];
+            }
+        });
+    }, [elementsOnPage]);
 
     const renderPendingElement = () => {
         if (!state.pendingElementType || !pendingPosition) return null;
@@ -103,8 +143,10 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
 
     return (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}>
-            <div
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: state.pendingElementType ? 'crosshair' : 'default' }}
+            <button
+                type="button"
+                aria-label={t('editorOverlay', 'PDF editing overlay')}
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: state.pendingElementType ? 'crosshair' : 'default', background: 'transparent', border: 'none', padding: 0 }}
                 onClick={handleOverlayClick}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => setPendingPosition(null)}
@@ -113,17 +155,20 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
             {renderPendingElement()}
             {elementsOnPage.map((el) => {
                 const isSelected = state.selectedElementId === el.id;
+                const nodeRef = getNodeRef(el.id);
+                const draggableKey = `${el.id}:${el.x}:${el.y}:${scale}`;
                 return (
                     <Draggable
-                        key={el.id}
-                        position={{ x: el.x * scale, y: el.y * scale }}
+                        key={draggableKey}
+                        nodeRef={nodeRef}
+                        defaultPosition={{ x: el.x * scale, y: el.y * scale }}
                         onStart={() => handleDragStart(el)}
-                        onDrag={(e, data) => handleDrag(el, e, data)}
-                        onStop={handleDragStop}
+                        onStop={(_e, data) => handleDragStop(el, _e, data)}
                         bounds="parent" 
                         scale={1} 
                     >
                         <Box
+                            ref={nodeRef}
                             onContextMenu={(e) => handleElementContextMenu(e, el)}
                             sx={{
                                 position: 'absolute', cursor: 'move',
@@ -169,6 +214,7 @@ const EditingOverlay: React.FC<PluginRenderPageLayer & EditingCanvasPluginProps>
                                 const size = checkboxEl.size * scale;
                                 return (
                                     <svg width={size} height={size}>
+                                        <title>{t('checkboxPreview', 'Checkbox preview')}</title>
                                         <rect 
                                             x={1} y={1}
                                             width={size - 2} height={size - 2}
