@@ -61,9 +61,9 @@ const InspectorSidebar = () => {
                     <button
                         type="button"
                         onClick={handleDelete}
-                        className="w-full px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white theme-transition"
+                        className="w-full px-3 py-2 rounded-md bg-[var(--error)] hover:bg-[var(--error-hover)] text-white theme-transition"
                     >
-                        {t("deleteElement", "Delete Element")}
+                        {t("delete")}
                     </button>
                 </div>
             )}

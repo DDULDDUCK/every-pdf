@@ -177,7 +177,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           <MenuItem
             onClick={handleDelete}
             sx={{
-              color: 'var(--danger)',
+              color: 'var(--error)',
               '&:hover': {
                 backgroundColor: 'var(--button-hover)',
               },
@@ -186,7 +186,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <ListItemIcon sx={{ color: 'inherit', minWidth: '36px' }}>
               <DeleteIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText sx={{ color: 'inherit' }}>{t("delete")} (Delete)</ListItemText>
+            <ListItemText sx={{ color: 'inherit' }}>{t("delete")}</ListItemText>
           </MenuItem>
         </>
       )}
