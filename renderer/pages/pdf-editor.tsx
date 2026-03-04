@@ -71,7 +71,15 @@ const EditorPageContent = () => {
         let newElement: PDFEditElement;
         switch (type) {
             case 'text': 
-                newElement = { ...baseElement, type: 'text', text: tEditor("textPlaceholder"), fontSize: 20, color: "#222222", hasBackground: false, backgroundColor: "#ffffff" };
+                newElement = {
+                    ...baseElement,
+                    type: 'text',
+                    text: tEditor("textPlaceholder"),
+                    fontSize: state.preferredTextFontSize,
+                    color: "#222222",
+                    hasBackground: false,
+                    backgroundColor: "#ffffff",
+                };
                 break;
             case 'signature': 
                 newElement = { ...baseElement, type: 'signature', imageData: "", width: 200, height: 80, hasBackground: false, backgroundColor: "#ffffff" }; 
@@ -173,7 +181,7 @@ const EditorPageContent = () => {
             <Head>
                 <title>PDF 편집기 - Every PDF</title>
             </Head>
-            <div className="app-container min-h-screen flex flex-col">
+            <div className="app-container h-screen overflow-hidden flex flex-col">
                 <input type="file" ref={fileInputRef} onChange={onFileChange} accept="application/pdf" style={{ display: 'none' }} />
                 
                 <EditToolbar
@@ -184,9 +192,9 @@ const EditorPageContent = () => {
                     onGoBack={handleGoBack}
                 />
 
-                <PanelGroup direction="horizontal" className="flex flex-1 overflow-hidden relative">
-                    <Panel defaultSize={75} minSize={50}>
-                        <div className="w-full h-full">
+                <PanelGroup direction="horizontal" className="flex flex-1 min-h-0 overflow-hidden relative">
+                    <Panel defaultSize={75} minSize={50} className="min-h-0 overflow-hidden">
+                        <div className="w-full h-full min-h-0 overflow-hidden">
                             <PDFViewer
                               ref={viewerRef}
                               onEditElement={handleEditElement}
@@ -200,7 +208,7 @@ const EditorPageContent = () => {
                     <PanelResizeHandle className="w-2 flex items-center justify-center bg-transparent hover:bg-primary/10 transition-colors duration-200 group">
                          <div className="w-px h-12 bg-border group-hover:bg-primary/50 transition-colors duration-200" />
                     </PanelResizeHandle>
-                    <Panel defaultSize={25} minSize={20} maxSize={40}>
+                    <Panel defaultSize={25} minSize={20} maxSize={40} className="min-h-0 overflow-hidden">
                         <InspectorSidebar />
                     </Panel>
                 </PanelGroup>

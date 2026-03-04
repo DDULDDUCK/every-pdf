@@ -28,6 +28,7 @@ type PDFEditState = {
   pdfUrl: string | null;
   numPages: number;
   currentPage: number;
+  preferredTextFontSize: number;
   elements: PDFEditElement[];
   selectedElementId: string | null;
   pendingElementType: 'text' | 'signature' | 'checkbox' | null;
@@ -57,6 +58,7 @@ const initialState: PDFEditState = {
   pdfUrl: null,
   numPages: 0,
   currentPage: 1,
+  preferredTextFontSize: 20,
   elements: [],
   selectedElementId: null,
   pendingElementType: null,
@@ -73,19 +75,27 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
       return { ...state, numPages: action.payload };
     case 'SET_CURRENT_PAGE':
       return { ...state, currentPage: action.payload };
-    case 'ADD_ELEMENT':
-      const newStateWithAdd = { ...state, elements: [...state.elements, action.payload] };
+    case 'ADD_ELEMENT': {
+      const newStateWithAdd = {
+        ...state,
+        elements: [...state.elements, action.payload],
+        preferredTextFontSize: action.payload.type === 'text' ? action.payload.fontSize : state.preferredTextFontSize,
+      };
       return {
         ...newStateWithAdd,
         history: [...state.history.slice(0, state.historyIndex + 1), newStateWithAdd.elements],
         historyIndex: state.historyIndex + 1,
       };
-    case 'UPDATE_ELEMENT':
+    }
+    case 'UPDATE_ELEMENT': {
       const newStateWithUpdate = {
         ...state,
         elements: state.elements.map((el) =>
           el.id === action.payload.element.id ? action.payload.element : el
         ),
+        preferredTextFontSize: action.payload.element.type === 'text'
+          ? action.payload.element.fontSize
+          : state.preferredTextFontSize,
       };
       if (action.payload.saveHistory) {
         return {
@@ -95,7 +105,8 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
         };
       }
       return newStateWithUpdate;
-    case 'REMOVE_ELEMENT':
+    }
+    case 'REMOVE_ELEMENT': {
       const newSelectedId = state.selectedElementId === action.payload ? null : state.selectedElementId;
       const newStateWithRemove = {
         ...state,
@@ -107,6 +118,7 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
         history: [...state.history.slice(0, state.historyIndex + 1), newStateWithRemove.elements],
         historyIndex: state.historyIndex + 1,
       };
+    }
     case 'SET_SELECTED_ELEMENT_ID':
       return { ...state, selectedElementId: action.payload, pendingElementType: null };
     case 'SET_ELEMENTS':
@@ -137,7 +149,7 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
       return state;
     case 'COPY_ELEMENT':
       return { ...state, clipboard: action.payload };
-    case 'PASTE_ELEMENT':
+    case 'PASTE_ELEMENT': {
       if (state.clipboard) {
         const newElement = {
           ...state.clipboard,
@@ -149,13 +161,15 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
         const newStateWithPaste = { ...state, elements: [...state.elements, newElement] };
         return {
           ...newStateWithPaste,
+          preferredTextFontSize: newElement.type === 'text' ? newElement.fontSize : state.preferredTextFontSize,
           history: [...state.history.slice(0, state.historyIndex + 1), newStateWithPaste.elements],
           historyIndex: state.historyIndex + 1,
           selectedElementId: newElement.id,
         };
       }
       return state;
-    case 'SAVE_HISTORY':
+    }
+    case 'SAVE_HISTORY': {
       const currentHistory = state.history[state.historyIndex];
       if (JSON.stringify(currentHistory) !== JSON.stringify(state.elements)) {
         return {
@@ -165,6 +179,7 @@ const pdfEditReducer = (state: PDFEditState, action: Action): PDFEditState => {
         };
       }
       return state;
+    }
     default:
       return state;
   }

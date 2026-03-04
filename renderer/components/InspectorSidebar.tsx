@@ -42,7 +42,7 @@ const InspectorSidebar = () => {
 
     return (
         <aside
-            className="bg-panel-bg flex flex-col theme-transition h-full"
+            className="bg-panel-bg flex flex-col theme-transition h-full min-h-0"
         >
             <div className="p-4 border-b border-border">
                 <h2 className="text-lg font-semibold text-text theme-transition">{t("properties")}</h2>
@@ -59,6 +59,7 @@ const InspectorSidebar = () => {
             {selectedElement && (
                 <div className="p-4 border-t border-border">
                     <button
+                        type="button"
                         onClick={handleDelete}
                         className="w-full px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white theme-transition"
                     >

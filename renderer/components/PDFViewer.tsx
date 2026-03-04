@@ -31,7 +31,7 @@ export type PDFViewerHandle = {
 
 // [수정] forwardRef의 props 타입 변경
 const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, onPlaceElement, onCancelPlaceElement, onUploadClick, onDeselect }, ref) => {
-  const { state, setCurrentPage, setNumPages, setSelectedElementId } = usePDFEdit();
+  const { state, setCurrentPage, setNumPages } = usePDFEdit();
   const { t } = useTranslation("editor");
   
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
@@ -68,12 +68,7 @@ const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, 
   // PDF가 없을 때의 화면은 변경 없음
 
   return (
-    <div className="flex-1 h-full bg-app-bg relative theme-transition" onClick={(e) => {
-        // 뷰어 배경 클릭 시 선택 해제
-        if (e.target === e.currentTarget) {
-            setSelectedElementId(null);
-        }
-    }}>
+    <div className="flex-1 h-full bg-app-bg relative theme-transition">
       {!state.pdfUrl ? (
         <div className="w-full h-full flex flex-col items-center justify-center bg-panel-bg theme-transition relative overflow-hidden">
             {/* ... PDF 없을 때의 UI (기존과 동일) ... */}
@@ -88,6 +83,7 @@ const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, 
               <div className="relative mb-12">
                 <div className="absolute inset-0 bg-primary opacity-10 rounded-full animate-pulse w-32 h-32"></div>
                 <button
+                  type="button"
                   onClick={onUploadClick}
                   className="group relative bg-card-bg rounded-full p-8 shadow-lg border border-border w-32 h-32 flex items-center justify-center hover:bg-primary hover:border-primary transition-all duration-300 transform hover:scale-110 active:scale-95 cursor-pointer"
                 >
@@ -101,7 +97,13 @@ const PDFViewer = forwardRef<PDFViewerHandle, PDFViewerProps>(({ onEditElement, 
                 {t("startTitle")}
               </h1>
               <p className="text-lg text-button-text mb-12 leading-relaxed theme-transition max-w-xl">
-                <span className="text-primary font-semibold cursor-pointer" onClick={onUploadClick}>{t("startDesc").split("<icon>")[1]?.split("</icon>")[0] || t("openPdf")}</span>
+                <button
+                  type="button"
+                  onClick={onUploadClick}
+                  className="text-primary font-semibold cursor-pointer bg-transparent border-0 p-0"
+                >
+                  {t("startDesc").split("<icon>")[1]?.split("</icon>")[0] || t("openPdf")}
+                </button>
                 {t("startDesc").replace(/<icon>.*?<\/icon>/, "")}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 w-full max-w-4xl">
