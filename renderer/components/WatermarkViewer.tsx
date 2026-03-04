@@ -1,9 +1,8 @@
 // components/WatermarkViewer.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Viewer, Worker, RenderPageProps } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import * as pdfjs from 'pdfjs-dist';
 import { useTranslation } from "react-i18next";
 
 // home.tsx와 공유할 타입
@@ -25,12 +24,59 @@ interface WatermarkViewerProps {
   pagesToApply: string;
 }
 
+const TILE_CELLS = Array.from({ length: 16 }, (_, i) => i);
+
+const parsePagesToApply = (pagesToApply: string): Set<number> => {
+  const normalized = pagesToApply.trim().toLowerCase();
+
+  if (normalized === 'all' || normalized.length === 0) {
+    return new Set();
+  }
+
+  const result = new Set<number>();
+  const ranges = pagesToApply.split(',');
+
+  ranges.forEach((rawRange) => {
+    const range = rawRange.trim();
+
+    if (!range) {
+      return;
+    }
+
+    if (range.includes('-')) {
+      const [startRaw, endRaw] = range.split('-').map((value) => Number(value.trim()));
+
+      if (!Number.isFinite(startRaw) || !Number.isFinite(endRaw) || startRaw <= 0 || endRaw <= 0) {
+        return;
+      }
+
+      const start = Math.min(startRaw, endRaw);
+      const end = Math.max(startRaw, endRaw);
+
+      for (let page = start; page <= end; page += 1) {
+        result.add(page);
+      }
+
+      return;
+    }
+
+    const pageNumber = Number(range);
+    if (Number.isFinite(pageNumber) && pageNumber > 0) {
+      result.add(pageNumber);
+    }
+  });
+
+  return result;
+};
+
 const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesToApply }) => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [pagesSet, setPagesSet] = useState<Set<number>>(new Set());
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const { t } = useTranslation(["home"]);
+
+  const pagesSet = useMemo(() => parsePagesToApply(pagesToApply), [pagesToApply]);
+
   useEffect(() => {
     if (file) {
       const url = URL.createObjectURL(file);
@@ -49,29 +95,7 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
     setImagePreviewUrl(null);
   }, [options.watermarkImage]);
 
-  useEffect(() => {
-    if (pagesToApply.toLowerCase() === 'all') {
-      setPagesSet(new Set());
-      return;
-    }
-    const newSet = new Set<number>();
-    const ranges = pagesToApply.split(',');
-    ranges.forEach(range => {
-      if (range.includes('-')) {
-        const [start, end] = range.split('-').map(Number);
-        if (!isNaN(start) && !isNaN(end)) {
-          for (let i = start; i <= end; i++) newSet.add(i);
-        }
-      } else {
-        const pageNum = Number(range);
-        if (!isNaN(pageNum)) newSet.add(pageNum);
-      }
-    });
-    setPagesSet(newSet);
-  }, [pagesToApply]);
-
-
-  const renderPage = (props: RenderPageProps) => {
+  const renderPage = useCallback((props: RenderPageProps) => {
     const shouldApply = pagesSet.size === 0 || pagesSet.has(props.pageIndex + 1);
     if (!shouldApply) {
         return <>{props.canvasLayer.children}{props.textLayer.children}{props.annotationLayer.children}</>;
@@ -141,7 +165,7 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden' }}>
             {options.position === 'tile' ? (
                 <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', height: '100%' }}>
-                    {Array.from({ length: 16 }).map((_, i) => (
+                    {TILE_CELLS.map((i) => (
                         <div key={i} style={{ flex: '0 0 25%', height: '25%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             {renderWatermarkContent(true)}
                         </div>
@@ -155,7 +179,7 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
         {props.annotationLayer.children}
       </>
     );
-  };
+  }, [imagePreviewUrl, options, pagesSet]);
   
   if (!fileUrl) {
     return (
@@ -172,7 +196,6 @@ const WatermarkViewer: React.FC<WatermarkViewerProps> = ({ file, options, pagesT
                 fileUrl={fileUrl}
                 plugins={[defaultLayoutPluginInstance]}
                 renderPage={renderPage}
-                key={file?.name + pagesToApply} // 파일이나 페이지 범위가 바뀌면 뷰어 강제 리렌더링
             />
         </div>
     </Worker>

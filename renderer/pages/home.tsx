@@ -57,6 +57,8 @@ export default function HomePage() {
         fontBold: false,
     });
     const [pagesToApply, setPagesToApply] = useState('all');
+    const [previewWatermarkOptions, setPreviewWatermarkOptions] = useState<WatermarkOptions>(watermarkOptions);
+    const [previewPagesToApply, setPreviewPagesToApply] = useState('all');
 
     // --- Effects ---
 
@@ -93,6 +95,17 @@ export default function HomePage() {
             if (pdfUrl) URL.revokeObjectURL(pdfUrl);
         };
     }, [pdfUrl]);
+
+    useEffect(() => {
+        const debounceId = window.setTimeout(() => {
+            setPreviewWatermarkOptions(watermarkOptions);
+            setPreviewPagesToApply(pagesToApply);
+        }, 120);
+
+        return () => {
+            window.clearTimeout(debounceId);
+        };
+    }, [watermarkOptions, pagesToApply]);
 
 
     // --- Handlers ---
@@ -329,9 +342,19 @@ export default function HomePage() {
                         isProcessing={status.isProcessing}
                         onAddWatermark={handleAddWatermark}
                         options={watermarkOptions}
-                        onOptionChange={(key, value) => setWatermarkOptions(prev => ({ ...prev, [key]: value }))}
+                        onOptionChange={(key, value) => {
+                            setWatermarkOptions((prev) => {
+                                if (Object.is(prev[key], value)) {
+                                    return prev;
+                                }
+
+                                return { ...prev, [key]: value };
+                            });
+                        }}
                         pages={pagesToApply}
-                        onPagesChange={setPagesToApply}
+                        onPagesChange={(value) => {
+                            setPagesToApply((prev) => (prev === value ? prev : value));
+                        }}
                     />
                 );
             case 'security':
@@ -382,7 +405,7 @@ export default function HomePage() {
     const renderViewer = () => {
         switch (selectedAction) {
             case 'watermark':
-                return <WatermarkViewer file={selectedFile} options={watermarkOptions} pagesToApply={pagesToApply} />;
+                return <WatermarkViewer file={selectedFile} options={previewWatermarkOptions} pagesToApply={previewPagesToApply} />;
             default:
                 if (!pdfUrl) {
                     return (
@@ -396,7 +419,7 @@ export default function HomePage() {
                         <img
                           src={pdfUrl}
                           className="w-full h-full object-contain"
-                          alt="Image preview"
+                          alt="Selected file preview"
                         />
                     );
                 }
@@ -418,12 +441,13 @@ export default function HomePage() {
             <div className="app-container flex flex-col min-h-screen">
                 <div className="content-card w-full flex flex-col flex-grow">
                     <div className="content-header flex justify-between items-center border-b">
-                        <h1 
+                        <button
+                            type="button"
                             className="content-title cursor-pointer hover:text-primary transition-colors" 
                             onClick={() => router.push('/welcome')}
                         >
                             Every PDF
-                        </h1>
+                        </button>
                         <div className="flex items-center gap-4">
                             <ActionButtons
                                 selectedAction={selectedAction}
