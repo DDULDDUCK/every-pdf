@@ -7,17 +7,21 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     # 이제 OS와 아키텍처 조합으로 작업을 실행합니다.
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         # 빌드할 OS와 아키텍처 조합을 정의합니다.
         include:
           - os: windows-latest
             arch: x64
-          - os: macos-13 # Intel(x64) 빌드를 위해 macos-13 사용
+          - os: macos-15-intel
             arch: x64
           - os: macos-latest # Apple Silicon(arm64) 빌드를 위해 macos-latest(또는 macos-14) 사용
             arch: arm64
