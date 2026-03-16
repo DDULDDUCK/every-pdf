@@ -1,0 +1,64 @@
+{
+  "split": {
+    "title": "PDF aufteilen",
+    "dropzone": "Ziehen Sie eine PDF-Datei per Drag & Drop in die Datei oder klicken Sie, um sie auszuwählen",
+    "selectedFile": "Selektierte Datei: {{fileName}}",
+    "pageRange": "Seitenbereich",
+    "pageRangePlaceholder": "z.B. 1-3,5,7-9",
+    "actionButton": "Aufteilen"
+  },
+  "merge": {
+    "title": "PDF zusammenführen",
+    "dropzone": "PDF-Dateien per Drag & Drop ablegen oder durch Klicken auswählen",
+    "multiSelectHint": "(Halten Sie die Umschalttaste gedrückt, um mehrere Dateien auszuwählen)",
+    "selectedFiles": "Selektierte Dateien ({{count}})",
+    "actionButton": "Zusammenführen",
+    "removeFile": "Löschen"
+  },
+  "rotate": {
+    "title": "PDF drehen",
+    "dropzone": "Ziehen Sie eine PDF-Datei per Drag & Drop in die Datei oder klicken Sie auf die Schaltfläche, um sie auszuwählen",
+    "selectedFile": "Selektierte Datei: {{fileName}}",
+    "rotationRange": "Drehbereich",
+    "allPages": "Alle Seiten",
+    "selectedPages": "Selektierte Seiten",
+    "pageRange": "Seitenbereich",
+    "pageRangePlaceholder": "z.B. 1-3,5,7-9",
+    "includeUnspecified": "Nicht spezifizierte Seiten einschließen",
+    "rotationAngle": "Drehwinkel",
+    "degrees": {
+      "90": "90°",
+      "180": "180°",
+      "270": "270°"
+    },
+    "actionButton": "Drehen"
+  },
+  "convertToPdf": {
+    "title": "Nach PDF umwandeln",
+    "formatSelection": "Selektieren Sie das Format zum Konvertieren",
+    "formats": {
+      "txt": "Text (TXT)",
+      "html": "HTML",
+      "image": "Bild"
+    },
+    "dropzone": "Dateien per Drag & Drop ablegen oder durch Klicken auswählen",
+    "supportedFormats": "Unterstützte Formate: {{formats}}",
+    "multiSelectHint": "(Mehrfachauswahl möglich)",
+    "selectedFile": "Selektierte Datei: {{fileName}}",
+    "selectedImages": "Selektierte Bilder: {{count}}",
+    "actionButton": "In PDF konvertieren"
+  },
+  "convertFromPdf": {
+    "title": "In andere Formate konvertieren",
+    "dropzone": "Ziehen Sie eine PDF-Datei per Drag & Drop in die Datei oder klicken Sie die Schaltfläche, um sie auszuwählen",
+    "supportedFormats": "Verfügbare Konvertierungen: DOCX, JPG, PNG",
+    "selectedFile": "Selektierte Datei: {{fileName}}",
+    "formatSelection": "Wählen Sie das zu konvertierende Format aus",
+    "formats": {
+      "docx": "Word (DOCX)",
+      "jpg": "Image (JPG)",
+      "png": "Bild (PNG)"
+    },
+    "note": "* Beim Konvertieren von PDF in Bilder wird jede Seite als separate Bilddatei gespeichert"
+  }
+}

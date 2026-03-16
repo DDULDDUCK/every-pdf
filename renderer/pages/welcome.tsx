@@ -85,6 +85,7 @@ export default function WelcomePage() {
                       {i18n.language === 'ko' && '한국어'}
                       {i18n.language === 'ja' && '日本語'}
                       {i18n.language === 'en' && 'English'}
+                      {i18n.language === 'de' && 'Deutsch'}
                       {i18n.language === 'zh-CN' && '中文'}
                     </span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,6 +113,12 @@ export default function WelcomePage() {
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
                       >
                         English
+                      </button>
+                      <button
+                        onClick={() => i18n.changeLanguage('de')}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-card-hover text-text flex items-center gap-2"
+                      >
+                        Deutsch
                       </button>
                       <button
                         onClick={() => i18n.changeLanguage('zh-CN')}

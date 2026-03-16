@@ -1,0 +1,12 @@
+{
+    "title" : "Theme-Einstellungen",
+    "description" : {
+        "light": "Auf helles Design einstellen.",
+        "dark": "Auf dunkles Design einstellen."
+    },
+    "theme": {
+        "light": "Heller Modus",
+        "dark": "Dunkler Modus"
+    },   
+    "usestate" : "In Verwendung"
+}
