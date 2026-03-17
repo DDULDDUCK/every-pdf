@@ -1,0 +1,36 @@
+{
+  "pageTitle": "Every PDF - Dokumentbearbeitungs-Tool",
+  "noFileSelected": "Keine PDF Datei ausgewählt",
+  "split": {
+    "processing": "PDF aufteilen...",
+    "success": "PDF Aufteilung abgeschlossen!",
+    "error": "Wählen Sie eine Datei aus"
+  },
+  "merge": {
+    "processing": "PDF zusammenführen...", 
+    "success": "PDF zusammenführen abgeschlossen!",
+    "error": "Bitte wählen Sie mindestens 2 PDF Dateien zum Zusammenführen aus"
+  },
+  "rotate": {
+    "processing": "PDF rotieren...",
+    "success": "PDF Rotation abgeschlossen!"
+  },
+  "convert": {
+    "toPdf": "Datei zu PDF konvertieren...",
+    "fromPdf": "Konvertiere PDF...",
+    "success": "Konvertierung abgeschlossen!"
+  },
+  "security": {
+    "encrypt": "PDF verschlüsseln...",
+    "decrypt": "PDF entschlüsseln...",
+    "success": "Sicherheitsprozess abgeschlossen!"
+  },
+  "watermark": {
+    "processing": "Wasserzeichen einfügen...",
+    "success": "Wasserzeichen eingefügt!"
+  },
+  "error": "Ein unbekannter Fehler ist aufgetreten",
+  "serverConnecting": "Verbinde mit Server...",
+  "serverConnected": "Server verbunden",
+  "serverError": "Server Verbindung fehlgeschlagen"
+  }

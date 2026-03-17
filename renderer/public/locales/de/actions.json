@@ -1,0 +1,12 @@
+{
+  "split": "aufteilen",
+  "merge": "verbinden", 
+  "rotate": "drehen",
+  "watermark": "Wasserzeichen",
+  "convertToPdf": "zu PDF umwandeln",
+  "convertFromPdf": "von PDF umwandeln",
+  "security": "Sicherheit",
+  "seletedFile": "Ausgewählte Dateien: {{fileName}}",
+  "selectedImg": "Ausgewählte Bilder: {{count}}",
+  "edit": "PDF editieren"
+}
