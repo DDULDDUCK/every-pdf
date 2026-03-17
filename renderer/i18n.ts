@@ -20,6 +20,14 @@ import enTool from './public/locales/en/tools.json';
 import enEditor from './public/locales/en/editor.json';
 import enSecurity from './public/locales/en/security.json';
 import enWatermark from './public/locales/en/watermark.json';
+import deWelcome from './public/locales/de/welcome.json';
+import deHome from './public/locales/de/home.json';
+import deActions from './public/locales/de/actions.json';
+import deTheme from './public/locales/de/theme.json';
+import deTools from './public/locales/de/tools.json';
+import deSecurity from './public/locales/de/security.json';
+import deWatermark from './public/locales/de/watermark.json';
+import deEditor from './public/locales/de/editor.json';
 // Japanese
 import jaWelcome from './public/locales/ja/welcome.json';
 import jaHome from './public/locales/ja/home.json';
@@ -71,6 +79,16 @@ const resources = {
     security: enSecurity,
     watermark: enWatermark,
     editor: enEditor
+  },
+  de: {
+    welcome: deWelcome,
+    home: deHome,
+    actions: deActions,
+    theme: deTheme,
+    tools: deTools,
+    security: deSecurity,
+    watermark: deWatermark,
+    editor: deEditor
   },
   'zh-CN': {
     welcome: zhCNWelcome,
