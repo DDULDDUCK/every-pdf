@@ -11,7 +11,7 @@ import zipfile
 from pathlib import Path
 import uuid
 import platform
-from pdf2image import convert_from_path
+import pypdfium2 as pdfium
 import img2pdf
 from PIL import Image
 import io
@@ -51,25 +51,6 @@ async def convert_from_pdf(
     session_dir = get_session_dir()
     temp_pdf = session_dir / f"temp_{file.filename}"
     output_path = session_dir / f"{os.path.splitext(file.filename)[0]}"
-    
-    poppler_path = None
-    if platform.system() == "Windows":
-        if getattr(sys, '_MEIPASS', None):
-            base_path = Path(sys._MEIPASS)
-            poppler_path = str(base_path / "poppler" / "bin")
-        else:
-            poppler_path = str(Path(__file__).parent.parent.parent / "poppler" / "windows" / "poppler-24.08.0" / "Library" / "bin")
-    elif platform.system() == "Darwin":
-        if getattr(sys, '_MEIPASS', None):
-            base_path = Path(sys._MEIPASS)
-            poppler_path = str(base_path / "poppler" / "bin")
-            lib_path = str(base_path / "poppler" / "lib")
-        else:
-            base_path = Path(__file__).parent.parent.parent
-            poppler_path = str(base_path / "poppler" / "mac" / "25.03.0" / "bin")
-            lib_path = str(base_path / "poppler" / "mac" / "25.03.0" / "lib")
-        os.environ['DYLD_LIBRARY_PATH'] = lib_path
-        os.environ['PATH'] = f"{poppler_path}:{os.environ.get('PATH', '')}"
 
     try:
         with open(temp_pdf, "wb") as buffer:
@@ -102,12 +83,14 @@ async def convert_from_pdf(
             reader = PdfReader(temp_pdf)
             num_pages = len(reader.pages)
             try:
-                images = convert_from_path(
-                    temp_pdf,
-                    dpi=300,
-                    fmt=image_format,
-                    poppler_path=poppler_path
-                )
+                pdf_doc = pdfium.PdfDocument(str(temp_pdf))
+                try:
+                    images = [
+                        pdf_doc[i].render(scale=300 / 72).to_pil()
+                        for i in range(len(pdf_doc))
+                    ]
+                finally:
+                    pdf_doc.close()
                 if len(images) > 1:
                     zip_filename = f"{os.path.splitext(file.filename)[0]}_images.zip"
                     output_zip = session_dir / zip_filename

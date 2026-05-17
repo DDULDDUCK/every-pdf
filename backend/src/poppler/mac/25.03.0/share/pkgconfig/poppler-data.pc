@@ -1,8 +1,0 @@
-poppler_datadir=/opt/homebrew/Cellar/poppler/25.03.0/share/poppler
-
-Name: poppler-data
-Description: Encoding files for use with poppler
-Version: 0.4.12
-
-Cflags: -DPOPPLER_DATADIR=/opt/homebrew/Cellar/poppler/25.03.0/share/poppler
-

@@ -29,15 +29,6 @@ async function buildBackend() {
       '--console',
       '--name', 'pdf_processor',
       '--add-data', `${join(backendPath, 'src', 'fonts')}${isWin ? ';' : ':'}pdf_processor/fonts`,
-      ...(isWin ? [
-        '--add-data',
-        `${join(backendPath, 'src', 'poppler', 'windows', 'poppler-24.08.0', 'Library', 'bin')};poppler/bin`
-      ] : process.platform === 'darwin' ? [
-        '--add-data',
-        `${join(backendPath, 'src', 'poppler', 'mac', '25.03.0', 'bin')}:poppler/bin`,
-        '--add-data',
-        `${join(backendPath, 'src', 'poppler', 'mac', '25.03.0', 'lib')}:poppler/lib`
-      ] : []),
       '--hidden-import', 'pdf_processor',
       '--hidden-import', 'PyPDF2',
       '--hidden-import', 'fastapi',
@@ -107,7 +98,13 @@ async function buildBackend() {
       '--hidden-import', 'xhtml2pdf.default',
       '--hidden-import', 'xhtml2pdf.parser',
       '--hidden-import', 'xhtml2pdf.xhtml2pdf_reportlab',
-      '--hidden-import', 'pdf2image',
+      // pypdfium2 ships a native libpdfium binary and version.json data files
+      // loaded via __file__-relative paths in pypdfium2_raw.bindings and
+      // pypdfium2_raw.version. --hidden-import alone would skip those — use
+      // --collect-all to bundle submodules, data, and binaries together.
+      '--collect-all', 'pypdfium2',
+      '--collect-all', 'pypdfium2_raw',
+      '--hidden-import', 'pypdfium2_cfg',
       '--hidden-import', 'PIL',
       '--hidden-import', 'PIL.Image',
       '--hidden-import', 'PIL.ImageDraw',

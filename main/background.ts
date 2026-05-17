@@ -344,7 +344,7 @@ autoUpdater.on('update-downloaded', (info) => {
       - img2pdf (LGPL v3)
       - xhtml2pdf (Apache License 2.0)
       - ReportLab (BSD License)
-      - pdf2image (MIT License)
+      - pypdfium2 (Apache License 2.0 / BSD-3-Clause)
       - pdfplumber (MIT License)
       - python-docx (MIT License)
 
