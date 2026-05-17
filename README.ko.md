@@ -92,7 +92,7 @@ Every PDF는 일상적인 문서 작업부터 전문적인 편집까지, 필요�
 ### 사전 요구사항
 
 - [Node.js](https://nodejs.org/) (v18 이상)
-- [Python](https://www.python.org/) (v3.9 이상)
+- [Python](https://www.python.org/) (v3.10 이상)
 - [Git](https://git-scm.com/)
 
 ### 설치 및 실행

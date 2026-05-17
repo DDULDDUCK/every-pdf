@@ -91,7 +91,7 @@ Interested in contributing? Follow this guide to set up the project locally.
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or higher)
-- [Python](https://www.python.org/) (v3.9 or higher)
+- [Python](https://www.python.org/) (v3.10 or higher)
 - [Git](https://git-scm.com/)
 
 ### Installation & Run
