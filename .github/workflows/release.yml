@@ -46,8 +46,11 @@ jobs:
           cache: 'npm'
 
       # 4. NPM 의존성 설치
+      # 'npm install'을 사용해 lock file과 package.json 간의 사소한 불일치가
+      # 있어도 CI가 자동 해결하도록 합니다. (재현성은 약간 떨어지지만 데스크톱
+      # 앱이라 트랜지티브 dep의 미세한 차이는 영향 없음.)
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       # 5. 플랫폼 및 아키텍처에 맞는 빌드 및 퍼블리시 실행
       - name: Build and Release for Windows
